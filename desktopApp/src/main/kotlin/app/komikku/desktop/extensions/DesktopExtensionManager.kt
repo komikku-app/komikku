@@ -3,6 +3,7 @@ package app.komikku.desktop.extensions
 import android.content.Context
 import android.widget.Toast
 import app.komikku.desktop.extension.ExtensionPackageResult
+import app.komikku.desktop.extension.ExtensionPaths
 import app.komikku.desktop.extension.ExtensionRuntime
 import app.komikku.shared.extension.PlatformExtensionManager
 import eu.kanade.domain.source.service.SourcePreferences
@@ -343,6 +344,8 @@ class DesktopExtensionManager(
             installJobs[key] = currentCoroutineContext().job
             installErrors.remove(target.pkgName)
             emit(InstallStep.Pending)
+            // A store's index is third-party data too: its package name names the download
+            require(ExtensionPaths.isValidPackageName(target.pkgName)) { "'${target.pkgName}' is not a valid package name" }
             emit(InstallStep.Downloading)
             downloadDir.mkdirs()
             val download = File.createTempFile("${target.pkgName}-", ".apk", downloadDir)
@@ -407,7 +410,14 @@ class DesktopExtensionManager(
             failed(expectedPkgName, "Downloaded package ${extension.pkgName} is not $expectedPkgName")
             return@withLock false
         }
-        val target = File(apkDir, "${extension.pkgName}.$APK_EXTENSION")
+        apkDir.mkdirs()
+        val target = ExtensionPaths.packageFileOrNull(apkDir, extension.pkgName, APK_SUFFIX)
+        val temp = ExtensionPaths.packageFileOrNull(apkDir, extension.pkgName, "$APK_SUFFIX.tmp")
+        if (target == null || temp == null) {
+            logcat(LogPriority.ERROR) { "Not installing ${extension.pkgName}: its file would be outside $apkDir" }
+            failed(extension.pkgName, "Not installing ${extension.pkgName}: its file would be outside the extensions folder")
+            return@withLock false
+        }
         val current = if (target.isFile) runtime.inspect(target) as? ExtensionPackageResult.Valid else null
         if (current != null) {
             if (extension.versionCode < current.extension.versionCode) {
@@ -422,8 +432,6 @@ class DesktopExtensionManager(
             }
         }
 
-        apkDir.mkdirs()
-        val temp = File(apkDir, "${extension.pkgName}.$APK_EXTENSION.tmp")
         file.copyTo(temp, overwrite = true)
         if (!temp.renameTo(target)) {
             target.delete()
@@ -477,7 +485,7 @@ class DesktopExtensionManager(
 
     /** [uninstallExtension] that returns when the extension is gone. */
     suspend fun uninstall(pkgName: String) = mutex.withLock {
-        File(apkDir, "$pkgName.$APK_EXTENSION").delete()
+        ExtensionPaths.packageFileOrNull(apkDir, pkgName, APK_SUFFIX)?.delete()
         loadedApkHashes.remove(pkgName)
         unregister(pkgName)
         runtime.pruneJarCache(loadedApkHashes.values.toSet())
@@ -493,7 +501,7 @@ class DesktopExtensionManager(
                     .also { it += "${extension.pkgName}:${extension.versionCode}:${extension.signatureHash}" }
             }
             updateUntrusted { it - extension.pkgName }
-            val apk = File(apkDir, "${extension.pkgName}.$APK_EXTENSION")
+            val apk = ExtensionPaths.packageFileOrNull(apkDir, extension.pkgName, APK_SUFFIX) ?: return
             (loadExtension(apk) as? LoadResult.Success)?.let { register(it.extension.withUpdateCheck()) }
         }
     }
@@ -563,5 +571,6 @@ class DesktopExtensionManager(
 
     companion object {
         private const val APK_EXTENSION = "apk"
+        private const val APK_SUFFIX = ".$APK_EXTENSION"
     }
 }

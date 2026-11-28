@@ -89,6 +89,33 @@ class ExtensionPackageTest {
         check(FixtureApk(sourceClass = null)).rejection() shouldContain "no source class"
     }
 
+    @Test
+    fun `package names that are not Java package names are rejected`() {
+        val names = listOf(
+            "../../evil",
+            "eu.kanade/../../evil",
+            "/absolute/evil",
+            "..\\..\\evil",
+            "C:\\evil",
+            "eu.kanade\\evil.x",
+            "eu.kanade.tachiyomi.extension.en.a/b",
+            "evil",
+            ".evil.x",
+            "evil.x.",
+            "eu..evil",
+            "1eu.evil",
+            "eu.1evil",
+            "eu.kanade.é",
+            "eu.kanade-evil.x",
+            "eu.kanade.evil\u0000.x",
+            "eu.kanade.evil x",
+        )
+        for (name in names) {
+            check(FixtureApk(packageName = name)).rejection() shouldContain "not a valid package name"
+        }
+        check(FixtureApk(packageName = "eu.kanade_2.Tachiyomi.x9")).shouldBeInstanceOf<ExtensionPackageResult.Valid>()
+    }
+
     private fun ExtensionPackageResult.rejection(): String {
         shouldBeInstanceOf<ExtensionPackageResult.Rejected>()
         return reason

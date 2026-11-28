@@ -258,6 +258,29 @@ class DesktopExtensionManagerTest {
     }
 
     @Test
+    @Order(4)
+    fun `a package name from the manifest never leaves the extensions folder`(): Unit = runBlocking {
+        // <dataDir>/extensions/apks/../../evil.apk is <dataDir>/evil.apk
+        val victim = File(dataDir, "evil.apk").apply { writeText("not an extension's") }
+        val apk = File(work, "evil.apk")
+        FixtureApk(packageName = "../../evil").writeSigned(apk, storeKey)
+
+        manager.installApkFile(apk) shouldBe false
+
+        victim.readText() shouldBe "not an extension's"
+        File(dataDir, "evil.apk.tmp").exists() shouldBe false
+        manager.installError("evil")!! shouldContain "not a valid package name"
+
+        manager.uninstall("../../evil")
+        manager.uninstall(victim.absolutePath.removeSuffix(".apk"))
+        manager.uninstall("..\\..\\evil")
+
+        victim.readText() shouldBe "not an extension's"
+        manager.installedExtensionsFlow.value.map { it.pkgName } shouldBe listOf(pkg)
+        victim.delete()
+    }
+
+    @Test
     @Order(5)
     fun `extensions signed by unknown keys are untrusted until trusted`(): Unit = runBlocking {
         val otherPkg = "eu.kanade.tachiyomi.extension.en.untrusted"
