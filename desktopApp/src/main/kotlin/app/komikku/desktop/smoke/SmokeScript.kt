@@ -73,14 +73,19 @@ internal class SmokeScript(val driver: SmokeDriver) {
         ),
         SmokeStep(
             name = "08-details",
-            condition = "details shown, ${SmokeFixture.CHAPTERS.size} chapters stored",
+            condition = "details shown, ${SmokeFixture.CHAPTERS.size} chapters stored and listed",
             action = {
                 val manga = checkNotNull(fixtureManga()) { "The fixture is not in the database" }
                 driver.onUi { navigators.push(BrowseHomeScreen, MangaDetailsScreen(manga.id)) }
             },
             until = {
-                driver.onUi { navigators.top(BrowseHomeScreen) } is MangaDetailsScreen &&
+                driver.texts().containsAll(SmokeFixture.CHAPTERS) &&
+                    driver.onUi { navigators.top(BrowseHomeScreen) } is MangaDetailsScreen &&
                     chapters().map { it.name }.toSet() == SmokeFixture.CHAPTERS.toSet()
+            },
+            state = {
+                val texts = driver.texts()
+                "listed: ${SmokeFixture.CHAPTERS.filter { it in texts }}, stored: ${chapters().map { it.name }}"
             },
         ),
         SmokeStep(

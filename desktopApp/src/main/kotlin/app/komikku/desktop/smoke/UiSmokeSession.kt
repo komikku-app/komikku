@@ -23,6 +23,7 @@ import uy.kohesive.injekt.api.get
 import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.system.exitProcess
 
 /**
  * One UI smoke run, from before the DI start to the exit code. The report, every screenshot so far, the app log and
@@ -36,6 +37,7 @@ internal class UiSmokeSession(
     private val trap: NetworkTrap,
     private val watchdogMillis: Long = WATCHDOG_MILLIS,
     private val halt: (Int) -> Unit = { Runtime.getRuntime().halt(it) },
+    private val exit: (Int) -> Nothing = { exitProcess(it) },
 ) {
 
     val report = SmokeReport(reportFolder)
@@ -58,6 +60,9 @@ internal class UiSmokeSession(
     @Volatile
     private var closeRequestedAt = 0L
 
+    @Volatile
+    private var chosenWindow: SmokeWindowSize.Choice.Fits? = null
+
     /** Before the DI start: the fixed frame, the navigator registry and the watchdog. */
     fun start() {
         UiSmoke.fixLocale()
@@ -73,11 +78,27 @@ internal class UiSmokeSession(
     }
 
     /**
-     * After the DI start, before the scheduler and the window: the presets that make every run the same and keep it
-     * offline, the fixture, then the script once the window shows.
+     * After the DI start, before the scheduler and the window: the window size for this screen (a screen too small is
+     * refused), the presets that make every run the same and keep it offline, the fixture, then the script once the
+     * window shows.
      */
-    fun onInjektReady() {
-        prepareApp()
+    fun onInjektReady(choice: SmokeWindowSize.Choice = SmokeWindowSize.forScreen()) {
+        when (choice) {
+            is SmokeWindowSize.Choice.TooSmall -> {
+                if (!ended.compareAndSet(false, true)) return
+                watchdog.interrupt()
+                report.environment("window size", "refused: ${choice.reason}")
+                end(UiSmoke.EXIT_REFUSED, choice.reason, deleteNow = false, outcome = SmokeReport.Outcome.REFUSED)
+                deleteDataFolderAfterHooks()
+                exit(UiSmoke.EXIT_REFUSED)
+            }
+            is SmokeWindowSize.Choice.Fits -> {
+                report.environment("window size", choice)
+                report.write()
+                chosenWindow = choice
+                prepareApp(choice.width, choice.height)
+            }
+        }
         scope.launch { runScript() }
     }
 
@@ -94,8 +115,9 @@ internal class UiSmokeSession(
                 report.environment("scale", layer.contentScale)
                 report.environment("window", "${window.width}x${window.height} (content ${layer.width}x${layer.height})")
                 report.environment("key target", driver.keyTarget().javaClass.name)
-                check(window.width == WINDOW_WIDTH && window.height == WINDOW_HEIGHT) {
-                    "The window is ${window.width}x${window.height}, not ${WINDOW_WIDTH}x$WINDOW_HEIGHT"
+                val chosen = checkNotNull(chosenWindow)
+                check(window.width == chosen.width && window.height == chosen.height) {
+                    "The window is ${window.width}x${window.height}, not the chosen ${chosen.width}x${chosen.height}"
                 }
             }
             failure = SmokeScript(driver).run(report, reportFolder)
@@ -126,18 +148,21 @@ internal class UiSmokeSession(
         }
         val code = if (problem == null) UiSmoke.EXIT_PASSED else UiSmoke.EXIT_FAILED
         end(code, problem, deleteNow = false)
-        // Shutdown hooks still write to the data folder (the cookie store's flush): delete it after them
-        if (!keepDataFolder) {
-            Runtime.getRuntime().addShutdownHook(
-                Thread({
-                    // The hooks start in no set order: give them a moment to start, then wait for the writers
-                    Thread.sleep(HOOKS_START_MILLIS)
-                    Thread.getAllStackTraces().keys.filter { it.name in DATA_FOLDER_WRITERS }.forEach { it.join(UI_TIMEOUT_MILLIS) }
-                    deleteDataFolder()
-                }, "ui-smoke-clean-up"),
-            )
-        }
+        deleteDataFolderAfterHooks()
         return code
+    }
+
+    /** Shutdown hooks still write to the data folder (the cookie store's flush): deletes it after them. */
+    private fun deleteDataFolderAfterHooks() {
+        if (keepDataFolder) return
+        Runtime.getRuntime().addShutdownHook(
+            Thread({
+                // The hooks start in no set order: give them a moment to start, then wait for the writers
+                Thread.sleep(HOOKS_START_MILLIS)
+                Thread.getAllStackTraces().keys.filter { it.name in DATA_FOLDER_WRITERS }.forEach { it.join(UI_TIMEOUT_MILLIS) }
+                deleteDataFolder()
+            }, "ui-smoke-clean-up"),
+        )
     }
 
     private fun watch() {
@@ -155,10 +180,15 @@ internal class UiSmokeSession(
         halt(UiSmoke.EXIT_WATCHDOG)
     }
 
-    private fun end(code: Int, problem: String?, deleteNow: Boolean = true) {
+    private fun end(
+        code: Int,
+        problem: String?,
+        deleteNow: Boolean = true,
+        outcome: SmokeReport.Outcome = if (problem == null) SmokeReport.Outcome.PASSED else SmokeReport.Outcome.FAILED,
+    ) {
         copyLog()
         report.environment("exit code", code)
-        report.finish(if (problem == null) SmokeReport.Outcome.PASSED else SmokeReport.Outcome.FAILED, problem, trap.attempts)
+        report.finish(outcome, problem, trap.attempts)
         if (deleteNow && !keepDataFolder) deleteDataFolder()
     }
 
@@ -189,8 +219,6 @@ internal class UiSmokeSession(
     }
 
     companion object {
-        const val WINDOW_WIDTH = 1280
-        const val WINDOW_HEIGHT = 800
         private const val WATCHDOG_MILLIS = 5 * 60_000L
         private const val WINDOW_TIMEOUT_MILLIS = 60_000L
         private const val UI_TIMEOUT_MILLIS = 5_000L
@@ -199,12 +227,15 @@ internal class UiSmokeSession(
         private val DATA_FOLDER_WRITERS = setOf("android-compat-cookie-flush")
         private const val HOOKS_START_MILLIS = 200L
 
-        /** The presets of a smoke run (the same frame every time, nothing scheduled) and the fixture. */
-        fun prepareApp() {
+        /**
+         * The presets of a smoke run (the same frame every time for a window of [windowWidth] × [windowHeight],
+         * nothing scheduled) and the fixture.
+         */
+        fun prepareApp(windowWidth: Int, windowHeight: Int) {
             Injekt.get<UiPreferences>().themeMode().set(ThemeMode.LIGHT)
             Injekt.get<DesktopWindowPreferences>().apply {
-                windowWidth().set(WINDOW_WIDTH)
-                windowHeight().set(WINDOW_HEIGHT)
+                windowWidth().set(windowWidth)
+                windowHeight().set(windowHeight)
                 windowMaximized().set(false)
             }
             Injekt.get<DesktopTrayPreferences>().trayIcon().set(false)

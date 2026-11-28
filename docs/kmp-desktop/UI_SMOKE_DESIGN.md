@@ -101,6 +101,12 @@ macOS and uploads the report folder.
   (the workflow reads only that, like the self-test). `report.json` with the same data; `NN-<step>.png`; on failure
   `NN-<step>-failed.png`, the stack trace and a copy of `komikku.log`. Exit 0 passed, 1 a step failed, 2 refused (guard),
   3 watchdog (5 min overall; the report is written before `Runtime.halt`).
+- **Window size** (`SmokeWindowSize.kt`): 1280x800 where the usable screen area (without menu bar, Dock or task bar)
+  holds it, else the largest window that fits with an aspect between 5:4 and 16:10, the reason on the report's
+  `window size:` line (macOS runner: `1024x684, not 1280x800: the usable screen area is 1024x684`). Refused (exit 2)
+  below 960x600: the details screen needs about 530 px of content height for both fixture chapters whole on screen,
+  plus a title bar of up to 40 px; 960 is 600 at 16:10. `SmokeScriptTest` runs the script at 1280x800, 1024x684 and
+  960x600 and checks the chapters are whole on screen.
 - **Size [guess]:** about 900 lines of app code (smoke package), about 30 lines elsewhere (`main()` refactor,
   `NavigatorRegistry` hook in `AppNavigatorHost`, `KomikkuApp` providing it), about 500 lines of tests; 2–3 days for one
   engineer plus review, then CI iterations (Test and release engineer, about 40 lines of workflow per OS).

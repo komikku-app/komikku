@@ -10,6 +10,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onFirst
@@ -24,6 +25,7 @@ import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.ui.navigation.NavigatorRegistry
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContainOnly
+import io.kotest.matchers.floats.shouldBeLessThanOrEqual
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
@@ -37,11 +39,15 @@ import javax.imageio.ImageIO
 
 /**
  * The smoke script on every test run (UI_SMOKE_DESIGN.md section 4): the same steps, presets and fixture as the
- * packaged app's `--ui-smoke`, driven headless through the Compose test framework instead of the real window.
+ * packaged app's `--ui-smoke`, driven headless through the Compose test framework instead of the real window: the
+ * window the mode chooses on a screen of [screenWidth] × [screenHeight], without a title bar of [titleBar] px. One
+ * subclass per size: each needs its own app (the script reads a chapter and turns the lock on).
  */
 @OptIn(ExperimentalTestApi::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SmokeScriptTest {
+abstract class SmokeScriptTest(screenWidth: Int, screenHeight: Int, private val titleBar: Int) {
+
+    private val window = SmokeWindowSize.choose(screenWidth, screenHeight) as SmokeWindowSize.Choice.Fits
 
     private lateinit var app: Application
     private val navigators = SmokeNavigators()
@@ -50,7 +56,7 @@ class SmokeScriptTest {
     fun boot(@TempDir dataDir: File) {
         UiSmoke.fixLocale()
         app = DesktopInjekt.init(dataDir)
-        UiSmokeSession.prepareApp()
+        UiSmokeSession.prepareApp(window.width, window.height)
         NavigatorRegistry.install(navigators)
     }
 
@@ -58,7 +64,7 @@ class SmokeScriptTest {
     fun uninstall() = NavigatorRegistry.uninstall()
 
     @Test
-    fun `every step of the smoke script passes`(@TempDir reportFolder: File) = runDesktopComposeUiTest(width = 1280, height = 772) {
+    fun `every step of the smoke script passes`(@TempDir reportFolder: File) = runDesktopComposeUiTest(window.width, window.height - titleBar) {
         setContent { KomikkuApp(context = app) }
         waitForIdle()
         val driver = TestDriver(this, navigators)
@@ -72,6 +78,14 @@ class SmokeScriptTest {
         report.steps().map { it.name } shouldBe script.steps.map { it.name }
         report.steps().map { it.status }.shouldContainOnly(SmokeReport.Status.PASS)
         script.steps.forEach { File(reportFolder, "${it.name}.png").isFile shouldBe true }
+        // The window's minimum height (SmokeWindowSize) keeps the details screen's chapters whole on screen
+        val contentHeight = onRoot().fetchSemanticsNode().size.height.toFloat()
+        SmokeFixture.CHAPTERS.forEach { chapter ->
+            withClue("$chapter whole on screen") {
+                val row = onNode(hasText(chapter)).fetchSemanticsNode()
+                row.positionInRoot.y + row.size.height shouldBeLessThanOrEqual contentHeight
+            }
+        }
     }
 
     /** [SmokeDriver] over the Compose test framework: its key injection, text input and captures. */
@@ -124,3 +138,16 @@ class SmokeScriptTest {
         override suspend fun accessibilityTree(): String = test.onAllNodes(isRoot()).printToString()
     }
 }
+
+/** The title bar's height on macOS; the most a window's frame takes from its height is about 40 px. */
+private const val MAC_TITLE_BAR = 28
+private const val MAX_TITLE_BAR = 40
+
+/** The preferred window, as on the Linux and Windows runners. */
+class SmokeScriptPreferredSizeTest : SmokeScriptTest(1280, 800, MAC_TITLE_BAR)
+
+/** The macOS runner's screen (CI run 46139150350): a 1024x684 window, 1024x656 without its title bar. */
+class SmokeScriptSmallScreenTest : SmokeScriptTest(1024, 684, MAC_TITLE_BAR)
+
+/** The smallest window the mode accepts, with the tallest frame. */
+class SmokeScriptMinimumSizeTest : SmokeScriptTest(960, 600, MAX_TITLE_BAR)
