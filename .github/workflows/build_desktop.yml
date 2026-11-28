@@ -701,8 +701,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-  # Track D, step 1 (docs/kmp-desktop/WINDOWS_LINUX_TEST_PLAN.md): the desktop unit + headless UI tests on Windows,
-  # where they had never run. Non-blocking (`continue-on-error`): a failure marks this job red but neither fails the
+  # Track D, step 1 (docs/kmp-desktop/WINDOWS_LINUX_TEST_PLAN.md): the desktop unit + headless UI tests and the
+  # Android compat layer's tests (:desktop:android-compat) on Windows, where they had never run. Non-blocking (`continue-on-error`): a failure marks this job red but neither fails the
   # run nor holds up `release`, which depends only on `package`. The HTML report and the JUnit XML are uploaded when the
   # tests fail.
   windows-test:
@@ -737,9 +737,11 @@ jobs:
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
 
+      # The Android compat layer's tests too (its file URIs and paths are platform-specific); --continue runs both
+      # modules' tests when one fails
       - name: Test desktop app
         id: desktop_tests
-        run: ./gradlew :desktopApp:test --max-workers=2
+        run: ./gradlew :desktopApp:test :desktop:android-compat:test --continue --max-workers=2
 
       - name: Upload test report
         if: failure() && steps.desktop_tests.outcome == 'failure'
@@ -749,6 +751,8 @@ jobs:
           path: |
             desktopApp/build/reports/tests/test
             desktopApp/build/test-results/test
+            desktop/android-compat/build/reports/tests/test
+            desktop/android-compat/build/test-results/test
           retention-days: 14
 
   # Track D, step 2 (WINDOWS_LINUX_TEST_PLAN.md, section 4): installs what `package` built on a fresh runner, starts the
