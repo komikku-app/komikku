@@ -4468,9 +4468,10 @@ failure below was found by converting and loading real Keiyoushi APKs inside the
   APK in the folder, with the app's Injekt graph over a temporary data folder (extensions resolve the `Application`
   and the network helper when their sources are created). `build_desktop.yml` downloads the current Hiperdex, Kagane,
   MangaDex and Weeb Central APKs from Keiyoushi's index and passes them to the packaged app's self-test.
-- **Catalogue sweep (local, not in CI):** every extension of Keiyoushi's index (1,686) converted, every class verified
-  and every source created: 1,683 pass. Left: `aquellosquetraducen` (`android.icu.text.Collator`), `tenkaiscan`
-  (`android.graphics.ColorMatrix`), `mehgazone` (`android.text.Spannable`), the known `android.graphics` / text gap.
+- **Catalogue sweep (local, not in CI; EXTENSION_COMPAT.md):** all 1,701 extensions of Keiyoushi's index convert,
+  1,699 create their sources (with `Collator` and `Spannable` added). Left: `aquellosquetraducen`
+  (`android.icu.text.RuleBasedCollator`) and `tenkaiscan` (`android.graphics.ColorMatrix`). 275 extensions need
+  `android.graphics` classes to show pages (ANSWER 016 approves the first group).
 - **Live reading (packaged app, network):** MangaDex, MangaPill and Weeb Central: popular list, chapter list, page
   list and the page images downloaded.
 - **Through the UI (packaged app, fresh data folder):** the Keiyoushi store (`index.pb`) added in Browse → Extensions;

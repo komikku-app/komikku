@@ -552,9 +552,9 @@ mark the residual path in both modules.
 - **M3 — real APK extensions on the Mac, 2026-11-28 (PROGRESS "M3 — real APK extensions on the Mac"):** the load
   failure is fixed: the converter writes stack map frames (ASM), retargets R8-inlined constructors, keeps `-` in member
   names and copies the APK's resources; the host has `okhttp-zstd`, `AppInfo`, `http.agent`, and the compat layer
-  `LruCache`, `Activity`, `Bundle`, activity lifecycle callbacks and `ApplicationInfo`. 1,683 of Keiyoushi's 1,686
-  extensions convert, verify and create their sources (the 3 left need `android.graphics` / `android.icu` / text
-  classes); MangaDex, MangaPill and Weeb Central read live in the packaged app. CI's self-test now checks Hiperdex,
+  `LruCache`, `Activity`, `Bundle`, activity lifecycle callbacks and `ApplicationInfo`. 1,699 of Keiyoushi's 1,701
+  extensions create their sources (EXTENSION_COMPAT.md; the 2 left need `android.graphics.ColorMatrix` and
+  `android.icu.text.RuleBasedCollator`), and 275 of them need `android.graphics` classes to show pages; MangaDex, MangaPill and Weeb Central read live in the packaged app. CI's self-test now checks Hiperdex,
   Kagane, MangaDex and Weeb Central in the packaged app on every runner. A failed install shows its cause. Cmd+Q and
   the close button now run the bounded shutdown (it never ran before: Compose exited the JVM first), Cmd+H locks like
   minimising. Checked in the packaged app through the UI: Hiperdex and Kagane install and open (Hiperdex's images are
