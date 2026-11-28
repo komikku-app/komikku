@@ -1,4 +1,4 @@
-Status: Test and release engineer — done: run 46120905511 read, Linux smoke install fixed, R.2 cause found — left: R.2 fix and its repeated runs, the Windows unit test failures, the macOS smoke design
+Status: Test and release engineer — done: run 46120905511 read, Linux smoke install fixed, R.2 fixed (15/15 repeated runs), ANSWER 013 signing and pinning, Linux notification smoke, compat tests on Windows, Windows test teardown fixes (3934443c74, e10450b554, 30f75ccd5b), macOS smoke design note — left: the next CI run's Windows test, Windows and Linux smoke results; Forge to decide on the two master-owned files (HttpPageLoader in 0a77c5bc21, ChapterCache.close patch); the product bugs listed below (other owners)
 
 # Desktop CI: test and release notes
 
@@ -26,9 +26,10 @@ designs not built yet. Forge folds what matters into PROGRESS.md / HANDOVER.md.
 - The real-extension job prints the self-test report twice (the launcher's stdout, then the report file, which the step
   prints because the Windows GUI launcher can drop stdout). Cosmetic, left as is.
 - The Windows app log of the smoke run had one line (the single-instance hand-over); the automatic backup error of run
-  46117892032 (R.1) did not appear.
+  46117892032 (R.1) did not appear. That proves nothing: a fresh start writes no log file (F1, Shared-code engineer),
+  so the "no error line" checks pass on a nearly empty log. Check the line count again once F1 is in.
 
-## R.2: `ReaderWidePagesUiTest` "rotate wide pages to fit" (cause found)
+## R.2: `ReaderWidePagesUiTest` "rotate wide pages to fit" (fixed, `0a77c5bc21`)
 
 - **Which wait:** the Linux test report of run 46117892032 (artifact `desktop-test-report-linux-X64-…`) has the full
   trace: line 207, the wait for the wide page (`page-2`) to be taller than wide. Everything before it took about 1.4 s,
@@ -49,3 +50,103 @@ designs not built yet. Forge folds what matters into PROGRESS.md / HANDOVER.md.
 - **Shown deterministically:** a scratch test holding the chapter cache's lock while two `loadPage` calls queue the
   same page: both threads download it (2 requests) and at the first `Ready` the image file does not exist
   (`FileNotFoundException …/chapter_disk_cache/<key>.0`), final state `Ready`.
+- **Fix (`0a77c5bc21`, `HttpPageLoader`, KMK block):** a set of the pages a reader thread is loading now; a thread that
+  takes a page another thread is loading skips that entry, and one that gets it after the other finished loads it only
+  while it is still `Queue`. No test was loosened. `HttpPageLoaderRaceTest` (desktopApp) is the scratch test made
+  permanent: it failed before the fix (2 image requests, `Ready` before the file existed) and passes after it.
+- **Repeated runs** (`.git/forge/gradlew-locked`, JDK 21, a clean worktree of `HEAD` plus the fix, each run a fresh
+  Gradle test JVM with `--rerun --max-workers=2`, two busy loops beside it): the whole reader test package
+  (`app.komikku.desktop.reader.*`, 48 tests incl. `ReaderWidePagesUiTest` and `HttpPageLoaderRaceTest`) **15 of 15
+  passed**. Gates on that tree: `:app:spotlessCheck`, `:desktopApp:spotlessCheck`, `:app:verifyBorrowedSources` passed.
+- The same race exists on Android (`master`). `HttpPageLoader.kt` is master's file, and `0a77c5bc21` (pushed before
+  the "master-owned files stay identical" rule) makes `origin/multiplatform` differ from `origin/master` there. Forge to
+  decide: send it to `master` as an Android-fix patch (`.git/forge/scratch/r2/httppageloader-race.patch`, the
+  `HttpPageLoader` part of the commit) or move the fix elsewhere.
+
+## ANSWER 013 (signing and what CI downloads)
+
+- (i) `8802da8132`: the macOS key is imported with `-T /usr/bin/codesign`, partition list `apple-tool:,apple:,codesign:`,
+  never `-A`. From the Compose plugin 1.12.2 code: `MacSigner` signs with `/usr/bin/codesign` and only reads the
+  certificate with `/usr/bin/security`; notarization (`xcrun notarytool`, `stapler`) and the DMG tools do not use the key.
+  BUILDING.md "Signing" marks it untested and has the first-signed-build checklist (expected error if a tool is missing:
+  `errSecInternalComponent` / `User interaction is not allowed.`; fix: one more `-T <path>`).
+- (ii) `c2897cd5fe`: **the workflow downloads WiX and points the plugin at it.** The plugin's own `downloadWix` task
+  fetches `wix311-binaries.zip` without any check and keeps it in the Gradle user home (which setup-gradle caches). The
+  Windows `package` job now downloads WiX 3.11.2 (`wix3112rtm`), checks SHA-256
+  `2c1888d5d1dba377fc7fa14444cf556963747ff9a0a289a3599cf09da03b9e2e` (computed here and found in 80+ public build
+  scripts, e.g. PyOxidizer, Mozilla VPN), unpacks it and sets `WIX_PATH`, with which the plugin creates no download task.
+  The step was run locally with PowerShell 7: correct hash passes and writes `WIX_PATH`; a wrong hash fails before
+  unpacking. Not yet run on a Windows runner.
+- (iii) `c2897cd5fe`: BUILDING.md "What CI downloads and runs" (one table). Also added `verify-signature: true` to the
+  three `setup-java` steps (Adoptium's GPG signature when a JDK is downloaded). **Open, for a decision:** the Gradle
+  distribution has no `distributionSha256Sum` (9.3.1: `b266d5ff6b90eada6dc3b20cb090e3731302e553a27c5d3e4df1f0d76beaff06`)
+  and there is no `gradle/verification-metadata.xml`; both files are shared with the Android build on `master`.
+- `f4f40f3fac`: BUILDING.md "Data directory" lists `instance.lock` and `instance.port` (Forge 14:41 (a)).
+
+## Smoke and Windows test job additions
+
+- `eda09f3d3f`: the Linux smoke job runs `--self-test-notify` as WINDOWS_LINUX_TEST_PLAN.md section 5 describes, after
+  the window checks: run C without a notification service (exit 1 and a `FAIL system notification` line expected), then
+  dunst installed, the plain self-test (exit 0, no `Notify` call on the bus), A (`notify-send`) and B (`=gdbus`) with
+  exit 0 and the exact `OK … (accepted)` line, the `Notify` call's app name, title and escaped body pieces, and the same
+  body from both. Each run on its own `dbus-run-session` with `dbus-monitor`; one difference from the plan's function:
+  it also takes the screenshot inside the session, because dunst ends with that bus. Checked locally only with stubs
+  (control flow and the monitor-log parsing); the first real run is the next CI run.
+- `8d5972ae2f`: the `windows-test` job runs `:desktopApp:test :desktop:android-compat:test --continue` and uploads both
+  modules' reports.
+
+## Windows unit test failures (run 46120905511: 48 of 484)
+
+| Group | Tests | Cause | Fix |
+|---|---|---|---|
+| Teardown: open database and chapter cache | 36 classes (`executionError`, `Failed to close extension context`) | `@TempDir` deletion: `databases/tachiyomi.db{,-shm,-wal}` and `cache/chapter_disk_cache/journal` still open (the Injekt graph's SQLite driver and `ChapterCache`'s `DiskLruCache`); Linux and macOS delete open files, Windows does not | `DesktopInjekt.onOpened` / `closeOpenFiles()`: the DI module registers the database driver, the network cache, the chapter cache (its private `diskCache` closed by reflection: `ChapterCache` is master's file and must stay identical; Android-fix patch adding `ChapterCache.close()` in `.git/forge/scratch/r2/chaptercache-close.patch`, for Forge) and the Coil disk cache when they are created; `DesktopDataDirTeardown` closes them after stopping the writers. A location already deleted is skipped (`e10450b554`) |
+| Teardown: network cache outside Injekt | `DesktopNetworkTest` (2), `DesktopWebViewTest` (2), `DesktopCloudflareInterceptorTest`, `FlareSolverrBackendTest` | their own `DesktopServices` / `NetworkHelper`: `network_cache/journal` open | the tests close `client.cache` after use (`3934443c74`) |
+| Teardown: Coil disk cache | `JsSourceBrowseUiTest`, `ExtensionsUiTest` (with others) | `cache/image_cache/journal` open | registered in `KomikkuApp`'s image loader factory (`e10450b554`) |
+| Child process log | `DesktopSingleInstanceTest` "two data folders run side by side" | the child JVM's stderr went to `child-0.log` in `@TempDir`, still locked at deletion | the child's stderr is read through a pipe into memory (and shown when an awaited line is missing) (`30f75ccd5b`) |
+| Unclosed reader | `DownloadManagerTest` "pending deletion" (Forge 14:56 (c)) | test 1 read `ComicInfo.xml` with `reader().readText()` without closing it; Windows then cannot delete chapter 1 | `use { it.readText() }` (`30f75ccd5b`) |
+| Report line ends | `DesktopSelfTestTest` | `\r\n` in stack traces | already fixed in `91d30f188f` (Windows and Linux engineer) |
+| **Product bug** | `DesktopSingleInstanceTest` "does not answer within two seconds" | the busy dialog shows `C:"Users"…` : `DesktopLocalize.kt`'s `fixed()` (moko-resources workaround) replaces every `\` with `"` **after** formatting, so every argument with a backslash (every Windows path in a message) is mangled. Owner: Shared-code engineer. Fix idea: apply the workaround to the resource text before formatting, not to the arguments | not fixed |
+| **Product bug** | `DesktopExtensionManagerTest` "a new manager loads the installed extensions from disk" (3 jars, 1 expected) and that class's / `ExtensionsUiTest`'s teardown (`extensions/jars/*.jar` open) | the class loaders of replaced or uninstalled extensions are never closed, so on Windows `pruneJarCache` cannot delete their converted jars: they pile up in `extensions/jars/` after each update. Owner: Extension runtime engineer. Fix idea: close an extension's `ExtensionClassLoader` when it is unloaded / replaced, before pruning | not fixed |
+
+Also found: `NetworkHelper.clientBuilder()` (KMK, Android too) builds a new `okhttp3.Cache` on the same
+`network_cache` folder for every client it builds (`client` and each `clientWithTimeOut()`); two `DiskLruCache`s on one
+journal can corrupt it. Owner: Shared-code engineer; not changed here.
+
+Local check (macOS cannot reproduce Windows locking): a scratch copy of `DesktopDataDirTeardown` listed, with `lsof`,
+the files under the test data folders still open after the teardown. Before the fix: the database and journals as on
+Windows; after (with the committed code, chapter cache closed by reflection): only the extension jars of the product
+bug above. Gates and `:desktopApp:test` on that tree (`.git/forge/gradlew-locked`, JDK 21): Spotless, borrowed sources,
+462 tests, 0 failed, 1 skipped.
+
+**What remains red in `windows-test` until the two product bugs are fixed:** `DesktopSingleInstanceTest` "does not
+answer within two seconds" (busy dialog path) and `DesktopExtensionManagerTest` (stale jars, plus its and
+`ExtensionsUiTest`'s teardown on the open jars). Everything else in the run's 48 should pass; the next CI run shows it.
+
+`DesktopNetworkTest` with other tests' cookies (Forge 14:41 (b)): the master merge already clears the shared cookie
+store before each test in that class; left to the merge, not changed here.
+
+## macOS smoke job (design only, not built)
+
+What the Linux / Windows smoke covers, for `Komikku-<v>-macos-arm64.dmg` on `macos-15` (arm64), non-blocking like them:
+
+1. Checksums of the artifact; `hdiutil attach -nobrowse -readonly` the DMG, `ditto` the `.app` to a temporary
+   `Applications` folder, `hdiutil detach`. While unsigned: `xattr -dr com.apple.quarantine` is not needed (CI files
+   have no quarantine flag); record `codesign -dv` and `spctl -a -vv` output as INFO (rejected until signing exists;
+   with signing, a PASS check).
+2. Start `Komikku.app/Contents/MacOS/Komikku` with `JAVA_TOOL_OPTIONS=-Dkomikku.dataDir=<temp>` (never the default
+   `~/Library/Application Support/Komikku`, checked untouched at the end). GitHub's macOS runners have a logged-in
+   GUI session, so no virtual display is needed.
+3. Window: find it with `osascript -e 'tell application "System Events" to get name of windows of process "Komikku"'`
+   (needs Accessibility for the runner's shell; the hosted image grants it to `/bin/bash`, to be confirmed in the first
+   run); screenshots with `screencapture -l <window id>` (window id from a tiny Swift/`CGWindowListCopyWindowInfo`
+   helper or `GetWindowID`) or the whole screen with `screencapture -x`.
+4. Shortcuts: Cmd+1…5 (macOS uses Cmd, `DesktopShortcuts`) through `osascript … keystroke "2" using command down`,
+   the same screenshot comparison as Linux (`compare` from ImageMagick via Homebrew, preinstalled on the image).
+5. Second start: minimize (`set miniaturized of window 1` via System Events), start the launcher again on the same data
+   folder: exit code 0, window un-minimized, one window.
+6. Quit with Cmd+Q (the app's quit handler, `DesktopAppEvents`): process ends, exit code 0; the log check with the same
+   allow-list; no `hs_err_pid*.log`.
+7. `--self-test-notify` once (osascript backend; exit 0 and the `OK … osascript exited with 0` line), INFO only, as
+   macOS does not say whether a banner appeared.
+8. Upload screenshots and logs like the others. Open questions for the first run: Accessibility permission on the
+   hosted runner, and whether an unsigned app started from the shell gets a window in front.
