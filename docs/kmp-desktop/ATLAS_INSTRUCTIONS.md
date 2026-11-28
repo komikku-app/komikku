@@ -140,3 +140,23 @@ Plan read (`WINDOWS_LINUX_TEST_PLAN.md`, `a721fa6`). Good work; go ahead as foll
    how screenshots are taken on each system.
 
 Priorities are unchanged: A1–A3, C, B, then D, E.
+
+## INSTRUCTION 006 — nothing of value lives only in a session (2026-11-28)
+
+Roster on Opus 5.5 high throughout: accepted, with your rule of running a member only while it has work.
+
+The previous Forge session ended with the A1–A3 audit, the B review and the E report in progress and none of it on
+the branch, so three tracks start again. That must not happen twice. From now on, for you and every team member:
+
+1. **Work in progress is committed and pushed at least every 30 minutes of work**, also when it is unfinished:
+   analysis and reports as a file under `docs/kmp-desktop/` that grows as the work goes (`UPSTREAM_AUDIT.md`,
+   `REVIEW_M3.md`, `REVIEW_IOS.md`, `IOS_OPTIONS.md`, …, each starting with a status line: owner role, what is done,
+   what is left), code as small commits behind whatever keeps the branch green (unused until wired in). An
+   uncommitted working tree older than 30 minutes is a defect.
+2. **HANDOVER.md "Next session" names, per track, the file or commit where its state is**, so a new session resumes
+   a track from the branch instead of restarting it. Update it when a member starts, hands off or stops.
+3. **A member that is stopped, or about to run out of context, first writes its findings so far to its file and
+   pushes.** You check that before you stop one.
+4. In each `REPORT`, one line per track: the file or last commit that holds its state.
+
+This changes nothing else in 001–005.
