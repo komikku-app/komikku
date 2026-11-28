@@ -103,6 +103,8 @@ jobs:
         with:
           java-version-file: .github/.java-version
           distribution: temurin
+          # Checks Adoptium's GPG signature when the JDK is downloaded (not when the runner's tool cache has it)
+          verify-signature: true
 
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
@@ -279,10 +281,40 @@ jobs:
         with:
           java-version-file: .github/.java-version
           distribution: temurin
+          # Checks Adoptium's GPG signature when the JDK is downloaded (not when the runner's tool cache has it)
+          verify-signature: true
 
       - name: Install rpm tooling
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y rpm
+
+      # WiX 3 for the .msi / .exe, pinned by version and SHA-256. The Compose plugin's own download (`downloadWix`, the
+      # same URL) is not verified and is kept in the Gradle user home, which setup-gradle caches; with WIX_PATH set the
+      # plugin uses this folder and creates no download task.
+      - name: Download WiX (pinned)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          WIX_URL: https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311-binaries.zip
+          WIX_SHA256: 2c1888d5d1dba377fc7fa14444cf556963747ff9a0a289a3599cf09da03b9e2e
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = Join-Path $env:RUNNER_TEMP 'wix311-binaries.zip'
+          $dir = Join-Path $env:RUNNER_TEMP 'wix311'
+          Invoke-WebRequest -Uri $env:WIX_URL -OutFile $zip
+          $hash = (Get-FileHash -Algorithm SHA256 -Path $zip).Hash.ToLowerInvariant()
+          if ($hash -ne $env:WIX_SHA256) {
+            Write-Output "::error::WiX download has SHA-256 $hash, expected $env:WIX_SHA256"
+            exit 1
+          }
+          Expand-Archive -Path $zip -DestinationPath $dir
+          foreach ($tool in 'candle.exe', 'light.exe') {
+            if (-not (Test-Path (Join-Path $dir $tool))) {
+              Write-Output "::error::WiX archive has no $tool"
+              exit 1
+            }
+          }
+          "WIX_PATH=$dir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
@@ -699,6 +731,8 @@ jobs:
         with:
           java-version-file: .github/.java-version
           distribution: temurin
+          # Checks Adoptium's GPG signature when the JDK is downloaded (not when the runner's tool cache has it)
+          verify-signature: true
 
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6

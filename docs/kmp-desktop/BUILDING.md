@@ -10,7 +10,9 @@ The desktop app is the Gradle module `:desktopApp` (Compose Multiplatform for th
 - The Android SDK setup of the Android build: Gradle configures the whole project, Android modules included.
 - Packaging only builds installers for the OS it runs on (jpackage cannot cross-build):
   - Linux: `.deb` needs `dpkg-deb` / `fakeroot`, `.rpm` needs `rpmbuild` (package `rpm`).
-  - Windows: `.msi` / `.exe` need WiX 3; the Compose Gradle plugin downloads it.
+  - Windows: `.msi` / `.exe` need WiX 3. Locally the Compose Gradle plugin downloads WiX 3.11.2 (unverified); with
+    the environment variable `WIX_PATH` set to an unpacked WiX folder it uses that one instead, as CI does (see
+    "What CI downloads and runs").
   - macOS: `.dmg` uses the system tools.
 
 ## Run and test
@@ -299,6 +301,28 @@ the key; no `.pkg` is built.
 3. `codesign --verify --deep --strict --verbose=2` on the `.app` inside the `.dmg` passes, `spctl -a -vv` says
    `source=Notarized Developer ID` after notarization, and `xcrun stapler validate` passes (the workflow runs it).
 4. Then remove "untested" here.
+
+## What CI downloads and runs
+
+What the desktop jobs in `build_desktop.yml` fetch from outside the repository, and how each is pinned:
+
+| What | Where | Pinned by | Verified by |
+|------|-------|-----------|-------------|
+| GitHub Actions (`checkout`, `setup-java`, `setup-gradle`, `wrapper-validation`, `upload-artifact`, `download-artifact`) | every job | full commit SHA (the tag in a comment) | the commit SHA itself |
+| Runner images | every job | label (`ubuntu-24.04`, `windows-2022`, `macos-15`, `macos-15-intel`); GitHub updates the image under a label | — |
+| JDK (Temurin) | `pr-check`, `package`, `windows-test` | major version from `.github/.java-version` (21); the patch release is the runner's cached one, or the latest when not cached | `setup-java` `verify-signature: true`: Adoptium's GPG signature, only when it downloads (the runner's tool cache is used as is) |
+| Gradle wrapper JAR | every Gradle job | `gradle/wrapper/gradle-wrapper.jar` in the repository | `gradle/actions/wrapper-validation` (`package`) and `setup-gradle`'s `validate-wrappers` (default on): checksum against Gradle's published ones |
+| Gradle distribution | every Gradle job | version in `gradle/wrapper/gradle-wrapper.properties` (9.3.1) | **not verified**: the file has no `distributionSha256Sum` (it is the Android build's file; adding it is a change for master) |
+| Maven dependencies and Gradle plugins | every Gradle job | versions in the version catalogs (`gradle/*.versions.toml`) | **not verified**: no `gradle/verification-metadata.xml` (shared with the Android build) |
+| WiX 3.11.2 (`wix311-binaries.zip`) | `package` on Windows | version and URL in the step `Download WiX (pinned)` | SHA-256 `2c1888d5…9e2e` in that step; a mismatch fails the job before anything is unpacked; the Compose plugin gets the folder through `WIX_PATH` and downloads nothing |
+| `rpm` | `package` on Linux | `apt-get` from Ubuntu's archive, unversioned | the archive's signatures (apt) |
+| Smoke test tools (Xvfb, openbox, xdotool, …) | `smoke` on Linux | `apt-get`, unversioned | the archive's signatures (apt) |
+| Keiyoushi extension APKs and `index.pb` | `extension-check` (no secrets) | repository commit in `.github/desktop-test-extensions.txt` | SHA-256 per APK in that file, before anything is loaded |
+| Keiyoushi live index and every APK in it | `extension-breadth` (no secrets, non-blocking) | not pinned (it checks the current catalogue) | not verified; only read by the link checker, never run, never in a job with secrets or a shipped artifact |
+
+No `appimagetool` or other packaging tool is downloaded: the Linux `.tar.gz` is the app image directory packed with
+`tar`, `.deb` / `.rpm` come from jpackage with the runner's `dpkg-deb` / `rpmbuild`, the `.dmg` from the macOS system
+tools, `signtool` from the Windows SDK on the runner image.
 
 ## Data directory
 
