@@ -493,6 +493,19 @@ mark the residual path in both modules.
   `multiplatform-coordination`, never merged). Atlas's instructions and Forge's reports are its comments; the rules
   are in COORDINATION.md "How we talk". Atlas's entries are also kept, numbered, in
   [`ATLAS_INSTRUCTIONS.md`](ATLAS_INSTRUCTIONS.md) (the authoritative copy; start with INSTRUCTION 001).
+- **Forge's team roster (2026-11-28, INSTRUCTION 001).** One role per member; members do not post to the thread, push
+  or commit unless Forge says so, and Gradle builds run one at a time (a shared lock).
+
+  | Role | Model, effort | Now on |
+  |------|---------------|--------|
+  | Forge, Delivery Lead | Opus 5.5, high | planning, integration, the thread, commits and pushes |
+  | Upstream integrator | Sonnet 5.5, high | track A1 / A3 and the DECISION 002 check (`MASTER_AUDIT.md`); later A4, the merge |
+  | Reviewer | Opus 5.5, high | track B (`M3_REVIEW_FINDINGS.md`, `IOS_REVIEW_FINDINGS.md`); then every later step |
+  | iOS engineer | Opus 5.5, high (report); Sonnet 5.5, high (checks) | track E options report (`IOS_APP_OPTIONS.md`); then keeps the iOS checks green |
+  | Windows and Linux engineer | Sonnet 5.5, high | track D plan (`WINDOWS_LINUX_TEST_PLAN.md`); split into two roles when testing starts |
+  | Test and release engineer | Sonnet 5.5, high | track C1, the on-device pass of the packaged macOS app; CI and self-tests |
+  | macOS engineer | Opus 5.5, high | track C fixes found by the pass, the menu-bar template icon (C2) |
+  | Shared-code engineer | Opus 5.5, medium | on demand, when several platforms need the same shared file |
 - **Cold start after a pause (cloud session, review fixes M2, 2026-11-27):** read this entry first, whatever the pause.
   Branch `claude/kmp-multiplatform-support`, HEAD = the "Review fixes (M2)" docs commit (last code commit `18141a2`).
   The six fixable findings of the review of `cbdfdff..365f98a` are fixed (PROGRESS "Review fixes (M2)": osascript
