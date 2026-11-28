@@ -13,13 +13,13 @@ import androidx.compose.ui.window.WindowState
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import java.awt.GraphicsEnvironment
+import java.awt.Dimension
 import java.awt.Rectangle
 
 /**
  * A [WindowState] restored from [DesktopWindowPreferences] and written back (debounced) whenever the
- * user moves, resizes, maximizes or restores the window. A saved position that is no longer on any
- * screen (e.g. a monitor was unplugged) falls back to the platform default.
+ * user moves, resizes, maximizes or restores the window. The restored window fits a screen's usable area with its
+ * title bar on screen ([restoreWindowPlacement]).
  */
 @OptIn(FlowPreview::class)
 @Composable
@@ -30,7 +30,7 @@ fun rememberPersistedWindowState(preferences: DesktopWindowPreferences): WindowS
             y = preferences.windowY().get(),
             width = preferences.windowWidth().get(),
             height = preferences.windowHeight().get(),
-            screens = screenBounds(),
+            screens = DesktopScreens.usableAreas(),
         )
         WindowState(
             placement = if (preferences.windowMaximized().get()) WindowPlacement.Maximized else WindowPlacement.Floating,
@@ -51,8 +51,12 @@ fun rememberPersistedWindowState(preferences: DesktopWindowPreferences): WindowS
 data class RestoredWindowPlacement(val position: WindowPosition, val size: DpSize)
 
 /**
- * Pure part of the restore: clamps the size to the minimum and drops a saved position whose
- * top-left corner is not inside any of [screens] (screen bounds in dp-equivalent AWT units).
+ * Pure part of the restore, over the screens' usable areas ([DesktopScreens.usableAreas], main screen first). The
+ * window goes on the screen that holds most of its saved title bar, else on the main screen (a monitor unplugged or
+ * smaller since), shrinks to that screen's usable area when bigger (a size saved on a bigger or less scaled display)
+ * and moves so the whole window, its title bar included, is inside it. Without a saved position it is centred on the
+ * main screen. The size never goes below the window's minimum unless the screen itself is smaller. Without screens
+ * (headless) only the minimum applies.
  */
 fun restoreWindowPlacement(
     x: Int,
@@ -61,15 +65,32 @@ fun restoreWindowPlacement(
     height: Int,
     screens: List<Rectangle>,
 ): RestoredWindowPlacement {
-    val size = DpSize(
-        width.coerceAtLeast(DesktopWindowPreferences.MIN_WIDTH).dp,
-        height.coerceAtLeast(DesktopWindowPreferences.MIN_HEIGHT).dp,
+    val wanted = Dimension(
+        width.coerceAtLeast(DesktopWindowPreferences.MIN_WIDTH),
+        height.coerceAtLeast(DesktopWindowPreferences.MIN_HEIGHT),
     )
     val hasPosition = x != DesktopWindowPreferences.UNSET_POSITION && y != DesktopWindowPreferences.UNSET_POSITION
-    val onScreen = hasPosition && (screens.isEmpty() || screens.any { it.contains(x, y) })
-    val position = if (onScreen) WindowPosition(x.dp, y.dp) else WindowPosition.PlatformDefault
-    return RestoredWindowPlacement(position, size)
+    if (screens.isEmpty()) {
+        val position = if (hasPosition) WindowPosition(x.dp, y.dp) else WindowPosition.PlatformDefault
+        return RestoredWindowPlacement(position, DpSize(wanted.width.dp, wanted.height.dp))
+    }
+    val titleBar = Rectangle(x, y, wanted.width, TITLE_BAR_HEIGHT)
+    val screen = screens
+        .takeIf { hasPosition }
+        ?.map { it to it.intersection(titleBar) }
+        ?.filter { (_, shared) -> !shared.isEmpty }
+        ?.maxByOrNull { (_, shared) -> shared.width.toLong() * shared.height }
+        ?.first
+    val area = screen ?: screens.first()
+    val fitWidth = wanted.width.coerceAtMost(area.width)
+    val fitHeight = wanted.height.coerceAtMost(area.height)
+    val left = if (screen != null) x.coerceIn(area.x, area.x + area.width - fitWidth) else area.x + (area.width - fitWidth) / 2
+    val top = if (screen != null) y.coerceIn(area.y, area.y + area.height - fitHeight) else area.y + (area.height - fitHeight) / 2
+    return RestoredWindowPlacement(WindowPosition(left.dp, top.dp), DpSize(fitWidth.dp, fitHeight.dp))
 }
+
+/** The height of the strip at the top of a window that holds its title bar, in dp; the tallest title bar is ~40. */
+private const val TITLE_BAR_HEIGHT = 40
 
 private fun saveWindowState(
     preferences: DesktopWindowPreferences,
@@ -89,10 +110,5 @@ private fun saveWindowState(
         preferences.windowHeight().set(size.height.value.toInt())
     }
 }
-
-private fun screenBounds(): List<Rectangle> = runCatching {
-    if (GraphicsEnvironment.isHeadless()) return@runCatching emptyList()
-    GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.map { it.defaultConfiguration.bounds }
-}.getOrDefault(emptyList())
 
 private const val WINDOW_STATE_SAVE_DELAY_MS = 500L

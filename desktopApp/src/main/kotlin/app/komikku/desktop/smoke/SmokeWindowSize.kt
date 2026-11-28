@@ -1,6 +1,6 @@
 package app.komikku.desktop.smoke
 
-import java.awt.GraphicsEnvironment
+import app.komikku.desktop.window.DesktopScreens
 
 /**
  * The smoke window's size: [PREFERRED_WIDTH] × [PREFERRED_HEIGHT] where the screen has room, else the largest window
@@ -46,8 +46,7 @@ internal object SmokeWindowSize {
 
     /** [choose] for this machine's main screen; the preferred size where there is no screen (headless). */
     fun forScreen(): Choice {
-        if (GraphicsEnvironment.isHeadless()) return choose(PREFERRED_WIDTH, PREFERRED_HEIGHT)
-        val usable = GraphicsEnvironment.getLocalGraphicsEnvironment().maximumWindowBounds
+        val usable = DesktopScreens.usableAreas().firstOrNull() ?: return choose(PREFERRED_WIDTH, PREFERRED_HEIGHT)
         return choose(usable.width, usable.height)
     }
 }
