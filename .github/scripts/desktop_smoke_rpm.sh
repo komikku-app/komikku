@@ -1,0 +1,202 @@
+#!/usr/bin/env bash
+# KMK: install, upgrade and erase of the Linux RPM (its own scriptlets, desktopApp/packaging/linux/rpm-post.sh and
+# rpm-preun.sh) in a Fedora container, run by .github/workflows/build_desktop.yml (job `smoke`, ubuntu-24.04, after the
+# .deb smoke test) on the `package` job's artifact. Nothing graphical is started. The menu folders are removed before
+# the install, as on a system without a desktop: the install must still exit with 0 and leave the menu entry, an upgrade
+# (the same package again, then a rebuilt one with a higher release) must keep it, and the erase must exit with 0 and
+# take it away.
+#
+#   desktop_smoke_rpm.sh <packages dir> <output dir>
+#
+#   <packages dir>  the artifact Komikku-desktop-linux-X64-<sha> (Komikku-<v>-linux-x64.rpm)
+#   <output dir>    logs/ and summary.md (created)
+#
+# Every check is printed as [PASS] / [FAIL] / [INFO] and written to <output dir>/summary.md and the job summary; the
+# script exits 1 when a check failed.
+set -uo pipefail
+
+if [ "$#" -ne 2 ]; then
+  echo "usage: $0 <packages dir> <output dir>" >&2
+  exit 2
+fi
+packages=$(cd "$1" && pwd) || exit 2
+mkdir -p "$2/logs" || exit 2
+out=$(cd "$2" && pwd)
+
+# Fedora 45, pinned by digest (BUILDING.md "What CI downloads and runs")
+image='fedora:45@sha256:a7d72ba2745b100a3351087472e5ee7b2450af7cf331e7673007e3817612839c'
+container="komikku-rpm-smoke-$$"
+entry_name=komikku-Komikku.desktop
+menu_folders=(/usr/share/applications /usr/local/share/applications /usr/share/desktop-directories
+  /usr/local/share/desktop-directories)
+
+failures=0
+rows=()
+started=no
+
+record() {
+  local status=$1 name=$2 detail=${3:-}
+  rows+=("| $status | $name | ${detail//|/\\|} |")
+  echo "[$status] $name${detail:+: $detail}"
+  if [ "$status" = FAIL ]; then
+    failures=$((failures + 1))
+    echo "::error title=Desktop RPM test::$name${detail:+: $detail}"
+  fi
+}
+pass() { record PASS "$@"; }
+fail() { record FAIL "$@"; }
+info() { record INFO "$@"; }
+# A failure after which nothing else can be checked
+fatal() {
+  fail "$@"
+  exit 1
+}
+
+finish() {
+  local status=$?
+  if [ "$started" = yes ]; then docker rm -f "$container" > /dev/null 2>&1; fi
+  {
+    echo "## Desktop RPM install, upgrade and erase (Fedora container)"
+    echo
+    echo "| Result | Check | Detail |"
+    echo "|--------|-------|--------|"
+    printf '%s\n' "${rows[@]}"
+    echo
+    echo "Logs: rpm/logs/ in the artifact desktop-smoke-linux-… of this run."
+  } > "$out/summary.md"
+  if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then cat "$out/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+  if [ "$failures" -gt 0 ]; then
+    echo "$failures check(s) failed"
+    exit 1
+  fi
+  exit "$status"
+}
+trap finish EXIT
+
+# Runs a command in the container (no shell in between, so arguments keep their parentheses and spaces)
+box() { docker exec "$container" "$@"; }
+
+# The installed menu entries (xdg-desktop-menu writes to the first menu folder of XDG_DATA_DIRS it can use; without one,
+# the post scriptlet copies the entry to /usr/share/applications)
+menu_entries() {
+  box sh -c "for dir in /usr/share/applications /usr/local/share/applications; do
+    [ -e \"\$dir/$entry_name\" ] && echo \"\$dir/$entry_name\"; done; true" 2> /dev/null | tr '\n' ' ' | sed 's/ $//'
+}
+
+# rpm_step <log name> <check name> <rpm arguments...>: passes when rpm exits with 0 and no scriptlet failed
+rpm_step() {
+  local log=$1 name=$2 code
+  shift 2
+  box rpm "$@" > "$out/logs/$log" 2>&1
+  code=$?
+  local scriptlet
+  scriptlet=$(grep -m 1 -i 'scriptlet failed' "$out/logs/$log")
+  if [ "$code" = 0 ] && [ -z "$scriptlet" ]; then
+    pass "$name" "exit code 0 (logs/$log)"
+  else
+    fail "$name" "exit code $code${scriptlet:+, $scriptlet} (logs/$log)"
+  fi
+  local said
+  said=$(grep -m 1 '^komikku: ' "$out/logs/$log")
+  if [ -n "$said" ]; then info "$name: scriptlet message" "$said"; fi
+  return "$code"
+}
+
+shopt -s nullglob
+rpms=("$packages"/*.rpm)
+shopt -u nullglob
+[ "${#rpms[@]}" -eq 1 ] || fatal "One .rpm in the packages" "found ${#rpms[@]} in $packages"
+rpm_file=$(basename "${rpms[0]}")
+pass "One .rpm in the packages" "$rpm_file"
+
+if ! docker run -d --name "$container" -v "$packages:/packages:ro" "$image" sleep infinity \
+  > "$out/logs/docker-run.log" 2>&1; then
+  fatal "Fedora container" "docker run failed (logs/docker-run.log)"
+fi
+started=yes
+pass "Fedora container" "$(box sh -c '. /etc/os-release && echo "$PRETTY_NAME"'), $image"
+
+package=$(box rpm -qp --qf '%{NAME} %{VERSION}-%{RELEASE}' "/packages/$rpm_file" 2> "$out/logs/rpm-query.log")
+[ -n "$package" ] || fatal "Package header" "rpm -qp failed (logs/rpm-query.log)"
+name=${package%% *}
+info "Package" "$package"
+
+# The package's dependencies first, through dnf (rpm -i does not resolve them); they may bring menu folders, which are
+# removed afterwards
+mapfile -t requires < <(box rpm -qp --requires "/packages/$rpm_file" 2> /dev/null | grep -v '^rpmlib(' |
+  sed 's/ *[<>=].*//' | sort -u)
+if box dnf -y install --setopt=install_weak_deps=False "${requires[@]}" > "$out/logs/dnf-requires.log" 2>&1; then
+  pass "Dependencies installed (dnf)" "${#requires[@]} requirement(s) of the package (logs/dnf-requires.log)"
+else
+  fatal "Dependencies installed (dnf)" "dnf failed (logs/dnf-requires.log)"
+fi
+existing=$(box sh -c 'ls -d "$@" 2> /dev/null; true' sh "${menu_folders[@]}" | tr '\n' ' ')
+info "Menu folders before the install" "${existing:-none}; all removed"
+box rm -rf "${menu_folders[@]}"
+
+# --- Install --------------------------------------------------------------------------------------------------------
+
+# Nothing else can be checked without it
+rpm_step rpm-install.log "Install (rpm -i)" -ivh "/packages/$rpm_file" || exit 1
+if box test -x /opt/komikku/bin/Komikku; then
+  pass "Launcher installed" "/opt/komikku/bin/Komikku"
+else
+  fail "Launcher installed" "no executable /opt/komikku/bin/Komikku"
+fi
+entries=$(menu_entries)
+if [ -n "$entries" ]; then
+  pass "Menu entry installed without menu folders" "$entries"
+else
+  fail "Menu entry installed without menu folders" "no $entry_name in /usr/share/applications or /usr/local/share/applications"
+fi
+
+# --- Upgrade --------------------------------------------------------------------------------------------------------
+
+# The same package again: the new post runs ($1 = 2), then the old preun ($1 = 1), which must leave the entry
+rpm_step rpm-reinstall.log "Upgrade to the same package (rpm -U --replacepkgs)" -Uvh --replacepkgs "/packages/$rpm_file"
+entries=$(menu_entries)
+if [ -n "$entries" ]; then
+  pass "Menu entry kept by the upgrade to the same package" "$entries"
+else
+  fail "Menu entry kept by the upgrade to the same package" "gone after rpm -U --replacepkgs"
+fi
+
+# A real version change: the package rebuilt with a higher release (rpmrebuild keeps its files and scriptlets)
+if box dnf -y install rpmrebuild > "$out/logs/dnf-rpmrebuild.log" 2>&1 &&
+  box rpmrebuild --batch --package --notest-install --release=999 --directory=/tmp/rebuilt "/packages/$rpm_file" \
+    > "$out/logs/rpmrebuild.log" 2>&1; then
+  rebuilt=$(box sh -c 'find /tmp/rebuilt -name "*.rpm" | head -n 1')
+fi
+if [ -n "${rebuilt:-}" ]; then
+  info "Rebuilt package" "$(box rpm -qp --qf '%{NAME} %{VERSION}-%{RELEASE}' "$rebuilt" 2> /dev/null)"
+  rpm_step rpm-upgrade.log "Upgrade to a higher release (rpm -U)" -Uvh "$rebuilt"
+  info "Installed after the upgrade" "$(box rpm -q "$name" 2>&1)"
+  entries=$(menu_entries)
+  if [ -n "$entries" ]; then
+    pass "Menu entry kept by the upgrade to a higher release" "$entries"
+  else
+    fail "Menu entry kept by the upgrade to a higher release" "gone after rpm -U"
+  fi
+else
+  info "Upgrade to a higher release" "not run: the package could not be rebuilt (logs/dnf-rpmrebuild.log, rpmrebuild.log)"
+fi
+
+# --- Erase ----------------------------------------------------------------------------------------------------------
+
+rpm_step rpm-erase.log "Erase (rpm -e)" -ev "$name"
+if box rpm -q "$name" > /dev/null 2>&1; then
+  fail "Package gone after the erase" "rpm -q $name still finds it"
+else
+  pass "Package gone after the erase"
+fi
+if box test -e /opt/komikku/bin/Komikku; then
+  fail "Launcher removed" "/opt/komikku/bin/Komikku is still there"
+else
+  pass "Launcher removed"
+fi
+entries=$(menu_entries)
+if [ -z "$entries" ]; then
+  pass "Menu entry removed" "no $entry_name left"
+else
+  fail "Menu entry removed" "still there: $entries"
+fi

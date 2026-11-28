@@ -317,6 +317,8 @@ What the desktop jobs in `build_desktop.yml` fetch from outside the repository, 
 | WiX 3.11.2 (`wix311-binaries.zip`) | `package` on Windows | version and URL in the step `Download WiX (pinned)` | SHA-256 `2c1888d5…9e2e` in that step; a mismatch fails the job before anything is unpacked; the Compose plugin gets the folder through `WIX_PATH` and downloads nothing |
 | `rpm` | `package` on Linux | `apt-get` from Ubuntu's archive, unversioned | the archive's signatures (apt) |
 | Smoke test tools (Xvfb, openbox, xdotool, …) | `smoke` on Linux | `apt-get`, unversioned | the archive's signatures (apt) |
+| Fedora container image (`fedora:45`) | `smoke` on Linux (RPM test, `desktop_smoke_rpm.sh`) | image digest in that script | the digest itself (docker) |
+| The RPM's dependencies and `rpmrebuild` | `smoke` on Linux, inside that container | `dnf` from Fedora's repositories, unversioned | the repositories' signatures (dnf) |
 | Keiyoushi extension APKs and `index.pb` | `extension-check` (no secrets) | repository commit in `.github/desktop-test-extensions.txt` | SHA-256 per APK in that file, before anything is loaded |
 | Keiyoushi live index and every APK in it | `extension-breadth` (no secrets, non-blocking) | not pinned (it checks the current catalogue) | not verified; only read by the link checker, never run, never in a job with secrets or a shipped artifact |
 

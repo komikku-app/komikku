@@ -754,8 +754,10 @@ jobs:
   # each entry with its reason), then uninstalls. Driven only from outside (window system, keyboard shortcuts); Linux on Xvfb
   # with openbox. On Linux also the installed launcher's `--self-test-notify` (WINDOWS_LINUX_TEST_PLAN.md, section 5),
   # each run on a session bus of its own with dbus-monitor: without a notification service (must fail), then with dunst
-  # the plain self-test (no notification), notify-send and gdbus. Scripts: .github/scripts/desktop_smoke_linux.sh and
-  # desktop_smoke_windows.ps1.
+  # the plain self-test (no notification), notify-send and gdbus; on Windows the same self-test through the temporary
+  # tray icon. On Linux also the .rpm in a Fedora container: installed without menu folders, upgraded twice and erased,
+  # with the menu entry checked after each step (nothing graphical). Scripts: .github/scripts/desktop_smoke_linux.sh,
+  # desktop_smoke_rpm.sh and desktop_smoke_windows.ps1.
   # Non-blocking (`continue-on-error`), and `release` must keep depending only on `package` until this job has been
   # green on ten consecutive runs (ATLAS_INSTRUCTIONS.md, ANSWER 005).
   #
@@ -774,6 +776,9 @@ jobs:
   #   logs/notify-<run>.*        Linux, runs c / silent / a / b: the self-test report (.txt), its exit code (.exit),
   #                              the Notify calls dbus-monitor saw (.monitor.log); screenshots/notify-<run>.png the
   #                              screen while that run's bus was up (dunst's popup for a and b)
+  #   logs/notify.txt, notify-std*.log, screenshots/notify-<n>.png  Windows: the self-test report and the screen
+  #                              every 3 s while it ran (the balloon of the temporary tray icon)
+  #   rpm/summary.md, rpm/logs/  Linux: the RPM test's table and its rpm / dnf / rpmrebuild output
   #   logs/install.log, apt-*.log, menu-folders.log, uninstall.log, xvfb.log, openbox.log, windows-<n>.txt, jstack.txt
   #                              as they apply
   # Attempt 2 exists only when no window appeared with Skiko's default renderer and the app was started again with
@@ -793,7 +798,7 @@ jobs:
             asset-os: windows
     runs-on: ${{ matrix.os }}
     continue-on-error: true
-    timeout-minutes: 30
+    timeout-minutes: 45
     concurrency:
       group: ${{ github.workflow }}-smoke-${{ github.ref }}-${{ matrix.os }}
       cancel-in-progress: true
@@ -819,6 +824,12 @@ jobs:
         if: runner.os == 'Linux'
         timeout-minutes: 20
         run: .github/scripts/desktop_smoke_linux.sh packages smoke-output
+
+      # Also when the .deb smoke test failed: it does not depend on it
+      - name: RPM install, upgrade and erase (Linux)
+        if: ${{ !cancelled() && runner.os == 'Linux' }}
+        timeout-minutes: 20
+        run: .github/scripts/desktop_smoke_rpm.sh packages smoke-output/rpm
 
       - name: Smoke test (Windows)
         if: runner.os == 'Windows'
