@@ -661,7 +661,7 @@ jobs:
           name: Komikku-desktop-linux-X64-${{ github.sha }}
           path: packages
 
-      - name: Download the catalogue
+      - name: Link check
         run: |
           set -euo pipefail
           commit=$(git ls-remote https://github.com/keiyoushi/extensions.git refs/heads/repo | cut -f 1)
@@ -670,25 +670,16 @@ jobs:
             exit 1
           fi
           echo "INDEX_COMMIT=$commit" >> "$GITHUB_ENV"
-          mkdir -p catalogue breadth
-          curl -fsSL --retry 3 "https://raw.githubusercontent.com/keiyoushi/extensions/$commit/index.pb" | gzip -dc > index.bin
-          grep -a -o -E 'https://github\.com/keiyoushi/extensions/releases/download/[^/"]+/tachiyomi-[a-z0-9_.]+-v[0-9.]+\.apk' \
-            index.bin | sort -u > breadth/apk-urls.txt
-          rm index.bin
-          : > breadth/download-failures.txt
-          xargs -P 8 -I '{}' sh -c 'curl -fsSL --retry 3 --output-dir catalogue -O "$1" || echo "$1" >> breadth/download-failures.txt' \
-            _ '{}' < breadth/apk-urls.txt
-          echo "$(wc -l < breadth/apk-urls.txt) APKs in the index at $commit, $(find catalogue -name '*.apk' | wc -l) downloaded," \
-            "$(wc -l < breadth/download-failures.txt) failed (breadth/download-failures.txt)"
-
-      - name: Link check
-        run: |
-          set -euo pipefail
           tarballs=(packages/*.tar.gz)
-          mkdir -p app
+          mkdir -p app breadth
           tar -xzf "${tarballs[0]}" -C app
+          # The checker reads every APK URL of the index itself (a grep missed names with capitals), downloads each into
+          # its temporary work folder, checks it and deletes it; a download that fails is a "failed:" block of the report
           "$JAVA_HOME_21_X64/bin/java" -cp 'app/Komikku/lib/app/*' app.komikku.desktop.extension.linkcheck.LinkCheckMainKt \
-            catalogue --output=breadth/linkcheck.txt > /dev/null
+            "--index=https://raw.githubusercontent.com/keiyoushi/extensions/$commit/index.pb" \
+            --output=breadth/linkcheck.txt > /dev/null 2> breadth/progress.log
+          echo "$(grep -c '^== ' breadth/linkcheck.txt) APKs in the index at $commit checked," \
+            "$(grep -c '^== .*: failed: ' breadth/linkcheck.txt || true) failed (download or conversion)"
           python3 .github/scripts/desktop_extension_breadth.py breadth/linkcheck.txt "$INDEX_COMMIT" > breadth/summary.md
           cat breadth/summary.md >> "$GITHUB_STEP_SUMMARY"
 
