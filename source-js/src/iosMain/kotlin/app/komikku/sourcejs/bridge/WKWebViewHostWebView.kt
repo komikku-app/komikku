@@ -120,6 +120,9 @@ class WKWebViewHostWebView(
     /** Test hook: called on the main thread with each new web view, before it loads. */
     internal var onWebViewCreated: ((WKWebView) -> Unit)? = null
 
+    /** Test hook: called on the main thread with each host (lower case) before its stored cookies are copied in. */
+    internal var beforeCookieCopy: (suspend (String) -> Unit)? = null
+
     override suspend fun evaluate(url: String, headers: Map<String, String>, scripts: List<String>, timeoutSeconds: Int): String {
         val target = webViewUrl(url)
         val timeout = timeoutSeconds.coerceAtLeast(1).seconds
@@ -313,6 +316,7 @@ class WKWebViewHostWebView(
             val storage = cookieStorage ?: return
             val name = host.lowercase()
             if (!cookieHosts.add(name)) return
+            beforeCookieCopy?.invoke(name)
             val first = cookieHosts.size == 1
             val stored = storage.cookies.orEmpty().filterIsInstance<NSHTTPCookie>().filter { cookieApplies(it.domain, name) }
             if (stored.isEmpty()) return

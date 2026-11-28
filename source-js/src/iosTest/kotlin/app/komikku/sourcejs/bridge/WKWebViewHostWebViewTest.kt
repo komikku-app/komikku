@@ -362,6 +362,18 @@ class WKWebViewHostWebViewTest {
     }
 
     @Test
+    fun aNavigationStillWaitingForItsCookiesWhenTheCallEndsDoesNotStart() = webKitTest {
+        // The redirect to localhost waits for its cookie copy until the call has timed out and torn the view down.
+        webView.beforeCookieCopy = { host -> if (host == "localhost") delay(10_000) }
+        assertEquals("", webView.evaluate("$base/hop", emptyMap(), emptyList(), 2))
+        webView.beforeCookieCopy = null
+        assertEquals(0, webView.liveWebViews)
+        // The cancelled copy answered the decision after the page was replaced: the redirect target is never loaded.
+        delay(1_500)
+        assertEquals(listOf("/hop null"), requests.value)
+    }
+
+    @Test
     fun cookiesThatExpireOrThatTheAppChangesDuringTheCallAreNotDeleted() = webKitTest {
         val storage = NSHTTPCookieStorage.sharedHTTPCookieStorage
         storage.setCookie(cookieOf("${cookie}_exp", "old", expires = NSDate.dateWithTimeIntervalSinceNow(3.0)))
