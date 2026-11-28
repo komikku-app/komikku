@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreenMod
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -52,6 +53,8 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 
 /**
  * End to end against [MockWebServer]: a generated extension store index and generated, signed
@@ -72,7 +75,6 @@ class DesktopExtensionManagerTest {
     private lateinit var manager: DesktopExtensionManager
 
     private val pkg = "eu.kanade.tachiyomi.extension.en.dexfixture"
-    private val sourceClass = "eu/kanade/tachiyomi/extension/en/dexfixture/DexFixtureSource"
     private val sourceId = 4242L
 
     @BeforeAll
@@ -99,10 +101,23 @@ class DesktopExtensionManagerTest {
         server.close()
     }
 
+    /**
+     * With the source, `Fetch` and `Late`: `Fetch.touch()` stands for a page fetch of this version that is still running
+     * during an update: it waits in [FetchGate.pass], then uses `Late`, a class nothing loaded before.
+     */
     private fun fixtureApk(versionCode: Int, name: String, key: TestSigningKey, packageName: String = pkg): ByteArray {
         val jar = File(work, "classes-${System.nanoTime()}.jar")
         val className = packageName.replace('.', '/') + "/DexFixtureSource"
-        FixtureClasses.jar(jar, mapOf(className to FixtureClasses.source(className, sourceId, name)))
+        val fetch = packageName.replace('.', '/') + "/Fetch"
+        val late = packageName.replace('.', '/') + "/Late"
+        FixtureClasses.jar(
+            jar,
+            mapOf(
+                className to FixtureClasses.source(className, sourceId, name),
+                fetch to FixtureClasses.classCallingInOrder(fetch, listOf(FetchGate.INTERNAL_NAME to "pass", late to "touch")),
+                late to FixtureClasses.classCallingInOrder(late, emptyList()),
+            ),
+        )
         val apk = File(work, "${packageName.substringAfterLast('.')}-$versionCode-${System.nanoTime()}.apk")
         FixtureApk(
             packageName = packageName,
@@ -204,14 +219,30 @@ class DesktopExtensionManagerTest {
         val events = mutableListOf<ExtensionDetailsEvent>()
         val eventCollector = CoroutineScope(Dispatchers.Unconfined).launch { details.events.collect { synchronized(events) { events += it } } }
         withTimeout(10_000) { details.state.first { it.extension?.versionCode == 3L } }
-        val oldLoader = outdated.sources.single().javaClass.classLoader
+        val oldSource = outdated.sources.single()
+        val oldLoader = oldSource.javaClass.classLoader
         val oldJar = jars().single()
+        // A page fetch of the old version, still running during the update
+        var fetchError: Throwable? = null
+        val fetch = thread {
+            try {
+                Class.forName("$pkg.Fetch", true, oldLoader).getMethod("touch").invoke(null)
+            } catch (e: Throwable) {
+                fetchError = e
+            }
+        }
+        FetchGate.entered.await(10, TimeUnit.SECONDS) shouldBe true
 
         manager.updateExtension(outdated).toList().last() shouldBe InstallStep.Installed
-        // The old version's loader is closed and its jar deleted (Windows refuses while a loader keeps it open)
-        oldLoader.getResource("$sourceClass.class") shouldBe null
+        // The old version's jar is deleted at once, on every OS (Windows refuses to delete an open file) ...
         oldJar.exists() shouldBe false
         jars().size shouldBe 1
+        // ... while its running fetch goes on, loading a class it had not used yet
+        FetchGate.release.countDown()
+        fetch.join(10_000)
+        fetchError shouldBe null
+        Class.forName("$pkg.Late", false, oldLoader).classLoader shouldBeSameInstanceAs oldLoader
+        oldSource.name shouldBe "Dex fixture"
         withTimeout(10_000) { details.state.first { it.extension?.versionCode == 4L } }
         recorder.cancel()
         eventCollector.cancel()
@@ -257,9 +288,12 @@ class DesktopExtensionManagerTest {
             sourceClass = ".MissingSource",
             dex = FixtureClasses.dex(jar, work),
         ).writeSigned(apk, storeKey)
+        val jarsBefore = jars()
 
         manager.installApkFile(apk, brokenPkg) shouldBe false
 
+        // The jar converted for the failed load is deleted
+        jars() shouldContainExactlyInAnyOrder jarsBefore
         manager.installError(brokenPkg)!! shouldStartWith "Extension load error: "
         manager.installError(brokenPkg)!! shouldContain "ClassNotFoundException: $brokenPkg.MissingSource"
         manager.installedExtensionsFlow.value.map { it.pkgName } shouldBe listOf(pkg)
@@ -278,9 +312,11 @@ class DesktopExtensionManagerTest {
             val apk = File(work, "looping.apk")
             FixtureApk(packageName = loopingPkg, sourceClass = ".DexFixtureSource", dex = FixtureClasses.dex(jar, work))
                 .writeSigned(apk, storeKey)
+            val jarsBefore = jars()
 
             manager.installApkFile(apk, loopingPkg) shouldBe false
 
+            jars() shouldContainExactlyInAnyOrder jarsBefore
             manager.installError(loopingPkg) shouldBe "Unsupported on desktop: needs android.os.Looper.loop()"
             val unsupported = manager.unsupportedExtensionsFlow.value.single()
             unsupported.pkgName shouldBe loopingPkg
@@ -408,20 +444,32 @@ class DesktopExtensionManagerTest {
     @Test
     @Order(8)
     fun `uninstalls an extension`(): Unit = runBlocking {
-        val loader = manager.installedExtensionsFlow.value.single().sources.single().javaClass.classLoader
         val jar = jars().single()
 
         manager.uninstall(pkg)
 
         manager.installedExtensionsFlow.value.shouldBeEmpty()
         File(dataDir, "extensions/apks/$pkg.apk").exists() shouldBe false
-        // Its loader is closed, so its jar could be deleted at once (Windows refuses while a loader keeps it open)
-        loader.getResource("$sourceClass.class") shouldBe null
+        // Deleted at once, on every OS: no class loader keeps it open
         jar.exists() shouldBe false
+        jars().shouldBeEmpty()
         val sourceManager = Injekt.get<SourceManager>()
         withTimeout(10_000) { sourceManager.sources.first { sources -> sources.none { it.id == sourceId } } }
         sourceManager.get(sourceId) shouldBe null
         // Library entries of the removed source still resolve to a named stub
         sourceManager.getOrStub(sourceId).name.shouldNotBeNull()
+    }
+}
+
+/** Where the old version's `Fetch` waits during the update ([DesktopExtensionManagerTest]): a host class it calls. */
+object FetchGate {
+    const val INTERNAL_NAME = "app/komikku/desktop/extensions/FetchGate"
+    val entered = CountDownLatch(1)
+    val release = CountDownLatch(1)
+
+    @JvmStatic
+    fun pass() {
+        entered.countDown()
+        release.await(30, TimeUnit.SECONDS)
     }
 }

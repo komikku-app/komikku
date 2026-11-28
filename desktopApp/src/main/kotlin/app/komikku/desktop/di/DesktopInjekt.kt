@@ -40,6 +40,9 @@ object DesktopInjekt {
     /** The [OpenFile]s of the singletons created so far; under [lock]. */
     private val openFiles = ArrayList<OpenFile>()
 
+    /** What the singletons created so far finish at app exit ([onExit]): name and action; under [lock]. */
+    private val exitActions = ArrayList<Pair<String, () -> Unit>>()
+
     /** Set by [stopDelayedWriters], reset by [init]: a writer created in between is stopped at once. Under [lock]. */
     private var stopped = false
 
@@ -105,6 +108,29 @@ object DesktopInjekt {
      */
     internal fun onOpened(name: String, location: File, close: () -> Unit) {
         synchronized(lock) { openFiles += OpenFile(name, location, close) }
+    }
+
+    /**
+     * A singleton has [action] to finish at app exit ([runExitActions]). Registered when the singleton is created, so
+     * the exit never creates one that nothing used (the extension manager would load every extension).
+     */
+    internal fun onExit(name: String, action: () -> Unit) {
+        synchronized(lock) { exitActions += name to action }
+    }
+
+    /**
+     * App exit, after the work has stopped: runs the [onExit] actions registered so far, the last registered first,
+     * each once. A failure is logged and the others still run.
+     */
+    fun runExitActions() {
+        while (true) {
+            val (name, action) = synchronized(lock) { exitActions.removeLastOrNull() } ?: break
+            try {
+                action()
+            } catch (e: Exception) {
+                xLogE("Exit action $name failed", e)
+            }
+        }
     }
 
     /**

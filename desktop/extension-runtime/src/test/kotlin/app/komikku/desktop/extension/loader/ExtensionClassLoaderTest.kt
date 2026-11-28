@@ -15,7 +15,6 @@ import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import java.io.IOException
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
@@ -78,22 +77,35 @@ class ExtensionClassLoaderTest {
     }
 
     @Test
-    fun `closing the loader closes the jar its resource streams read from`() {
-        val jar = File(dir, "resources.jar")
-        JarOutputStream(jar.outputStream()).use { out ->
-            out.putNextEntry(JarEntry("assets/extension-only.txt"))
-            out.write(ByteArray(64 * 1024) { 'x'.code.toByte() })
+    fun `the jar is never kept open, classes and resources still load after it is deleted`() {
+        val jar = fixtureJar()
+        val withAsset = File(dir, "with-asset.jar")
+        JarOutputStream(withAsset.outputStream()).use { out ->
+            java.util.zip.ZipFile(jar).use { zip ->
+                zip.entries().asSequence().forEach { entry ->
+                    out.putNextEntry(JarEntry(entry.name))
+                    zip.getInputStream(entry).use { it.copyTo(out) }
+                    out.closeEntry()
+                }
+            }
+            out.putNextEntry(JarEntry("assets/i18n/messages_en.properties"))
+            out.write("title=Fixture".toByteArray())
             out.closeEntry()
         }
-        val loader = ExtensionClassLoader(jar, javaClass.classLoader)
-        val stream = loader.getResourceAsStream("assets/extension-only.txt")!!
-        stream.read() shouldBe 'x'.code
+        val loader = ExtensionClassLoader(withAsset, javaClass.classLoader)
 
-        loader.close()
+        // Windows refuses to delete a file that is open
+        withAsset.delete() shouldBe true
 
-        // A jar file from the JDK's shared cache would stay open (and locked on Windows) and keep reading
-        shouldThrow<IOException> { stream.readBytes() }
-        jar.delete() shouldBe true
+        val source = ExtensionRuntime.instantiateSources(listOf("app.komikku.desktop.extension.fixture.KotlinFixtureSource"), loader)
+            .single()
+        runBlocking { source.getPopularManga(1) }.mangas.single().title shouldBe "Popular 1"
+        source.javaClass.protectionDomain.codeSource.location shouldBe withAsset.toURI().toURL()
+        source.javaClass.`package`.name shouldBe "app.komikku.desktop.extension.fixture"
+        loader.getResourceAsStream("assets/i18n/messages_en.properties")!!.use { it.readBytes().decodeToString() } shouldBe
+            "title=Fixture"
+        loader.getResource("assets/i18n/messages_en.properties")!!.readText() shouldBe "title=Fixture"
+        loader.getResource("assets/missing.txt") shouldBe null
     }
 
     @Test

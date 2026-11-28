@@ -121,6 +121,8 @@ fun main(args: Array<String>) {
     singleInstance.stopListening()
     // The work runs on daemon threads: stop it and let it clean up before the JVM exits (bounded).
     runBlocking { stopDesktopWork(scheduler, Injekt.get(), Injekt.get()) }
+    // What the singletons created in this run finish at exit (e.g. the extension manager's pending jar deletions)
+    DesktopInjekt.runExitActions()
     singleInstance.close()
     DesktopAppEvents.finishQuit()
     exitProcess(smoke?.finish() ?: 0)

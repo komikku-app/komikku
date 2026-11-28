@@ -1,13 +1,20 @@
 package app.komikku.desktop.extension.loader
 
 import app.komikku.desktop.compat.ExtensionDataOwner
+import java.io.ByteArrayInputStream
+import java.io.Closeable
 import java.io.File
-import java.io.IOException
 import java.io.InputStream
 import java.net.URL
-import java.net.URLClassLoader
+import java.net.URLConnection
+import java.net.URLStreamHandler
+import java.security.CodeSource
+import java.security.ProtectionDomain
+import java.security.cert.Certificate
 import java.util.Collections
 import java.util.Enumeration
+import java.util.concurrent.ConcurrentHashMap
+import java.util.zip.ZipFile
 
 /**
  * Desktop counterpart of Android's `ChildFirstPathClassLoader`, over the jar converted from an
@@ -23,6 +30,11 @@ import java.util.Enumeration
  *
  * A class in a shared package that the host does not have is still loaded from the extension (for
  * example extension-private helpers under `eu.kanade.tachiyomi.util`).
+ *
+ * The jar is read into memory when the loader is created and never kept open: an update, an uninstall or a failed load
+ * deletes it at once (Windows refuses to delete an open file), while the code of the version it replaced keeps
+ * running for as long as something uses it (a download, a page fetch), loading the classes it has not used yet; that
+ * version is freed with its last use, like any object. A class's bytes are dropped once it is defined.
  */
 class ExtensionClassLoader(
     jar: File,
@@ -30,10 +42,26 @@ class ExtensionClassLoader(
     private val sharedPackages: List<String> = DEFAULT_SHARED_PACKAGES,
     /** The extension's own data folder: every path the compat layer's contexts hand to its code lies inside. */
     override val extensionDataDir: File? = null,
-) : URLClassLoader(arrayOf(jar.toURI().toURL()), parent),
-    ExtensionDataOwner {
+) : ClassLoader(parent),
+    ExtensionDataOwner,
+    Closeable {
 
     private val platform: ClassLoader = getPlatformClassLoader()
+
+    /** The jar's entries by name; a class's entry is removed once the class is defined, all of them by [close]. */
+    private val entries = ConcurrentHashMap<String, ByteArray>()
+
+    private val codeSource = CodeSource(jar.toURI().toURL(), null as Array<Certificate>?)
+    private val protectionDomain = ProtectionDomain(codeSource, null, this, null)
+    private val urlHandler = EntryHandler()
+
+    init {
+        ZipFile(jar).use { zip ->
+            for (entry in zip.entries()) {
+                if (!entry.isDirectory) entries[entry.name] = zip.getInputStream(entry).use { it.readBytes() }
+            }
+        }
+    }
 
     override fun loadClass(name: String, resolve: Boolean): Class<*> {
         synchronized(getClassLoadingLock(name)) {
@@ -46,6 +74,27 @@ class ExtensionClassLoader(
             return c
         }
     }
+
+    override fun findClass(name: String): Class<*> {
+        val path = name.replace('.', '/') + ".class"
+        val bytes = entries[path] ?: throw ClassNotFoundException(name)
+        val packageName = name.substringBeforeLast('.', "")
+        if (packageName.isNotEmpty() && getDefinedPackage(packageName) == null) {
+            try {
+                definePackage(packageName, null, null, null, null, null, null, null)
+            } catch (_: IllegalArgumentException) {
+                // defined meanwhile by another thread
+            }
+        }
+        return defineClass(name, bytes, 0, bytes.size, protectionDomain).also { entries.remove(path) }
+    }
+
+    // URL.of(URI, handler) needs Java 20; the app targets 17
+    @Suppress("DEPRECATION")
+    override fun findResource(name: String): URL? =
+        if (entries.containsKey(name)) URL("komikku-extension", null, -1, "/$name", urlHandler) else null
+
+    override fun findResources(name: String): Enumeration<URL> = Collections.enumeration(listOfNotNull(findResource(name)))
 
     private fun isShared(name: String): Boolean = sharedPackages.any { name.startsWith(it) }
 
@@ -69,17 +118,20 @@ class ExtensionClassLoader(
         return Collections.enumeration(urls)
     }
 
-    /**
-     * [getResource]'s order. A resource of the extension jar is opened by [URLClassLoader], which closes the jar file it
-     * opens for it in [close]: `URL.openStream()` takes it from the JDK's shared cache, where it stays open, and Windows
-     * then refuses to delete the jar after the extension is updated or uninstalled.
-     */
-    override fun getResourceAsStream(name: String): InputStream? = try {
-        platform.getResourceAsStream(name)
-            ?: (if (findResource(name) != null) super.getResourceAsStream(name) else null)
-            ?: parent.getResourceAsStream(name)
-    } catch (_: IOException) {
-        null
+    override fun getResourceAsStream(name: String): InputStream? =
+        platform.getResourceAsStream(name) ?: entries[name]?.let(::ByteArrayInputStream) ?: parent.getResourceAsStream(name)
+
+    /** Drops the jar's entries: classes not loaded yet can no longer be (verification and checks; the app never does). */
+    override fun close() = entries.clear()
+
+    /** Opens `komikku-extension:` URLs ([findResource]) from [entries]. */
+    private inner class EntryHandler : URLStreamHandler() {
+        override fun openConnection(url: URL): URLConnection = object : URLConnection(url) {
+            override fun connect() = Unit
+
+            override fun getInputStream(): InputStream =
+                ByteArrayInputStream(entries[url.path.removePrefix("/")] ?: throw java.io.FileNotFoundException(url.toString()))
+        }
     }
 
     companion object {

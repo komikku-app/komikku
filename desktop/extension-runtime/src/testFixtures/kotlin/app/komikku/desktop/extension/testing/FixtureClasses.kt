@@ -74,12 +74,19 @@ object FixtureClasses {
      * calls `owner.method` with descriptor [descriptor] statically: used to reference a missing
      * symbol for the link checker.
      */
-    fun classCalling(internalName: String, owner: String, method: String, descriptor: String): ByteArray {
+    fun classCalling(internalName: String, owner: String, method: String, descriptor: String): ByteArray =
+        classCallingInOrder(internalName, listOf(owner to method), descriptor)
+
+    /**
+     * A public class [internalName] whose static `touch()` calls the static methods [calls] (`owner` to `method`, each
+     * with [descriptor]) one after the other: a class used by a later call is only loaded when that call runs.
+     */
+    fun classCallingInOrder(internalName: String, calls: List<Pair<String, String>>, descriptor: String = "()V"): ByteArray {
         val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
         writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER, internalName, null, "java/lang/Object", null)
         writer.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "touch", "()V", null, null).apply {
             visitCode()
-            visitMethodInsn(Opcodes.INVOKESTATIC, owner, method, descriptor, false)
+            calls.forEach { (owner, method) -> visitMethodInsn(Opcodes.INVOKESTATIC, owner, method, descriptor, false) }
             visitInsn(Opcodes.RETURN)
             visitMaxs(0, 0)
             visitEnd()

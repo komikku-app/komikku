@@ -53,6 +53,20 @@ class DesktopInjektTeardownTest {
     }
 
     @Test
+    fun `exit actions run once each, the last registered first, a failure not stopping the others`() {
+        DesktopInjekt.init(dir.resolve("data"))
+        val ran = mutableListOf<String>()
+        DesktopInjekt.onExit("first") { ran += "first" }
+        DesktopInjekt.onExit("failing") { error("broken") }
+        DesktopInjekt.onExit("last") { ran += "last" }
+
+        DesktopInjekt.runExitActions()
+        DesktopInjekt.runExitActions()
+
+        ran shouldContainExactly listOf("last", "first")
+    }
+
+    @Test
     fun `a writer created after the stop is stopped at once, until the next init`() {
         DesktopInjekt.init(dir.resolve("first"))
         runBlocking { DesktopInjekt.stopDelayedWriters() }
