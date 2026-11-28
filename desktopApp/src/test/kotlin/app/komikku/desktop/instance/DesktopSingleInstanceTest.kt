@@ -11,6 +11,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledOnOs
+import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.io.TempDir
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.kmk.KMR
@@ -20,6 +22,8 @@ import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.nio.file.Files
+import java.nio.file.attribute.AclEntryType
+import java.nio.file.attribute.AclFileAttributeView
 import java.nio.file.attribute.PosixFilePermissions
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.Semaphore
@@ -184,6 +188,22 @@ class DesktopSingleInstanceTest {
         assumeTrue("posix" in portFile.fileSystem.supportedFileAttributeViews())
 
         PosixFilePermissions.toString(Files.getPosixFilePermissions(portFile)) shouldBe "rw-------"
+    }
+
+    @Test
+    @EnabledOnOs(OS.WINDOWS)
+    fun `on Windows the port file's access list allows only the current user`() {
+        val dataDir = folder("data")
+        primary(dataDir)
+        val portFile = dataDir.toPath().resolve(DesktopSingleInstance.PORT_FILE)
+
+        val entry = Files.getFileAttributeView(portFile, AclFileAttributeView::class.java).acl.single()
+
+        entry.type() shouldBe AclEntryType.ALLOW
+        val user = System.getProperty("user.name")
+        val domain = System.getenv("USERDOMAIN")
+        entry.principal().name.lowercase() shouldBe (if (domain.isNullOrBlank()) user else "$domain\\$user").lowercase()
+        InstancePortFile.read(portFile).shouldNotBeNull()
     }
 
     @Test
