@@ -453,7 +453,10 @@ Deviations, all in timing only:
 - **Teardown** (on the main thread, whatever ended the call): the navigation delegate is removed, loading stops, the
   message handler and user scripts are removed (the content controller retains its handler), the page is replaced
   by an empty one (so its scripts, timers and requests stop now, not whenever the view is deallocated) and the view
-  leaves its window. Nothing in the host keeps a reference to the web view afterwards. Creation and teardown run in
+  leaves its window. A navigation whose decision still waits for its host's cookie copy is answered "cancel" once
+  the call has ended (the copy is cancelled with the call and answers afterwards); "allow" would let it start in
+  the torn-down view if WebKit honoured a late answer (an iOS 27.2 simulator ignores one after the page was
+  replaced). Nothing in the host keeps a reference to the web view afterwards. Creation and teardown run in
   their own autorelease pool, so what WebKit autoreleases there is released with the call, not when the main
   thread's pool is drained.
 - **Headers** are set on the first request only, as flutter_inappwebview does: WebKit sends its own `User-Agent` and
@@ -484,12 +487,16 @@ Two obstacles, both found on CI:
 
 So the job runs the WebKit tests a second time inside an app: the step "WebKit tests in a simulator app" of
 `build_ios_check.yml` wraps the linked test executable (`test.kexe`) in `SourceJsTests.app` (a minimal
-`Info.plist`, ad-hoc signed), boots the newest iPhone simulator, installs it and starts it with `simctl launch
---console-pty`, passing `--ktest_filter` for the three WebKit test classes and `KMK_WEBKIT_REQUIRED=1`. Launched as an
-app (still without `UIApplicationMain`, so offscreen), WebKit works. The step fails unless the runner prints
-`[  PASSED  ] <n> tests` with `n` at least the expected count (`MIN_TESTS`, 25 now; raise it with new tests) and no
-`[  FAILED  ]` or `SKIPPED:` line. The simulator is the newest iPhone by runtime version, compared as numbers
-(`iOS-18-10` after `iOS-18-2`).
+`Info.plist`, ad-hoc signed), boots the newest iPhone simulator, installs it and runs the executable of the
+installed bundle with `simctl spawn`, passing `--ktest_filter` for the WebKit test classes (the step's `CLASSES`) and
+`KMK_WEBKIT_REQUIRED=1`. Run from an installed app bundle (still without `UIApplicationMain`, so offscreen), WebKit
+works. `simctl spawn` returns the test binary's exit status; `simctl launch --console-pty`, used before, returns 0
+even after `exit(3)` or an abort (checked on an iOS 27.2 simulator), and lost the output of a short-lived app. The
+step fails on a non-zero exit status, and unless each class in `CLASSES` has as many `[       OK ]` lines as `@Test`
+functions in its source file, the runner's `[  PASSED  ] <n> tests` equals their sum, and no `[  FAILED  ]` or
+`SKIPPED:` line appears. A new test raises the count by itself; a class that is renamed or moved fails the step
+until `CLASSES` names it. The simulator is the newest iPhone by runtime version, compared as numbers (`iOS-18-10`
+after `iOS-18-2`).
 
 In the plain test run, the WebKit tests use `webKitTest` (`iosTest/.../WebKitTest.kt`): once per process it checks
 that a web view runs JavaScript (a `loadHTMLString` page read back with `evaluateJavaScript`, 10 s at most). When it
