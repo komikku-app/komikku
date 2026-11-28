@@ -1,7 +1,8 @@
 # In-app UI smoke mode — design (not built)
 
-Status: **design for Atlas** (ATLAS_INSTRUCTIONS.md, ANSWER 005 item 5). Owner: Windows and Linux engineer. Nothing is
-built. Code facts are read from `multiplatform`; **[guess]** marks what the first spike must confirm.
+Status: Windows and Linux engineer — done: the one-page design for Atlas (ANSWER 005 item 5) — left: Atlas's answer,
+then the build. Nothing is built. Code facts are read from `multiplatform`; **[guess]** marks what the first spike must
+confirm.
 
 **What it is:** `Komikku --ui-smoke=<report dir>` starts the real app (same `main()` path, DI, scheduler, window) on a
 fresh temporary data folder with a generated fixture, runs a fixed script through the app's own navigation, saves a
