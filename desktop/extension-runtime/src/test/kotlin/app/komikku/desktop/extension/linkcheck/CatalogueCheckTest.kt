@@ -29,13 +29,30 @@ class CatalogueCheckTest {
     @TempDir
     lateinit var dir: File
 
+    /** A protobuf length-delimited field [number] holding [payload]. */
+    private fun field(number: Int, payload: ByteArray): ByteArray {
+        var length = payload.size
+        val varint = mutableListOf<Byte>()
+        while (length >= 0x80) {
+            varint += ((length and 0x7f) or 0x80).toByte()
+            length = length ushr 7
+        }
+        varint += length.toByte()
+        return byteArrayOf(((number shl 3) or 2).toByte()) + varint.toByteArray() + payload
+    }
+
     @Test
     fun `reads the APK URLs of a gzip-compressed protobuf index and of a JSON index`() {
-        val first = "https://github.com/keiyoushi/extensions/releases/download/x/tachiyomi-en.a-v1.4.1.apk"
-        val second = "https://github.com/keiyoushi/extensions/releases/download/x/tachiyomi-all.b-v1.4.2.apk"
-        // Protobuf strings: a tag and a length byte before each URL; the second length byte is printable ('h')
-        val protobuf = byteArrayOf(0x0a, first.length.toByte()) + first.toByteArray() +
-            byteArrayOf(0x12, 'h'.code.toByte()) + second.toByteArray() + byteArrayOf(0x1a, 0x02) + first.toByteArray()
+        // Keiyoushi's shape: extensions with name, package, APK and jar URLs, sources with a home page
+        val first = "https://github.com/keiyoushi/extensions/releases/download/x/tachiyomi-id.apkomik-v1.6.2.apk"
+        val second = "https://github.com/keiyoushi/extensions/releases/download/x/tachiyomi-all.vinnieVeritas-v1.6.1.apk"
+        fun extension(name: String, apk: String) = field(
+            1,
+            field(1, name.toByteArray()) + field(2, "eu.kanade.tachiyomi.extension.$name".toByteArray()) +
+                field(3, field(1, apk.toByteArray()) + field(2, apk.replace(".apk", ".jar").toByteArray())) +
+                field(4, field(4, "https://01.apkomik.com".toByteArray())),
+        )
+        val protobuf = extension("id.apkomik", first) + extension("all.vinnieVeritas", second) + extension("id.apkomik", first)
         val gzip = ByteArrayOutputStream().also { out -> GZIPOutputStream(out).use { it.write(protobuf) } }.toByteArray()
 
         CatalogueIndex.apkUrls("https://example.invalid/index.pb", gzip) shouldContainExactly listOf(first, second)

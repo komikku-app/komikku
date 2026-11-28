@@ -16,7 +16,7 @@ import java.util.zip.GZIPInputStream
  */
 object CatalogueIndex {
 
-    private val ABSOLUTE_APK = Regex("""https?://[\x21-\x7e]+?\.apk""")
+    private val ABSOLUTE_APK = Regex("""https?://\S+\.apk""")
     private val JSON_APK = Regex(""""apk"\s*:\s*"([^"]+\.apk)"""")
 
     private val client: HttpClient = HttpClient.newBuilder()
@@ -40,9 +40,52 @@ object CatalogueIndex {
             val base = indexUrl.substringBeforeLast('/') + "/apk/"
             json.map { name -> if ("://" in name) name else base + name }
         } else {
-            ABSOLUTE_APK.findAll(text).map { it.value }.toList()
+            mutableListOf<String>().also { protobufStrings(bytes, 0, bytes.size, it) }.filter(ABSOLUTE_APK::matches)
         }
         return urls.distinct()
+    }
+
+    /**
+     * Adds the length-delimited fields of the protobuf message in `bytes[from, to)` to [out] as strings, recursively (a
+     * payload that parses as a message is also searched). False when the range is not a message; [out] is then left unchanged.
+     * Reading the fields, not searching the bytes, keeps a URL whole when its name contains `.apk` (`apkomik`).
+     */
+    private fun protobufStrings(bytes: ByteArray, from: Int, to: Int, out: MutableList<String>): Boolean {
+        val found = mutableListOf<String>()
+        var position = from
+        fun varint(): Long? {
+            var result = 0L
+            var shift = 0
+            while (position < to && shift < 64) {
+                val byte = bytes[position++].toInt()
+                result = result or ((byte and 0x7f).toLong() shl shift)
+                if (byte and 0x80 == 0) return result
+                shift += 7
+            }
+            return null
+        }
+        while (position < to) {
+            val key = varint() ?: return false
+            if (key ushr 3 == 0L) return false
+            when ((key and 7).toInt()) {
+                0 -> varint() ?: return false
+                1 -> position += 8
+                5 -> position += 4
+                2 -> {
+                    val length = varint() ?: return false
+                    if (length < 0 || length > to - position) return false
+                    val end = position + length.toInt()
+                    // A text can parse as a message by chance: keep it as a string either way
+                    found += String(bytes, position, end - position, Charsets.UTF_8)
+                    protobufStrings(bytes, position, end, found)
+                    position = end
+                }
+                else -> return false
+            }
+            if (position > to) return false
+        }
+        out += found
+        return true
     }
 
     /** Downloads [url] to [target] (three attempts). */
