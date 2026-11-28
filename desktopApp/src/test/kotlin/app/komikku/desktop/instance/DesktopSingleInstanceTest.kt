@@ -1,5 +1,6 @@
 package app.komikku.desktop.instance
 
+import app.komikku.desktop.compat.DesktopLog
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.longs.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.longs.shouldBeLessThan
@@ -11,6 +12,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledOnOs
+import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.io.TempDir
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.kmk.KMR
@@ -20,6 +23,8 @@ import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.nio.file.Files
+import java.nio.file.attribute.AclEntryType
+import java.nio.file.attribute.AclFileAttributeView
 import java.nio.file.attribute.PosixFilePermissions
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.Semaphore
@@ -31,7 +36,8 @@ import kotlin.time.Duration.Companion.milliseconds
  * [DesktopSingleInstance]: one running instance per data folder. Second starts run in a child JVM where it matters (the
  * lock is per process): they exit with 0 and the running instance's "show window" callback runs; a killed holder's lock
  * is released by the system and its port file ignored; two data folders do not affect each other; a wrong token or
- * garbage is dropped without an answer; no answer within the timeout means "busy" (exit 1).
+ * garbage is dropped without an answer; no answer within the timeout means "busy" (exit 1). An instance that is shutting
+ * down no longer answers, and a slow client holds the listener for one read timeout at most.
  */
 class DesktopSingleInstanceTest {
 
@@ -183,6 +189,93 @@ class DesktopSingleInstanceTest {
         assumeTrue("posix" in portFile.fileSystem.supportedFileAttributeViews())
 
         PosixFilePermissions.toString(Files.getPosixFilePermissions(portFile)) shouldBe "rw-------"
+    }
+
+    @Test
+    @EnabledOnOs(OS.WINDOWS)
+    fun `on Windows the port file's access list allows only the current user`() {
+        val dataDir = folder("data")
+        primary(dataDir)
+        val portFile = dataDir.toPath().resolve(DesktopSingleInstance.PORT_FILE)
+
+        val entry = Files.getFileAttributeView(portFile, AclFileAttributeView::class.java).acl.single()
+
+        entry.type() shouldBe AclEntryType.ALLOW
+        val user = System.getProperty("user.name")
+        val domain = System.getenv("USERDOMAIN")
+        entry.principal().name.lowercase() shouldBe (if (domain.isNullOrBlank()) user else "$domain\\$user").lowercase()
+        InstancePortFile.read(portFile).shouldNotBeNull()
+    }
+
+    @Test
+    fun `a start while the running instance shuts down is not told shown and takes the folder once it is free`() {
+        val dataDir = folder("data")
+        val quitting = primary(dataDir)
+        quitting.onShowRequest = { error("a quitting instance must not be asked to show its window") }
+
+        quitting.stopListening()
+        Files.exists(dataDir.toPath().resolve(DesktopSingleInstance.PORT_FILE)) shouldBe false
+        DesktopSingleInstance.acquire(dataDir, answerTimeout = 300.milliseconds) shouldBe
+            DesktopSingleInstance.Outcome.OtherNotAnswering
+        val exited = thread {
+            Thread.sleep(500)
+            quitting.close()
+        }
+
+        val outcome = DesktopSingleInstance.acquire(dataDir)
+
+        exited.join()
+        instances -= quitting
+        instances += outcome.shouldBeInstanceOf<DesktopSingleInstance.Outcome.Primary>().instance
+    }
+
+    @Test
+    fun `a client that sends its request slowly does not keep a real start from being answered`() {
+        val dataDir = folder("data")
+        val shown = Semaphore(0)
+        primary(dataDir).onShowRequest = { shown.release() }
+        val portFile = dataDir.toPath().resolve(DesktopSingleInstance.PORT_FILE)
+        val endpoint = InstancePortFile.read(portFile).shouldNotBeNull()
+        val dripping = Socket(InstanceSignal.loopback, endpoint.port)
+        val dripper = thread(isDaemon = true) {
+            try {
+                repeat(InstanceSignal.MAX_REQUEST_BYTES) {
+                    dripping.getOutputStream().apply {
+                        write('S'.code)
+                        flush()
+                    }
+                    Thread.sleep(300)
+                }
+            } catch (_: Exception) {
+                // Closed by the server, as it should be
+            }
+        }
+        Thread.sleep(200)
+
+        dripping.use {
+            val start = System.nanoTime()
+            InstanceSignal.requestShow(portFile, DesktopSingleInstance.ANSWER_TIMEOUT) shouldBe true
+            (System.nanoTime() - start) / 1_000_000 shouldBeLessThan DesktopSingleInstance.ANSWER_TIMEOUT.inWholeMilliseconds
+            shown.tryAcquire(5, TimeUnit.SECONDS) shouldBe true
+        }
+        dripper.join(5_000)
+    }
+
+    @Test
+    fun `a second start logs under the single-instance tag`() {
+        val dataDir = folder("data")
+        primary(dataDir)
+        val lines = mutableListOf<Pair<String, String>>()
+        val previous = DesktopLog.sink
+        DesktopLog.sink = { _, tag, message -> synchronized(lines) { lines += tag to message } }
+
+        try {
+            shouldThrow<Exit> { DesktopSingleInstance.ensure(dataDir, exit = { throw Exit(it) }) }.code shouldBe 0
+        } finally {
+            DesktopLog.sink = previous
+        }
+
+        synchronized(lines) { lines.single { "already runs" in it.second }.first } shouldBe "SingleInstance"
     }
 
     @Test

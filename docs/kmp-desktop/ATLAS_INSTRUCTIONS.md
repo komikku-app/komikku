@@ -355,3 +355,68 @@ it. The patch files stay in `docs/kmp-desktop/android-fixes/` until the maintain
 remove them in the merge of `master` that brings the fixes back.
 
 Go ahead with A4.
+
+## ANSWER 013 — the lock on file systems without locking, and the signing jobs (2026-11-28)
+
+Report read. The containment is what I asked for; the `release` job insisting on exactly the four packages is a good
+addition.
+
+**Question 1 — a data folder whose file system cannot lock: option (c), with the warning.** Do not refuse to start,
+and do not run with nothing.
+- When `tryLock` throws (as opposed to reporting the lock as taken), fall back to the port file as an advisory lock:
+  if it exists and the instance it names answers the token on its loopback socket, another instance on this machine
+  is running: signal it and exit as usual. If nothing answers, take over and write our own. That keeps the realistic
+  case, two starts on one machine, protected.
+- What this cannot see is a second computer opening the same shared folder. Say so once in the UI (a dismissible
+  banner, remembered per data folder): this folder does not support locking, do not open it from two computers at
+  the same time. Log it every start. New string in `i18n-kmk` base.
+- Tests: `tryLock` throwing with a live instance (second start exits and signals), with a stale port file (takes
+  over), and the banner shown once.
+
+**Question 2 — the signing jobs: both approved.**
+- (i) Import the macOS key with `-T /usr/bin/codesign` (add each further Apple tool the packaging actually calls,
+  found from the Compose plugin's signing code, not guessed) and `security set-key-partition-list`, never `-A`. It
+  cannot be verified without certificates, so: mark it in BUILDING.md "Signing" as untested, and add it to the
+  checklist for the first signed build, with the exact error to expect if a tool is missing from the list and the
+  one-line fix. A first signed build that fails loudly is acceptable; a key every process can use is not.
+- (ii) Pin WiX by version and SHA-256. If the Compose plugin's own download cannot be verified, download and verify
+  it in the workflow and point the plugin at that folder; report which of the two it became.
+- Apply the same eye to everything else those jobs download and run: actions pinned by commit (they are), the JDK
+  from `setup-java`, Gradle through the wrapper with its checksum, and `appimagetool` or similar if present. List
+  what is pinned how in BUILDING.md, one table.
+
+**The iOS WebKit tests.** IOS_CI.md, IOS_OPTIONS.md and my ANSWER 007 all rest on "25 web-view tests green on the
+simulator". If WebKit never ran in CI, that sentence is wrong everywhere it appears. Establish it from the old run
+logs, then correct the documents to what was actually proven (and what was only compiled), and tell me whether it
+changes anything in the iOS options report's assessment of the web-view bridge. A test step that cannot fail is
+worse than none; the fix to its exit status was the right call.
+
+**The `.deb` and the Windows temp folders:** agreed as routed. For the Windows job, the fix is to close what is
+open (the same idea as the Linux teardown work in PROGRESS.md "Review fixes (temp directory teardown)"), not to
+relax clean-up.
+
+## ANSWER 014 — A4, the `CloudflareInterceptor` hook, and landing the merge (2026-11-28)
+
+**Keep the hook.** One `actual class … actual constructor(` line inside a KMK marker is the right price: the
+alternative copies about 200 lines of `NetworkHelper` and would then silently miss what `master` adds to the HTTP
+clients, which is a worse way to drift than one marked line. Add `CloudflareInterceptor.kt` to the short list of
+borrowing hooks in UPSTREAM_AUDIT.md, next to `ArchiveReader`. The rule stays "byte-identical except the listed
+hooks"; a hook is a single declaration-level line, never behaviour. If a future merge of `master` ever conflicts on
+that line, that is the moment to reconsider.
+
+**Landing plan: approved.** Land it when the Reviewer's findings on the five commits are fixed or recorded: merge
+the branch into `multiplatform`, push, desktop build and iOS check. Then, in this order:
+- a short entry in PROGRESS.md as COORDINATION.md "Merging master" asks, including the four desktop behaviour changes
+  that came from following `master`, so nobody later takes them for regressions;
+- the two parity gaps (no "MangaDex session expired" notification, no batch "reset info") go on the parity list in
+  HANDOVER.md "Left to do"; they are priority 5, not now;
+- the macOS on-device pass re-checks the areas the merge touched (library range selection, the filter panel,
+  a Cloudflare-protected source, MDList) in the packaged app.
+
+**`ImageUtilTest` "splits tall images".** A test that reads the real screen height of the machine it runs on is a
+defect whether or not CI hides it: it fails on your Mac, so it will fail on the maintainer's. Make it deterministic
+(inject the display height, or the headless property in the test task), in our desktop code or test set-up, not by
+changing `master`'s test if it is `master`'s. If the cause is in `master`-owned code, it is an Android-fix patch
+like the others.
+
+The next merge of `master` is due when the maintainer merges #2023, or in two weeks, whichever comes first.

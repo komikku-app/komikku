@@ -1,9 +1,11 @@
 package app.komikku.desktop.extensions
 
 import app.komikku.desktop.di.DesktopInjekt
+import app.komikku.shared.reader.image.SkiaPageDecoder
 import eu.kanade.tachiyomi.AppInfo
 import eu.kanade.tachiyomi.BuildConfig
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import org.junit.jupiter.api.Test
@@ -24,6 +26,13 @@ class ExtensionHostApiTest {
         AppInfo.getVersionName() shouldBe BuildConfig.VERSION_NAME
         AppInfo.getVersionCode() shouldBe BuildConfig.VERSION_CODE
         AppInfo.getSupportedImageMimeTypes() shouldContain "image/jpeg"
+    }
+
+    @Test
+    fun `AppInfo lists exactly the image types the desktop reader decodes`() {
+        // Extensions build their Accept header from it: AVIF / JPEG XL / HEIF pages would show as errors (review M3)
+        AppInfo.getSupportedImageMimeTypes() shouldContainExactly listOf("image/gif", "image/jpeg", "image/png", "image/webp")
+        AppInfo.getSupportedImageMimeTypes() shouldContainExactly SkiaPageDecoder.DECODED.map { it.mime }
     }
 
     @Test

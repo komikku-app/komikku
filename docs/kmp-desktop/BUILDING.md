@@ -10,7 +10,9 @@ The desktop app is the Gradle module `:desktopApp` (Compose Multiplatform for th
 - The Android SDK setup of the Android build: Gradle configures the whole project, Android modules included.
 - Packaging only builds installers for the OS it runs on (jpackage cannot cross-build):
   - Linux: `.deb` needs `dpkg-deb` / `fakeroot`, `.rpm` needs `rpmbuild` (package `rpm`).
-  - Windows: `.msi` / `.exe` need WiX 3; the Compose Gradle plugin downloads it.
+  - Windows: `.msi` / `.exe` need WiX 3. Locally the Compose Gradle plugin downloads WiX 3.11.2 (unverified); with
+    the environment variable `WIX_PATH` set to an unpacked WiX folder it uses that one instead, as CI does (see
+    "What CI downloads and runs").
   - macOS: `.dmg` uses the system tools.
 
 ## Run and test
@@ -280,6 +282,48 @@ Unverified: none of this has run (no certificates exist); in particular whether 
 runtime and the native libraries inside the JARs as the Compose plugin signs them (it signs them itself; Compose's
 default entitlements for the JVM are used).
 
+**The macOS signing key in CI (untested):** the workflow imports the `.p12` into a temporary keychain with
+`security import … -T /usr/bin/codesign` and `security set-key-partition-list -S apple-tool:,apple:,codesign:`, so only
+`codesign` may use the private key (never `-A`, which would let every process on the runner use it). The list comes from
+the Compose plugin 1.12.2 code: `MacSigner` signs with `/usr/bin/codesign` and reads the certificate with
+`/usr/bin/security find-certificate` (no key access); jpackage's app-image signing also calls `codesign`; notarization
+(`xcrun notarytool` with the app-specific password, `stapler`) and the DMG tools (`hdiutil`, `osascript`) do not use
+the key; no `.pkg` is built.
+
+**Checklist for the first signed build** (the first run with the macOS secrets set):
+
+1. The `Import macOS signing certificate` step passes and `security find-identity -v -p codesigning "$keychain"` (add it
+   temporarily if needed) lists the identity.
+2. `Package desktop app` signs without a key-access error. If a tool that is not in the `-T` list uses the key, the run
+   cannot show the keychain's permission dialog and that tool fails, typically with `errSecInternalComponent` or
+   `User interaction is not allowed.` next to the tool's name. Fix: add `-T <full path of that tool>` to the
+   `security import` line in `build_desktop.yml` (and its name to the comment above it); never `-A`.
+3. `codesign --verify --deep --strict --verbose=2` on the `.app` inside the `.dmg` passes, `spctl -a -vv` says
+   `source=Notarized Developer ID` after notarization, and `xcrun stapler validate` passes (the workflow runs it).
+4. Then remove "untested" here.
+
+## What CI downloads and runs
+
+What the desktop jobs in `build_desktop.yml` fetch from outside the repository, and how each is pinned:
+
+| What | Where | Pinned by | Verified by |
+|------|-------|-----------|-------------|
+| GitHub Actions (`checkout`, `setup-java`, `setup-gradle`, `wrapper-validation`, `upload-artifact`, `download-artifact`) | every job | full commit SHA (the tag in a comment) | the commit SHA itself |
+| Runner images | every job | label (`ubuntu-24.04`, `windows-2022`, `macos-15`, `macos-15-intel`); GitHub updates the image under a label | — |
+| JDK (Temurin) | `pr-check`, `package`, `windows-test` | major version from `.github/.java-version` (21); the patch release is the runner's cached one, or the latest when not cached | `setup-java` `verify-signature: true`: Adoptium's GPG signature, only when it downloads (the runner's tool cache is used as is) |
+| Gradle wrapper JAR | every Gradle job | `gradle/wrapper/gradle-wrapper.jar` in the repository | `gradle/actions/wrapper-validation` (`package`) and `setup-gradle`'s `validate-wrappers` (default on): checksum against Gradle's published ones |
+| Gradle distribution | every Gradle job | version in `gradle/wrapper/gradle-wrapper.properties` (9.3.1) | **not verified**: the file has no `distributionSha256Sum` (it is the Android build's file; adding it is a change for master) |
+| Maven dependencies and Gradle plugins | every Gradle job | versions in the version catalogs (`gradle/*.versions.toml`) | **not verified**: no `gradle/verification-metadata.xml` (shared with the Android build) |
+| WiX 3.11.2 (`wix311-binaries.zip`) | `package` on Windows | version and URL in the step `Download WiX (pinned)` | SHA-256 `2c1888d5…9e2e` in that step; a mismatch fails the job before anything is unpacked; the Compose plugin gets the folder through `WIX_PATH` and downloads nothing |
+| `rpm` | `package` on Linux | `apt-get` from Ubuntu's archive, unversioned | the archive's signatures (apt) |
+| Smoke test tools (Xvfb, openbox, xdotool, …) | `smoke` on Linux | `apt-get`, unversioned | the archive's signatures (apt) |
+| Keiyoushi extension APKs and `index.pb` | `extension-check` (no secrets) | repository commit in `.github/desktop-test-extensions.txt` | SHA-256 per APK in that file, before anything is loaded |
+| Keiyoushi live index and every APK in it | `extension-breadth` (no secrets, non-blocking) | not pinned (it checks the current catalogue) | not verified; only read by the link checker, never run, never in a job with secrets or a shipped artifact |
+
+No `appimagetool` or other packaging tool is downloaded: the Linux `.tar.gz` is the app image directory packed with
+`tar`, `.deb` / `.rpm` come from jpackage with the runner's `dpkg-deb` / `rpmbuild`, the `.dmg` from the macOS system
+tools, `signtool` from the Windows SDK on the runner image.
+
 ## Data directory
 
 | OS | Default location |
@@ -292,7 +336,10 @@ Override with the `komikku.dataDir` system property (portable installs, separate
 `JAVA_TOOL_OPTIONS=-Dkomikku.dataDir=/path/to/data ./gradlew :desktopApp:run` or the same environment
 variable for an installed launcher. Contents: `databases/tachiyomi.db` (library), `preferences/*.json`,
 `extensions/` (installed APKs and converted jars), `storage/` (default downloads / local source folder,
-changeable in Settings), `cache/` (covers, chapter pages), `files/`, `keys/` (CBZ encryption key).
+changeable in Settings), `cache/` (covers, chapter pages), `files/`, `keys/` (CBZ encryption key),
+`instance.lock` (empty; the running app holds an exclusive lock on it so that a second start on the same data folder
+shows the first one's window instead of opening the database twice) and `instance.port` (written by that running app:
+the loopback port and token a second start uses to ask it to show its window; removed when it quits).
 
 ## Extension link check
 

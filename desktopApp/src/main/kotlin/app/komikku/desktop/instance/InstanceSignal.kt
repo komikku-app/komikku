@@ -9,6 +9,7 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketTimeoutException
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -24,8 +25,9 @@ import kotlin.time.Duration
  * The running instance listens on `127.0.0.1`, on a port the system picks, and writes the port and a random token to
  * the port file ([InstancePortFile]) with owner-only permissions. A second start sends one line, `SHOW <token>\n`;
  * when it matches exactly, the running instance answers `OK\n` and shows its window. Anything else (a wrong token,
- * another command, more than [MAX_REQUEST_BYTES] without a line end, nothing within the read timeout) is dropped and
- * the connection closed without an answer. The request is never parsed further: it means "show the window" and nothing
+ * another command, more than [MAX_REQUEST_BYTES] without a line end, no complete line within the read timeout, which
+ * bounds the whole request and not each read) is dropped and the connection closed without an answer. Connections are
+ * handled one at a time, so each slow client delays a real start by at most that timeout. The request is never parsed further: it means "show the window" and nothing
  * else.
  */
 internal object InstanceSignal {
@@ -69,12 +71,13 @@ internal object InstanceSignal {
 
     /**
      * Reads one line of at most [max] bytes from [input], without the line end; `null` when the stream ends first or
-     * the line is longer. Bytes after the line end are ignored.
+     * the line is longer. Bytes after the line end are ignored. [beforeRead] runs before each read (to bound the time).
      */
-    fun readRequestLine(input: InputStream, max: Int = MAX_REQUEST_BYTES): ByteArray? {
+    fun readRequestLine(input: InputStream, max: Int = MAX_REQUEST_BYTES, beforeRead: () -> Unit = {}): ByteArray? {
         val buffer = ByteArray(max)
         var size = 0
         while (size < max) {
+            beforeRead()
             val read = input.read(buffer, size, max - size)
             if (read < 0) return null
             for (i in size until size + read) {
@@ -132,9 +135,13 @@ internal object InstanceSignal {
         }
 
         private fun handle(client: Socket) {
+            val deadline = System.nanoTime() + readTimeout.inWholeNanoseconds
             val line = try {
-                client.soTimeout = readTimeout.inWholeMilliseconds.coerceIn(1, Int.MAX_VALUE.toLong()).toInt()
-                readRequestLine(client.getInputStream())
+                readRequestLine(client.getInputStream()) {
+                    val left = (deadline - System.nanoTime()) / 1_000_000
+                    if (left <= 0) throw SocketTimeoutException("request not complete in time")
+                    client.soTimeout = left.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+                }
             } catch (_: IOException) {
                 null
             }
@@ -142,6 +149,7 @@ internal object InstanceSignal {
                 xLogD("Single instance: ignored a request that was not a valid show request")
                 return
             }
+            if (socket.isClosed) return
             try {
                 client.getOutputStream().apply {
                     write(REPLY)

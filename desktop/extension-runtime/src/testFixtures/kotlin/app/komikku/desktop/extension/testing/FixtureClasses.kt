@@ -21,15 +21,23 @@ object FixtureClasses {
     /**
      * A class implementing `eu.kanade.tachiyomi.source.Source` with constant `id`, `name`, `lang`
      * and `supportsLatest = false`. The suspend members are left abstract (never called by the
-     * loader); it only needs to be instantiated and identified.
+     * loader); it only needs to be instantiated and identified. With [constructorCall] (`owner` to `method`), the
+     * constructor also calls that static `()V` method.
      */
-    fun source(internalName: String, id: Long, name: String, lang: String = "en"): ByteArray {
+    fun source(
+        internalName: String,
+        id: Long,
+        name: String,
+        lang: String = "en",
+        constructorCall: Pair<String, String>? = null,
+    ): ByteArray {
         val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
         writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER, internalName, null, "java/lang/Object", arrayOf(SOURCE))
         writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null).apply {
             visitCode()
             visitVarInsn(Opcodes.ALOAD, 0)
             visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false)
+            constructorCall?.let { (owner, method) -> visitMethodInsn(Opcodes.INVOKESTATIC, owner, method, "()V", false) }
             visitInsn(Opcodes.RETURN)
             visitMaxs(0, 0)
             visitEnd()
@@ -190,6 +198,49 @@ object FixtureClasses {
             visitInsn(Opcodes.IRETURN)
             visitMaxs(0, 0)
             visitEnd()
+        }
+        writer.visitEnd()
+        return writer.toByteArray()
+    }
+
+    /**
+     * `class <name> extends <superName>` (`superName` has `<init>()V`) that creates an instance of itself in its own
+     * constructor after R8 inlined that instance's constructor (review M3, finding 2): `<init>(I)V` calls
+     * `superName.<init>()` on `this`, then stores `new <name>` constructed by `superName.<init>()` directly (invalid on
+     * the JVM, accepted by ART and by dx) in `child`, and its argument in `number`. `childNumber()I` returns
+     * `child.number` (0), `number()I` the argument.
+     */
+    fun selfConstructing(name: String, superName: String): ByteArray {
+        val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
+        writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC or Opcodes.ACC_FINAL or Opcodes.ACC_SUPER, name, null, superName, null)
+        writer.visitField(Opcodes.ACC_PUBLIC, "child", "L$name;", null, null).visitEnd()
+        writer.visitField(Opcodes.ACC_PRIVATE, "number", "I", null, null).visitEnd()
+        writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "(I)V", null, null).apply {
+            visitCode()
+            visitVarInsn(Opcodes.ALOAD, 0)
+            visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", "()V", false)
+            visitVarInsn(Opcodes.ALOAD, 0)
+            visitTypeInsn(Opcodes.NEW, name)
+            visitInsn(Opcodes.DUP)
+            visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", "()V", false)
+            visitFieldInsn(Opcodes.PUTFIELD, name, "child", "L$name;")
+            visitVarInsn(Opcodes.ALOAD, 0)
+            visitVarInsn(Opcodes.ILOAD, 1)
+            visitFieldInsn(Opcodes.PUTFIELD, name, "number", "I")
+            visitInsn(Opcodes.RETURN)
+            visitMaxs(0, 0)
+            visitEnd()
+        }
+        for ((method, owner) in listOf("number" to "this", "childNumber" to "child")) {
+            writer.visitMethod(Opcodes.ACC_PUBLIC, method, "()I", null, null).apply {
+                visitCode()
+                visitVarInsn(Opcodes.ALOAD, 0)
+                if (owner == "child") visitFieldInsn(Opcodes.GETFIELD, name, "child", "L$name;")
+                visitFieldInsn(Opcodes.GETFIELD, name, "number", "I")
+                visitInsn(Opcodes.IRETURN)
+                visitMaxs(0, 0)
+                visitEnd()
+            }
         }
         writer.visitEnd()
         return writer.toByteArray()

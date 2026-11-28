@@ -93,7 +93,7 @@ abstract class UniFile internal constructor(
         fun fromFile(file: File?): UniFile? = file?.let { FileUniFile(null, it) }
 
         @JvmStatic
-        fun fromResource(context: Context?, id: Int): UniFile? = unsupported("UniFile.fromResource")
+        fun fromResource(context: Context?, id: Int): UniFile? = unsupported("com.hippo.unifile.UniFile", "fromResource(context, id)")
 
         /** `file:` URIs map to files; other URIs go through the registered [UriHandler]s. */
         @JvmStatic

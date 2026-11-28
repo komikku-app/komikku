@@ -190,13 +190,13 @@ internal object DexTranslator {
             val constructor = method.name == "<init>" && !method.isStatic && superclass != null
             if (!constructor && assignments.values.none { values -> values.any { it.vt == Value.VT.NEW } }) return
 
-            fun newType(value: Value, depth: Int = 0): String? {
+            fun receiver(value: Value, depth: Int = 0): Receiver? {
                 if (value.vt != Value.VT.LOCAL || depth > MAX_COPIES) return null
                 val source = assignments[value as Local]?.singleOrNull() ?: return null
                 return when (source.vt) {
-                    Value.VT.NEW -> (source as NewExpr).type
-                    Value.VT.THIS_REF -> if (constructor) method.owner else null
-                    Value.VT.LOCAL -> newType(source, depth + 1)
+                    Value.VT.NEW -> Receiver((source as NewExpr).type, isThis = false)
+                    Value.VT.THIS_REF -> if (constructor) Receiver(method.owner, isThis = true) else null
+                    Value.VT.LOCAL -> receiver(source, depth + 1)
                     else -> null
                 }
             }
@@ -205,8 +205,9 @@ internal object DexTranslator {
                 if (stmt.st != Stmt.ST.VOID_INVOKE) continue
                 val invoke = stmt.op as? InvokeExpr ?: continue
                 if (invoke.vt != Value.VT.INVOKE_SPECIAL || invoke.name != "<init>" || invoke.ops.isEmpty()) continue
-                val receiver = newType(invoke.ops[0]) ?: continue
-                if (receiver == method.owner && constructor && invoke.owner == superclass) continue
+                val (receiver, isThis) = receiver(invoke.ops[0]) ?: continue
+                // The constructor's own super(…) call; a `new C` built in C's constructor is re-targeted like any other
+                if (isThis && invoke.owner == superclass) continue
                 val type = internalName(receiver)
                 val superclass = internalName(invoke.owner)
                 if (type == superclass) continue
@@ -223,6 +224,9 @@ internal object DexTranslator {
         }
 
         private fun internalName(descriptor: String) = descriptor.removePrefix("L").removeSuffix(";")
+
+        /** The type (descriptor) of a constructor call's receiver, and whether it is the constructor's `this`. */
+        private data class Receiver(val type: String, val isThis: Boolean)
 
         private companion object {
             const val MAX_COPIES = 16

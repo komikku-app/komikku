@@ -1,6 +1,10 @@
 # iOS check (CI)
 
-Status: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
+Status: iOS engineer — done: the REVIEW_IOS.md fixes (deallocation asserted, late navigation answered "cancel",
+the WebKit step fails on the app's exit status and counts each class's tests), green in runs 46123856675 and
+46126712108 (26 of 26 WebKit tests, after the retention probe's removal) — left: nothing from REVIEW_IOS.md.
+
+History: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
 simulator, including deep recursion on the 4 MiB JS stack; 122 with I5a (run 45545772720, commit `eca24347e1`,
 section below); 132 with the I5a review fixes (cookies, non-HTTP URLs, `HEAD` bodies, redirect resolution; run
 45567078024, commit `0501bf16e7`); 145 with I5b, the store of installed sources (run 45570113228, commit `32c89164ae`, section below); 150 with the I5b review fixes (run 45574226158, commit `97ea1bb4fd`); 171 with I5c, the `WKWebView`
@@ -453,7 +457,10 @@ Deviations, all in timing only:
 - **Teardown** (on the main thread, whatever ended the call): the navigation delegate is removed, loading stops, the
   message handler and user scripts are removed (the content controller retains its handler), the page is replaced
   by an empty one (so its scripts, timers and requests stop now, not whenever the view is deallocated) and the view
-  leaves its window. Nothing in the host keeps a reference to the web view afterwards. Creation and teardown run in
+  leaves its window. A navigation whose decision still waits for its host's cookie copy is answered "cancel" once
+  the call has ended (the copy is cancelled with the call and answers afterwards); "allow" would let it start in
+  the torn-down view if WebKit honoured a late answer (an iOS 27.2 simulator ignores one after the page was
+  replaced). Nothing in the host keeps a reference to the web view afterwards. Creation and teardown run in
   their own autorelease pool, so what WebKit autoreleases there is released with the call, not when the main
   thread's pool is drained.
 - **Headers** are set on the first request only, as flutter_inappwebview does: WebKit sends its own `User-Agent` and
@@ -484,12 +491,26 @@ Two obstacles, both found on CI:
 
 So the job runs the WebKit tests a second time inside an app: the step "WebKit tests in a simulator app" of
 `build_ios_check.yml` wraps the linked test executable (`test.kexe`) in `SourceJsTests.app` (a minimal
-`Info.plist`, ad-hoc signed), boots the newest iPhone simulator, installs it and starts it with `simctl launch
---console-pty`, passing `--ktest_filter` for the three WebKit test classes and `KMK_WEBKIT_REQUIRED=1`. Launched as an
-app (still without `UIApplicationMain`, so offscreen), WebKit works. The step fails unless the runner prints
-`[  PASSED  ] <n> tests` with `n` at least the expected count (`MIN_TESTS`, 25 now; raise it with new tests) and no
-`[  FAILED  ]` or `SKIPPED:` line. The simulator is the newest iPhone by runtime version, compared as numbers
-(`iOS-18-10` after `iOS-18-2`).
+`Info.plist`, ad-hoc signed), boots the newest iPhone simulator, installs it and runs the executable of the
+installed app with `simctl launch`, passing `--ktest_filter` for the WebKit test classes (the step's `CLASSES`) and
+`KMK_WEBKIT_REQUIRED=1`. Launched as an app (still without `UIApplicationMain`, so offscreen), WebKit works. Run
+any other way it does not: run 46120905490 ran the installed bundle's executable with `simctl spawn` and every
+WebKit test failed with `WebKit does not run in this process` (iOS 18.6 simulator). `simctl launch` returns 0 even
+after `exit(3)` or an abort, so the step takes the app's process id from its output, waits until that process is
+gone, and reads its wait status from the simulator's log (`runningboardd`: `termination reported by launchd (<wait
+status>, …)`; 0 for a clean exit, 768 for `exit(3)`, 6 for `SIGABRT`, checked on an iOS 27.2 simulator). The test
+output goes to files (`--stdout` / `--stderr`), not a console pty. The step fails on a non-zero or missing wait
+status, and unless each class in `CLASSES` has as many `[       OK ]` lines as `@Test` functions in its source
+file, the runner's `[  PASSED  ] <n> tests` equals their sum, and no `[  FAILED  ]` or `SKIPPED:` line appears.
+
+Did WebKit run in CI before the exit status was checked? Yes. The old step (`simctl launch --console-pty`,
+exit status ignored) still failed on a `[  FAILED  ]` or `SKIPPED:` line and on fewer than 25 passed tests, and
+`KMK_WEBKIT_REQUIRED=1` turns "no WebKit" into a failure of every WebKit test. Runs 45627948544 and 46099469392
+printed `[  PASSED  ] 25 tests.` with neither line, and tests that only pass when a page runs its scripts (a value
+reported from the page's own 300 ms timer, a report from an iframe) took a second or more each. What the exit
+status adds is a crash after the last test passed; a crash before that already cut the count short. A new test raises the count by itself; a class that is renamed or moved fails the step
+until `CLASSES` names it. The simulator is the newest iPhone by runtime version, compared as numbers (`iOS-18-10`
+after `iOS-18-2`).
 
 In the plain test run, the WebKit tests use `webKitTest` (`iosTest/.../WebKitTest.kt`): once per process it checks
 that a web view runs JavaScript (a `loadHTMLString` page read back with `evaluateJavaScript`, 10 s at most). When it
@@ -498,7 +519,7 @@ where it fails. The tests that need no page (URL refusal, timeout, the message l
 
 ### Tests (`iosTest`, simulator only)
 
-- `WKWebViewHostWebViewTest` (17): a real `WKWebView` against `LoopbackHttpServer` on `127.0.0.1`: the scripts run
+- `WKWebViewHostWebViewTest` (18): a real `WKWebView` against `LoopbackHttpServer` on `127.0.0.1`: the scripts run
   in order after the load and see the page and the `flutterInAppWebViewPlatformReady` event, the reported value is
   returned, a header reaches the server, a URL with a space and a non-ASCII letter is percent-encoded; a page that
   reports from its own timer (300 ms, offscreen); a report from an iframe; scripts run on a 404 page; a non-string
@@ -506,8 +527,9 @@ where it fails. The tests that need no page (URL refusal, timeout, the message l
   logged; a timeout returns `""` after about 1 s (under 3 s, the copy back comes after); a refused connection returns `""` at once and logs the failure;
   `file:`, `data:`, `javascript:`, `about:`, `ftp:`, relative, empty and host-less URLs refused before a web view
   exists; cancellation returns at once, leaves no web view, and the page's 100 ms `fetch` ticker stops; after a call
-  the web view has no navigation delegate, no superview, no user scripts and no longer shows the page (whether it is
-  deallocated is printed, with two controls, not asserted); cookies copied in from and back to
+  the web view has no navigation delegate, no superview, no user scripts and no longer shows the page, and the web
+  views of three calls (a page report, a script report, a timeout) are freed within 8 s, as is a never-loaded control;
+  a navigation still waiting for its cookie copy when the call ends is answered "cancel"; cookies copied in from and back to
   the shared storage (one sent with the page request, one set by the page, one deleted by it); a redirect from
   `127.0.0.1` to `localhost` carries `localhost`'s stored cookie and not `127.0.0.1`'s; a cookie that expires during
   the call and one the page deletes after the app stored a new value are both kept with the app's value; cookie keys
@@ -523,8 +545,20 @@ where it fails. The tests that need no page (URL refusal, timeout, the message l
 
 - Real sites, TLS, Cloudflare-style challenges: only the loopback server (no network). Redirects to another host
   only as `127.0.0.1` → `localhost`; cookies for subresources on other hosts are not copied in (above).
-- The web view's deallocation: the teardown state is checked, the release of the `WKWebView` object is only reported
-  (`WEBVIEW_DEALLOCATED=…` in the step's log), and it says `false`: still not freed 8 s after the call with
+- The web view's deallocation (REVIEW_IOS.md, medium) is asserted since `aceb0ddb0a` and passes (run
+  46123856675). There was no leak: the old test's measurement kept the view. Its loop read `weak.value` in its own
+  frame, between `GC.collect()` calls. Each read of a Kotlin/Native `WeakReference` to an Objective-C object makes
+  a new Kotlin wrapper that retains the object until the wrapper is collected, and a wrapper the frame still holds
+  (a stack slot) keeps the view alive for as long as the loop runs. The controls were only read once, after the
+  loop, so they were freed. Shown in run 46123856675 by a temporary probe (`WKWebViewRetentionProbeTest`, removed
+  in `a05e98674e`) on one view after a real call: read in the loop's frame, `freed=false` after 3.2 s; then read in
+  a function of its own on the main thread, `freed=true` 0.2 s later. Each part of the host's use on its own (a
+  load, with the navigation delegate, with the message handler, with `evaluateJavaScript`) was freed as well, and
+  the same teardown in Swift frees a loaded `WKWebView` at once (a stand-in app on a local iOS 27.2 simulator). The
+  test now reads each weak reference that way and fails if a view of three calls (or the never-loaded control) is
+  still there after 8 s; it took 3.8 s in all. The host's teardown is unchanged: no pool, one web view and one
+  non-persistent data store per call. The rest of this paragraph is the earlier investigation. Old reading: still
+  not freed 8 s after the call with
   `GC.collect()` every 200 ms (runs 45620605008, 45627948544; the test holds it only through a Kotlin/Native
   `WeakReference`). What was ruled out: an autorelease pool per main run loop pass in `mainRunLoopTest` (as UIKit's
   run loop has; the test process never runs `UIApplicationMain`) and around creation and teardown changed nothing
@@ -547,6 +581,12 @@ where it fails. The tests that need no page (URL refusal, timeout, the message l
 - The desktop and Android hosts still use `UnsupportedHostWebView`.
 
 ### Result
+
+Run 46123856675 (commit `117edf59dd`, the REVIEW_IOS.md fixes): job `success`. The app step: `[  PASSED  ] 27
+tests.` (`WKWebViewHostWebViewTest` 18 of 18, `WebViewBridgeTest` 6 of 6, `IosJsSourceRuntimeWebViewTest` 2 of 2,
+the temporary `WKWebViewRetentionProbeTest` 1 of 1), the app's wait status 0, the deallocation assertion and the
+late-navigation test passing. Before it: 46120277810 failed to compile the probe (a missing opt-in), 46120905490
+ran the app's executable with `simctl spawn` (no WebKit, every WebKit test failed).
 
 Run 45627948544 (commit `cbff7a0c15`, the review fixes below): job `success`. The plain simulator run: 175
 `:source-js` tests passed, none failed (the WebKit tests among them returned early). The app step: `[  PASSED  ] 25

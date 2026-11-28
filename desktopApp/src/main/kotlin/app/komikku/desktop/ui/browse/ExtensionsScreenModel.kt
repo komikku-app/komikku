@@ -2,6 +2,7 @@ package app.komikku.desktop.ui.browse
 
 import android.app.Application
 import app.komikku.desktop.extensions.DesktopExtensionManager
+import app.komikku.desktop.extensions.UnsupportedExtension
 import app.komikku.shared.extension.GetPlatformExtensionsByType
 import app.komikku.shared.extension.PlatformExtensionManager
 import cafe.adriel.voyager.core.model.StateScreenModel
@@ -45,6 +46,8 @@ class ExtensionsScreenModel(
         val isRefreshing: Boolean = false,
         /** A failed install whose cause is known, shown in a dialog until dismissed. */
         val installFailure: InstallFailure? = null,
+        /** Installed extensions that need what desktop cannot do ("unsupported on desktop: needs …"). */
+        val unsupported: List<UnsupportedExtension> = emptyList(),
     )
 
     /** [name] could not be installed because of [reason] (the first line of the cause; the log has the rest). */
@@ -56,6 +59,11 @@ class ExtensionsScreenModel(
         }
         screenModelScope.launch {
             getStores.subscribe().collectLatest { stores -> mutableState.update { it.copy(stores = stores) } }
+        }
+        (manager as? DesktopExtensionManager)?.let { desktop ->
+            screenModelScope.launch {
+                desktop.unsupportedExtensionsFlow.collectLatest { list -> mutableState.update { it.copy(unsupported = list) } }
+            }
         }
         refresh()
     }
@@ -84,6 +92,11 @@ class ExtensionsScreenModel(
     }
 
     fun uninstall(extension: Extension) = manager.uninstallExtension(extension)
+
+    fun uninstall(extension: UnsupportedExtension) {
+        val desktop = manager as? DesktopExtensionManager ?: return
+        screenModelScope.launch { desktop.uninstall(extension.pkgName) }
+    }
 
     fun dismissInstallFailure() = mutableState.update { it.copy(installFailure = null) }
 
@@ -114,7 +127,10 @@ class ExtensionsScreenModel(
             }
             mutableState.update { it.copy(steps = it.steps - extension.pkgName) }
             if (last == InstallStep.Error) {
-                val reason = (manager as? DesktopExtensionManager)?.installError(extension.pkgName)
+                val desktop = manager as? DesktopExtensionManager
+                val unsupported = desktop?.unsupportedExtensionsFlow?.value?.find { it.pkgName == extension.pkgName }
+                val reason = unsupported?.let { context.stringResource(KMR.strings.desktop_ext_unsupported_needs, it.needs) }
+                    ?: desktop?.installError(extension.pkgName)
                 if (reason != null) {
                     mutableState.update { it.copy(installFailure = InstallFailure(extension.name, reason)) }
                 } else {

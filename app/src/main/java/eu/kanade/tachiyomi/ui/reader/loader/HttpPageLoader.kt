@@ -25,6 +25,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.PriorityBlockingQueue
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
@@ -52,6 +53,15 @@ internal class HttpPageLoader(
      */
     private val queue = PriorityBlockingQueue<PriorityPage>()
 
+    // KMK -->
+    /**
+     * The pages a reader thread is loading now. A page can be in the [queue] more than once; a second thread that took
+     * it before the first one marked it as downloading would download it too, find the cache's editor taken and mark
+     * the page ready before its image is in the cache.
+     */
+    private val loadingPages = ConcurrentHashMap.newKeySet<ReaderPage>()
+    // KMK <--
+
     private val preloadSize = /* SY --> */ readerPreferences.preloadSize().get() // SY <--
 
     // SY -->
@@ -69,7 +79,17 @@ internal class HttpPageLoader(
                     }
                 }
                     .filter { it.status == Page.State.Queue }
-                    .collect(::internalLoadPage)
+                    // KMK -->
+                    .collect { page ->
+                        if (!loadingPages.add(page)) return@collect
+                        try {
+                            // Another thread may have loaded it between the filter and the add
+                            if (page.status == Page.State.Queue) internalLoadPage(page)
+                        } finally {
+                            loadingPages.remove(page)
+                        }
+                    }
+                // KMK <--
             }
             // EXH -->
         }

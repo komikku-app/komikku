@@ -76,6 +76,20 @@ class DesktopSelfTestTest {
     }
 
     @Test
+    fun `the report file has one line separator also where the stack trace had Windows line ends`() {
+        // Windows prints stack traces with \r\n (the windows-test job failed on the test above)
+        val windowsTrace = object : IllegalStateException("boom") {
+            override fun printStackTrace(s: java.io.PrintWriter) {
+                s.print("java.lang.IllegalStateException: boom\r\n\tat a.B.c(B.kt:1)\r\n")
+            }
+        }
+        val outcomes = listOf(DesktopSelfTest.Outcome("extension", windowsTrace, ""))
+        val text = DesktopSelfTest.reportText(listOf("Komikku self-test, Java", "FAIL", DesktopSelfTest.FAILED), outcomes)
+        text shouldBe "Komikku self-test, Java\nFAIL\nStack trace of extension:\njava.lang.IllegalStateException: boom\n" +
+            "\tat a.B.c(B.kt:1)\n${DesktopSelfTest.FAILED}\n"
+    }
+
+    @Test
     fun `checks the extension APKs of a folder and verifies every class`() {
         DesktopSelfTest.extensionsDir(arrayOf("--self-test")) shouldBe null
         DesktopSelfTest.extensionsDir(arrayOf("--self-test", "--self-test-extensions=/tmp/x")) shouldBe File("/tmp/x")

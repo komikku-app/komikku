@@ -148,9 +148,9 @@ open class Preference(context: Context) : Comparable<Preference> {
         defaultValueHolder = defaultValue
     }
 
-    open fun setTitle(titleResId: Int): Unit = unsupported("Preference.setTitle(@StringRes)")
+    open fun setTitle(titleResId: Int): Unit = unsupported("androidx.preference.Preference", "setTitle(@StringRes)")
 
-    open fun setSummary(summaryResId: Int): Unit = unsupported("Preference.setSummary(@StringRes)")
+    open fun setSummary(summaryResId: Int): Unit = unsupported("androidx.preference.Preference", "setSummary(@StringRes)")
 
     fun hasKey(): Boolean = !keyValue.isNullOrEmpty()
 

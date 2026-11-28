@@ -2,6 +2,7 @@ package app.komikku.desktop.notification
 
 import exh.log.xLogW
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
@@ -24,19 +25,26 @@ import java.util.concurrent.TimeUnit
  *   `int32 -1`), so the call works without introspecting the service. No argument starts with `-`.
  *
  * The body is markup for most notification servers (`body-markup`), so `&`, `<` and `>` in it are escaped as
- * entities; the summary is plain text.
+ * entities; the summary is plain text. A server without `body-markup` shows the entities as they are (a known
+ * limitation, WINDOWS_LINUX_TEST_PLAN.md section 5: GNOME Shell, KDE Plasma, dunst, xfce4-notifyd and mako have it).
  *
  * Runs on its own daemon thread, never blocks the caller, kills a command after [TIMEOUT_SECONDS]. When a command
  * fails the next one is tried (`gdbus` after a failed `notify-send`), then the tray's balloon ([fallback]), then
- * nothing; failures are logged, never shown. [show] returning `true` means queued.
+ * nothing; failures are logged, never shown. A command that timed out (no notification service answering) is
+ * skipped for [SKIP_AFTER_TIMEOUT_MINUTES], so later notifications do not each wait for it. [show] returning `true`
+ * means queued.
  */
 class LinuxNotifier(
     private val notifySend: String?,
     private val gdbus: String?,
     private val fallback: DesktopNotifier,
-    private val runner: (List<String>) -> Boolean = { runCommand(it) },
+    private val runner: (List<String>) -> CommandResult = { runNotificationCommand(it, TIMEOUT_SECONDS) },
     private val executor: ExecutorService = defaultExecutor(),
+    private val clock: () -> Long = System::nanoTime,
 ) : DesktopNotifier {
+
+    /** [clock] time until which a command (by its executable) is skipped after it timed out. */
+    private val skippedUntil = ConcurrentHashMap<String, Long>()
 
     override fun show(notification: DesktopNotification): Boolean {
         val commands = commands(notification.title, notification.text)
@@ -59,13 +67,17 @@ class LinuxNotifier(
 
     private fun post(commands: List<List<String>>, notification: DesktopNotification) {
         for (command in commands) {
-            val posted = try {
+            val executable = command.first()
+            val skipped = skippedUntil[executable]
+            if (skipped != null && clock() - skipped < 0) continue
+            val result = try {
                 runner(command)
             } catch (e: Exception) {
-                xLogW("Linux notification: ${File(command.first()).name} failed ($e)")
-                false
+                CommandResult(null, failure = e.toString())
             }
-            if (posted) return
+            if (result.accepted) return
+            xLogW("Linux notification: ${File(executable).name} $result")
+            if (result.timedOut) skippedUntil[executable] = clock() + TimeUnit.MINUTES.toNanos(SKIP_AFTER_TIMEOUT_MINUTES)
         }
         try {
             fallback.show(notification)
@@ -78,6 +90,10 @@ class LinuxNotifier(
         const val NOTIFY_SEND = "notify-send"
         const val GDBUS = "gdbus"
         const val TIMEOUT_SECONDS = 10L
+        const val SKIP_AFTER_TIMEOUT_MINUTES = 10L
+
+        /** `gdbus call`'s own wait for the service's answer (its default is 25 s, beyond [TIMEOUT_SECONDS]). */
+        const val GDBUS_TIMEOUT_SECONDS = 5
 
         const val APP_NAME = "Komikku"
         const val BUS_NAME = "org.freedesktop.Notifications"
@@ -126,6 +142,8 @@ class LinuxNotifier(
             gdbus,
             "call",
             "--session",
+            "--timeout",
+            GDBUS_TIMEOUT_SECONDS.toString(),
             "--dest",
             BUS_NAME,
             "--object-path",
@@ -191,29 +209,6 @@ class LinuxNotifier(
         }
 
         private fun hex(value: Int, digits: Int): String = Integer.toHexString(value).padStart(digits, '0')
-
-        /**
-         * Runs [command] with its output discarded; `true` when it exited with 0 within [timeoutSeconds]. A command
-         * still running then is killed.
-         */
-        internal fun runCommand(command: List<String>, timeoutSeconds: Long = TIMEOUT_SECONDS): Boolean {
-            val name = File(command.first()).name
-            val process = ProcessBuilder(command)
-                .redirectErrorStream(true)
-                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
-                .start()
-            if (!process.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
-                process.destroyForcibly()
-                process.waitFor(1, TimeUnit.SECONDS)
-                xLogW("Linux notification: $name did not finish in $timeoutSeconds s")
-                return false
-            }
-            if (process.exitValue() != 0) {
-                xLogW("Linux notification: $name exited with ${process.exitValue()}")
-                return false
-            }
-            return true
-        }
 
         /** One daemon thread, at most 16 waiting notifications. */
         internal fun defaultExecutor(): ExecutorService = ThreadPoolExecutor(

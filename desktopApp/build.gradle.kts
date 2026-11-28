@@ -103,6 +103,17 @@ tasks.named<ProcessResources>("processResources") {
     from(runtimeModulesFile) { into("app/komikku/desktop/selftest") }
 }
 
+// Extension link check against the desktop app's class path, the host extensions actually run on (BUILDING.md
+// "Extension link check"); `--create-sources` needs it (the app's Injekt graph). Arguments go to `LinkCheckMain`:
+//   ./gradlew :desktopApp:extensionLinkCheck --args="--index=<url> --all-checks --output=build/linkcheck.txt"
+tasks.register<JavaExec>("extensionLinkCheck") {
+    group = "verification"
+    description = "Link check (and optionally verification / source creation) of extension APKs or a whole extension store index."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("app.komikku.desktop.extension.linkcheck.LinkCheckMainKt")
+    workingDir = rootDir
+}
+
 /*
  * Version: the Android app's `versionName` / `versionCode` in app/build.gradle.kts are the single source of truth
  * (read here, not duplicated). jpackage needs MAJOR[.MINOR[.BUILD]] numbers (MSI: MAJOR, MINOR <= 255,

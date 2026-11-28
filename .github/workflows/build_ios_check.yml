@@ -81,18 +81,19 @@ jobs:
 
       # The WebKit tests again, inside an app bundle: the test task spawns the bare test executable, where WebKit
       # cannot start its web content and networking processes, so those tests return early there
-      # (source-js/src/iosTest/.../WebKitTest.kt). Installed as an app on a booted simulator and run from the installed
-      # bundle with KMK_WEBKIT_REQUIRED=1, so that a web view that does not work fails them (docs/kmp-desktop/IOS_CI.md,
-      # I5c). `simctl spawn` returns the test binary's exit status (`simctl launch --console-pty` returns 0 even after
-      # a failure or a crash)
+      # (source-js/src/iosTest/.../WebKitTest.kt). Installed and launched as an app on a booted simulator, with
+      # KMK_WEBKIT_REQUIRED=1 so that a web view that does not work fails them (docs/kmp-desktop/IOS_CI.md, I5c).
+      # `simctl launch` does not return the app's exit status (`--console-pty` returns 0 even after a failure or a
+      # crash) and `simctl spawn`, which does, gets no WebKit on this runner: the status is read from the simulator's log
       - name: WebKit tests in a simulator app
         timeout-minutes: 15
         run: |
           set -euo pipefail
           # The test classes that use WebKit; the number of tests each must pass is read from its source
-          CLASSES="WKWebViewHostWebViewTest WebViewBridgeTest IosJsSourceRuntimeWebViewTest WKWebViewRetentionProbeTest"
+          CLASSES="WKWebViewHostWebViewTest WebViewBridgeTest IosJsSourceRuntimeWebViewTest"
           APP="$RUNNER_TEMP/SourceJsTests.app"
           LOG="$RUNNER_TEMP/webkit-tests.log"
+          ERRORS="$RUNNER_TEMP/webkit-tests.stderr"
           BUNDLE_ID=app.komikku.sourcejs.tests
           rm -rf "$APP" && mkdir -p "$APP"
           cp source-js/build/bin/iosSimulatorArm64/debugTest/test.kexe "$APP/SourceJsTests"
@@ -128,17 +129,29 @@ jobs:
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" "$APP"
-          INSTALLED=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" app)
           FILTER=$(for class in $CLASSES; do printf '*.%s.*:' "$class"; done)
-          set +e
-          SIMCTL_CHILD_KMK_WEBKIT_REQUIRED=1 xcrun simctl spawn "$UDID" "$INSTALLED/SourceJsTests" \
-            "--ktest_filter=${FILTER%:}" 2>&1 | tee "$LOG"
-          STATUS=${PIPESTATUS[0]}
-          set -e
+          START=$(date -v-1M '+%Y-%m-%d %H:%M:%S')
+          rm -f "$LOG" "$ERRORS"
+          LAUNCHED=$(SIMCTL_CHILD_KMK_WEBKIT_REQUIRED=1 xcrun simctl launch --terminate-running-process \
+            --stdout="$LOG" --stderr="$ERRORS" "$UDID" "$BUNDLE_ID" "--ktest_filter=${FILTER%:}")
+          PID=$(printf '%s\n' "$LAUNCHED" | sed -nE "s/^$BUNDLE_ID: ([0-9]+)$/\1/p")
+          echo "Test app: pid ${PID:-none}"
+          if [ -z "$PID" ]; then exit 1; fi
+          # A simulator app is a process of this Mac
+          while kill -0 "$PID" 2>/dev/null; do sleep 1; done
+          touch "$LOG" "$ERRORS"
+          cat "$LOG"
+          cat "$ERRORS" >&2
+          # Its wait status, as launchd reported it to RunningBoard: "termination reported by launchd (0, 0, 768)" is
+          # exit(3), "(2, 6, 6)" SIGABRT; anything but 0, or no report, fails the step
+          sleep 2
+          TERMINATION=$(xcrun simctl spawn "$UDID" log show --start "$START" --style compact \
+            --predicate "process == \"runningboardd\" AND eventMessage CONTAINS \":$PID] termination reported by launchd\"" \
+            | sed -nE 's/.*termination reported by launchd \(([0-9]+, [0-9]+, [0-9]+)\).*/\1/p' | tail -n 1 || true)
           xcrun simctl shutdown "$UDID" || true
           FAILED=0
-          echo "Test binary exit status: $STATUS"
-          if [ "$STATUS" -ne 0 ]; then FAILED=1; fi
+          echo "Test app termination: (${TERMINATION:-not reported}), wait status ${TERMINATION##*, }"
+          if [ "${TERMINATION##*, }" != "0" ]; then FAILED=1; fi
           # Every test of each class passed: as many `[ OK ]` lines as the class has @Test functions
           EXPECTED_TOTAL=0
           for class in $CLASSES; do

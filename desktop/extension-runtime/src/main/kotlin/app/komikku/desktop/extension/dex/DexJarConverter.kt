@@ -82,9 +82,10 @@ class DexJarConverter(
     companion object {
         /**
          * Bumped whenever converted jars change, so cached ones are converted again. 2: stack map frames and
-         * R8-inlined constructors (version 1 jars fail the JVM's verifier).
+         * R8-inlined constructors (version 1 jars fail the JVM's verifier). 3: an inlined `new C` inside one of `C`'s own
+         * constructors is re-targeted too (review M3, finding 2).
          */
-        const val CACHE_VERSION = 2
+        const val CACHE_VERSION = 3
         private const val CACHE_SUFFIX = "-v$CACHE_VERSION.jar"
 
         private val SHA256_PATTERN = Regex("[0-9a-f]{64}")

@@ -18,8 +18,9 @@ import java.util.EnumSet
  * - **macOS, Linux** (POSIX file systems): the file is created with mode `rw-------` in one step (the umask can only
  *   take bits away), so it is never readable by others.
  * - **Windows** (ACL file systems): the file is created empty, then its access list is replaced by a single entry that
- *   gives the current user (looked up by `user.name`, else the file's owner) full access; the entries it inherited from
- *   the folder are dropped. The list is not marked "protected", so an administrator re-applying inheritance from a
+ *   gives the current user full access; the entries it inherited from the folder are dropped. The user is looked up
+ *   qualified (`%USERDOMAIN%\user.name`: a bare name finds a local account of the same name before a domain one), then
+ *   by the bare name, else it is the file's owner (for an elevated administrator that is the Administrators group). The list is not marked "protected", so an administrator re-applying inheritance from a
  *   parent folder could add entries back; the default data folder (`%APPDATA%\Komikku`) is per-user anyway. Nothing
  *   is written to the file before its access list is set.
  * - **Anything else**: a plain file; the data folder's own permissions apply (logged).
@@ -55,10 +56,17 @@ internal object OwnerOnlyFiles {
         }
     }
 
-    private fun currentUser(path: Path): UserPrincipal = try {
-        path.fileSystem.userPrincipalLookupService.lookupPrincipalByName(System.getProperty("user.name"))
-    } catch (_: Exception) {
-        Files.getOwner(path)
+    private fun currentUser(path: Path): UserPrincipal {
+        val lookup = path.fileSystem.userPrincipalLookupService
+        val name = System.getProperty("user.name")
+        val domain = System.getenv("USERDOMAIN")?.takeIf { it.isNotBlank() }
+        for (candidate in listOfNotNull(domain?.let { "$it\\$name" }, name)) {
+            try {
+                return lookup.lookupPrincipalByName(candidate)
+            } catch (_: Exception) {
+            }
+        }
+        return Files.getOwner(path)
     }
 
     private val OWNER_READ_WRITE = EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)

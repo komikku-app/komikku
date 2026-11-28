@@ -4,6 +4,7 @@ import app.komikku.desktop.updater.DesktopOs
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -65,6 +66,8 @@ class LinuxNotifierTest {
             "/usr/bin/gdbus",
             "call",
             "--session",
+            "--timeout",
+            "5",
             "--dest",
             "org.freedesktop.Notifications",
             "--object-path",
@@ -121,8 +124,8 @@ class LinuxNotifierTest {
 
         val longEmoji = emoji.repeat(3000)
         val gdbus = LinuxNotifier.gdbusCommand("gdbus", longEmoji, longEmoji)
-        parseGVariantString(gdbus[12]) shouldBe emoji.repeat(99) + "…"
-        parseGVariantString(gdbus[13]) shouldBe emoji.repeat(499) + "…"
+        parseGVariantString(gdbus[14]) shouldBe emoji.repeat(99) + "…"
+        parseGVariantString(gdbus[15]) shouldBe emoji.repeat(499) + "…"
     }
 
     @Test
@@ -160,7 +163,7 @@ class LinuxNotifierTest {
         val notifier = LinuxNotifier("notify-send", "gdbus", tray, runner = { command ->
             ranOn = Thread.currentThread()
             commands += command
-            true
+            CommandResult.ACCEPTED
         }, executor = OtherThreadExecutor())
         notifier.show(notification) shouldBe true
         commands.single().first() shouldBe "notify-send"
@@ -175,7 +178,7 @@ class LinuxNotifierTest {
         val tray = Recording()
         LinuxNotifier(null, "gdbus", tray, runner = {
             commands += it
-            true
+            CommandResult.ACCEPTED
         }, executor = OtherThreadExecutor())
             .show(notification) shouldBe true
         commands.single().take(2) shouldContainExactly listOf("gdbus", "call")
@@ -186,10 +189,10 @@ class LinuxNotifierTest {
     fun `failing or timed out commands fall back to gdbus, then to the tray, then to nothing`() {
         val commands = mutableListOf<String>()
         val tray = Recording()
-        // notify-send fails (exit code or timeout: the runner reports false), gdbus works
+        // notify-send fails, gdbus works
         LinuxNotifier("notify-send", "gdbus", tray, runner = {
             commands += it.first()
-            it.first() == "gdbus"
+            if (it.first() == "gdbus") CommandResult.ACCEPTED else CommandResult(1)
         }, executor = OtherThreadExecutor())
             .show(notification) shouldBe true
         commands shouldContainExactly listOf("notify-send", "gdbus")
@@ -199,7 +202,7 @@ class LinuxNotifierTest {
         commands.clear()
         LinuxNotifier("notify-send", "gdbus", tray, runner = {
             commands += it.first()
-            if (it.first() == "gdbus") error("no bus") else false
+            if (it.first() == "gdbus") error("no bus") else CommandResult(1)
         }, executor = OtherThreadExecutor())
             .show(notification) shouldBe true
         commands shouldContainExactly listOf("notify-send", "gdbus")
@@ -207,13 +210,59 @@ class LinuxNotifierTest {
 
         // Both fail and no tray icon: nothing, no exception
         val noTray = DesktopTray(traySupported = { false })
-        LinuxNotifier("notify-send", "gdbus", noTray, runner = { false }, executor = OtherThreadExecutor())
+        LinuxNotifier("notify-send", "gdbus", noTray, runner = { CommandResult(1) }, executor = OtherThreadExecutor())
             .show(notification) shouldBe true
-        LinuxNotifier("notify-send", null, ThrowingNotifier(), runner = { false }, executor = OtherThreadExecutor())
+        LinuxNotifier("notify-send", null, ThrowingNotifier(), runner = { CommandResult(1) }, executor = OtherThreadExecutor())
             .show(notification) shouldBe true
 
         // Neither command known: the tray directly, with its answer
         LinuxNotifier(null, null, noTray, runner = { error("not run") }).show(notification) shouldBe false
+    }
+
+    @Test
+    fun `a command that timed out is skipped for ten minutes, one that refused is not`() {
+        val commands = mutableListOf<String>()
+        val tray = Recording()
+        var now = 0L
+        val notifier = LinuxNotifier("notify-send", "gdbus", tray, runner = {
+            commands += it.first()
+            if (it.first() == "notify-send") CommandResult.TIMED_OUT else CommandResult.ACCEPTED
+        }, executor = OtherThreadExecutor(), clock = { now })
+        notifier.show(notification) shouldBe true
+        commands shouldContainExactly listOf("notify-send", "gdbus")
+
+        // Within ten minutes notify-send is not waited for again
+        commands.clear()
+        now += TimeUnit.MINUTES.toNanos(9)
+        notifier.show(notification) shouldBe true
+        commands shouldContainExactly listOf("gdbus")
+        // Then it is tried again
+        commands.clear()
+        now += TimeUnit.MINUTES.toNanos(2)
+        notifier.show(notification) shouldBe true
+        commands shouldContainExactly listOf("notify-send", "gdbus")
+        tray.shown shouldBe emptyList()
+
+        // Both timing out: the tray at once while they are skipped
+        commands.clear()
+        val silent = LinuxNotifier("notify-send", "gdbus", tray, runner = {
+            commands += it.first()
+            CommandResult.TIMED_OUT
+        }, executor = OtherThreadExecutor(), clock = { now })
+        silent.show(notification) shouldBe true
+        silent.show(notification) shouldBe true
+        commands shouldContainExactly listOf("notify-send", "gdbus")
+        tray.shown.size shouldBe 2
+
+        // A refusal (non-zero exit) is not a reason to skip
+        commands.clear()
+        val refusing = LinuxNotifier("notify-send", null, tray, runner = {
+            commands += it.first()
+            CommandResult(1)
+        }, executor = OtherThreadExecutor(), clock = { now })
+        refusing.show(notification) shouldBe true
+        refusing.show(notification) shouldBe true
+        commands shouldContainExactly listOf("notify-send", "notify-send")
     }
 
     @Test
@@ -225,7 +274,7 @@ class LinuxNotifierTest {
         val notifier = LinuxNotifier("notify-send", null, tray, runner = {
             started.countDown()
             release.await()
-            true
+            CommandResult.ACCEPTED
         }, executor = executor)
         try {
             val begin = System.nanoTime()
@@ -247,12 +296,20 @@ class LinuxNotifierTest {
 
     @Test
     fun `a command that exits with 0 posted, any other exit code or a hang did not, and a hang is killed`() {
-        LinuxNotifier.runCommand(javaCommand(LinuxNotifierTestExit::class.java, "0")) shouldBe true
-        LinuxNotifier.runCommand(javaCommand(LinuxNotifierTestExit::class.java, "1")) shouldBe false
+        runNotificationCommand(javaCommand(LinuxNotifierTestExit::class.java, "0"), 10) shouldBe CommandResult.ACCEPTED
+        val refused = runNotificationCommand(javaCommand(LinuxNotifierTestExit::class.java, "1"), 10)
+        refused shouldBe CommandResult(1)
+        refused.accepted shouldBe false
+        refused.toString() shouldBe "exited with 1"
+        val missing = runNotificationCommand(listOf(File(dir, "missing").path), 10)
+        missing.accepted shouldBe false
+        missing.toString() shouldStartWith "could not run ("
 
         val pidFile = File(dir, "pid")
         val begin = System.nanoTime()
-        LinuxNotifier.runCommand(javaCommand(LinuxNotifierTestHang::class.java, pidFile.path), timeoutSeconds = 5) shouldBe false
+        val hang = runNotificationCommand(javaCommand(LinuxNotifierTestHang::class.java, pidFile.path), timeoutSeconds = 5)
+        hang shouldBe CommandResult.TIMED_OUT
+        hang.toString() shouldBe "timed out"
         (TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - begin) < 15) shouldBe true
         val pid = pidFile.readText().trim().toLong()
         ProcessHandle.of(pid).map { it.isAlive }.orElse(false) shouldBe false
@@ -265,7 +322,7 @@ class LinuxNotifierTest {
         var enabled = false
         val linux = LinuxNotifier("notify-send", "gdbus", tray, runner = {
             commands += it
-            true
+            CommandResult.ACCEPTED
         }, executor = OtherThreadExecutor())
         val notifier = DesktopSystemNotifier(tray, linux, enabled = { enabled })
         notifier.show(notification) shouldBe false

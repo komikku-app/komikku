@@ -52,6 +52,11 @@ data class ExtensionPackage(
             val metaData = manifest.metaData
             val pkgName = manifest.packageName
 
+            // Android's package manager would refuse it; on desktop it names the extension's files
+            if (!ExtensionPaths.isValidPackageName(pkgName)) {
+                return ExtensionPackageResult.Rejected("'$pkgName' is not a valid package name")
+            }
+
             if (ExtensionContract.EXTENSION_FEATURE !in manifest.usesFeatures) {
                 return ExtensionPackageResult.Rejected("$pkgName is not an extension (no ${ExtensionContract.EXTENSION_FEATURE} feature)")
             }

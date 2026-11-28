@@ -14,6 +14,10 @@ import java.io.File
  * `files/<type>/` for `getExternalFilesDir(type)`, `databases/`, `app_<name>/` for `getDir`, and
  * `preferences/<name>.json` for shared preferences. Directories are created on access, like on
  * Android, until [stopCreatingFolders] (see [stopCreatingDataFolders]).
+ *
+ * When extension code asks, the same layout lies under the extension's own folder (`extensions-data/<package>/`,
+ * [ExtensionDataFolders]) instead of [dataDirectory]. Shared preferences stay in the app's store: the source settings
+ * screen reads and writes the same `source_<id>` stores as the extension.
  */
 internal class DesktopContext(
     private val application: Context,
@@ -26,9 +30,9 @@ internal class DesktopContext(
     private var createsFolders = true
 
     override val applicationContext: Context get() = application
-    override val dataDir: File get() = dataDirectory.ensureDir()
-    override val filesDir: File get() = dataDirectory.resolve("files").ensureDir()
-    override val cacheDir: File get() = dataDirectory.resolve("cache").ensureDir()
+    override val dataDir: File get() = root().ensureDir()
+    override val filesDir: File get() = root().resolve("files").ensureDir()
+    override val cacheDir: File get() = root().resolve("cache").ensureDir()
     override val externalCacheDir: File get() = cacheDir
     override val contentResolver: ContentResolver by lazy { ContentResolver(application) }
     override val resources: Resources get() = Resources.getSystem()
@@ -37,11 +41,11 @@ internal class DesktopContext(
     override fun getExternalFilesDir(type: String?): File =
         (if (type.isNullOrEmpty()) filesDir else filesDir.resolve(type)).ensureDir()
 
-    override fun getDir(name: String, mode: Int): File = dataDirectory.resolve("app_$name").ensureDir()
+    override fun getDir(name: String, mode: Int): File = root().resolve("app_$name").ensureDir()
 
     override fun getDatabasePath(name: String): File {
         val file = File(name)
-        return if (file.isAbsolute) file else dataDirectory.resolve("databases").ensureDir().resolve(name)
+        return if (file.isAbsolute) file else root().resolve("databases").ensureDir().resolve(name)
     }
 
     override fun getSharedPreferences(name: String, mode: Int): SharedPreferences =
@@ -51,6 +55,9 @@ internal class DesktopContext(
     fun stopCreatingFolders() {
         createsFolders = false
     }
+
+    /** The asking extension's data folder, or the app's. */
+    private fun root(): File = ExtensionDataFolders.forCaller() ?: dataDirectory
 
     private fun File.ensureDir(): File = apply { if (createsFolders && !isDirectory) mkdirs() }
 

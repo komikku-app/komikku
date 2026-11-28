@@ -35,7 +35,15 @@ scripts from user-added repositories is at real risk of rejection.
 ran 175 `:source-js` tests on the iOS simulator with no failure, and "WebKit tests in a simulator app" reported
 `[  PASSED  ] 25 tests.` against the expected minimum of 25. The known open item is unchanged:
 `WEBVIEW_DEALLOCATED=false` (a `WKWebView` is still not freed 8 s after a call; the controls are freed), as
-IOS_CI.md describes. No commit since `6bc87481ba` touches the workflow's trigger paths (`source-js/**`, `gradle/**`,
+IOS_CI.md describes.
+
+*Update after REVIEW_IOS.md (ANSWER 010, 013):* the 25 WebKit tests did run WebKit in that run and in 45627948544:
+`KMK_WEBKIT_REQUIRED=1` fails every WebKit test when no page runs its scripts, and neither run had a failed or
+skipped test. What was not proven then: the step ignored the app's exit status (it checks it now), and the WebKit
+tests among the 175 of the plain run return early there (no WebKit outside an app), so only the 25 in the app
+exercise a real `WKWebView`. `WEBVIEW_DEALLOCATED=false` was the old test's measurement keeping the view, not a
+leak; deallocation is asserted now and passes (run 46123856675, 27 tests in the app with a temporary probe; IOS_CI.md
+has the details). Neither changes this report's assessment of the web-view bridge. No commit since `6bc87481ba` touches the workflow's trigger paths (`source-js/**`, `gradle/**`,
 `buildSrc/**`, the root build files, `.github/.java-version`, the workflow), so that run is current. The last runs on
 the old branch were green too (45659640950, 45627948544); the failures before them (45624564728, 45585550783) were
 fixed as IOS_CI.md records.
