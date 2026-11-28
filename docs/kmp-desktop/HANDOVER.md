@@ -714,6 +714,19 @@ mark the residual path in both modules.
    no "MangaDex session expired" notification (the desktop `MangaDexSessionNotifier` only logs; Settings > Tracking
    shows MDList logged out), and no batch "reset info" in the library selection (so `master`'s confirmation for it,
    `084750b89b`, has no desktop counterpart).
+   **Extensions that draw pages (ANSWER 016 / 017):** the `android.graphics` first group (`Bitmap`, `BitmapFactory`,
+   `Canvas`, `Paint`, `Rect`, `ColorMatrix`) is in; GigaViewer and Magazine Pocket chapters unscramble, seen headless,
+   **not in the packaged app** until the Mac pass. **Text drawing is not done** (`StaticLayout`, `TextPaint`,
+   `Typeface`, `Paint`'s text members): about 23 extensions draw text-only pages as images through Keiyoushi's
+   text-interceptor library (author's notes, alt text, chapter descriptions, notices: webtoons, tapastic, xkcd, SMBC,
+   comicfury, booklive, cmoa, …), 4 draw translated lettering into speech bubbles (manhuarm, mangamtl, mangatek,
+   rawkumame), the rest captions or comment pages (zaimanhua, dm5, jisumanhua, thefarside). Only those pages fail; the
+   rest of each source works, except `thefarside`, broken as a whole (a caption on every page). Until then such a page
+   shows the reader's "unsupported" state ("This page is drawn as text, which the desktop app does not support yet";
+   another missing Android class or member is named), with no retry. Plan: start with the text-interceptor library
+   (one `StaticLayout` / `TextPaint` / `Typeface` over Skia's text layout serves its 23), then the overlays and
+   captions. `projectsuki`'s ICU search (`StringSearch`, `BreakIterator`, `Normalizer2`) stays at "needs …": no ICU on
+   desktop.
 5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).
