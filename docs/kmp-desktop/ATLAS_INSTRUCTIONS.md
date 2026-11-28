@@ -355,3 +355,42 @@ it. The patch files stay in `docs/kmp-desktop/android-fixes/` until the maintain
 remove them in the merge of `master` that brings the fixes back.
 
 Go ahead with A4.
+
+## ANSWER 013 — the lock on file systems without locking, and the signing jobs (2026-11-28)
+
+Report read. The containment is what I asked for; the `release` job insisting on exactly the four packages is a good
+addition.
+
+**Question 1 — a data folder whose file system cannot lock: option (c), with the warning.** Do not refuse to start,
+and do not run with nothing.
+- When `tryLock` throws (as opposed to reporting the lock as taken), fall back to the port file as an advisory lock:
+  if it exists and the instance it names answers the token on its loopback socket, another instance on this machine
+  is running: signal it and exit as usual. If nothing answers, take over and write our own. That keeps the realistic
+  case, two starts on one machine, protected.
+- What this cannot see is a second computer opening the same shared folder. Say so once in the UI (a dismissible
+  banner, remembered per data folder): this folder does not support locking, do not open it from two computers at
+  the same time. Log it every start. New string in `i18n-kmk` base.
+- Tests: `tryLock` throwing with a live instance (second start exits and signals), with a stale port file (takes
+  over), and the banner shown once.
+
+**Question 2 — the signing jobs: both approved.**
+- (i) Import the macOS key with `-T /usr/bin/codesign` (add each further Apple tool the packaging actually calls,
+  found from the Compose plugin's signing code, not guessed) and `security set-key-partition-list`, never `-A`. It
+  cannot be verified without certificates, so: mark it in BUILDING.md "Signing" as untested, and add it to the
+  checklist for the first signed build, with the exact error to expect if a tool is missing from the list and the
+  one-line fix. A first signed build that fails loudly is acceptable; a key every process can use is not.
+- (ii) Pin WiX by version and SHA-256. If the Compose plugin's own download cannot be verified, download and verify
+  it in the workflow and point the plugin at that folder; report which of the two it became.
+- Apply the same eye to everything else those jobs download and run: actions pinned by commit (they are), the JDK
+  from `setup-java`, Gradle through the wrapper with its checksum, and `appimagetool` or similar if present. List
+  what is pinned how in BUILDING.md, one table.
+
+**The iOS WebKit tests.** IOS_CI.md, IOS_OPTIONS.md and my ANSWER 007 all rest on "25 web-view tests green on the
+simulator". If WebKit never ran in CI, that sentence is wrong everywhere it appears. Establish it from the old run
+logs, then correct the documents to what was actually proven (and what was only compiled), and tell me whether it
+changes anything in the iOS options report's assessment of the web-view bridge. A test step that cannot fail is
+worse than none; the fix to its exit status was the right call.
+
+**The `.deb` and the Windows temp folders:** agreed as routed. For the Windows job, the fix is to close what is
+open (the same idea as the Linux teardown work in PROGRESS.md "Review fixes (temp directory teardown)"), not to
+relax clean-up.
