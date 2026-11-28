@@ -52,6 +52,32 @@ class RuleBasedCollatorTest {
     }
 
     @Test
+    fun `above PRIMARY a later letter difference outranks an earlier case or accent difference, like ICU`() {
+        val collator = (Collator.getInstance(Locale.ROOT) as RuleBasedCollator).apply { setNumericCollation(true) }
+        collator.getStrength() shouldBe Collator.TERTIARY
+
+        // b > a decides; the a / A case difference of the first run only breaks a tie
+        (collator.compare("a1b", "A1a") > 0) shouldBe true
+        (collator.compare("é1b", "e1a") > 0) shouldBe true
+        (collator.compare("a1a", "A1a") < 0) shouldBe true
+        collator.setStrength(Collator.SECONDARY)
+        (collator.compare("é1b", "e1a") > 0) shouldBe true
+        collator.compare("a1a", "A1a") shouldBe 0
+    }
+
+    @Test
+    fun `a number compares against other characters at its place like a digit, zeros as 0`() {
+        val numeric = (Collator.getInstance(Locale.ROOT) as RuleBasedCollator).apply { setNumericCollation(true) }
+        val plain = java.text.Collator.getInstance(Locale.ROOT)
+
+        for (other in listOf(".", " ", "-", "a", ".b", "a0")) {
+            Integer.signum(numeric.compare("0", other)) shouldBe Integer.signum(plain.compare("0", other))
+            Integer.signum(numeric.compare("x00", "x$other")) shouldBe Integer.signum(plain.compare("x0", "x$other"))
+            Integer.signum(numeric.compare("x7y", "x$other")) shouldBe Integer.signum(plain.compare("x7y", "x$other"))
+        }
+    }
+
+    @Test
     fun `an extension's base-sensitivity numeric order ignores case and accents`() {
         val names = listOf("Tomo 10", "tomo 2", "Tomo 1", "el 20", "Él 3", "Anexo")
 

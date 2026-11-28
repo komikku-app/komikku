@@ -28,43 +28,36 @@ class RuleBasedCollator internal constructor(delegate: java.text.RuleBasedCollat
 
     override fun compare(source: String?, target: String?): Int {
         if (!numeric) return super.compare(source, target)
-        val a = runs(source.orEmpty())
-        val b = runs(target.orEmpty())
-        for (i in 0 until minOf(a.size, b.size)) {
-            val x = a[i]
-            val y = b[i]
-            val order = if (x.isDigits && y.isDigits) {
-                compareValuesBy(x, y, { it.text.length }, { it.text })
-            } else {
-                super.compare(x.text, y.text)
-            }
-            if (order != 0) return order
-        }
-        return a.size.compareTo(b.size)
+        // One whole-string comparison, like ICU: all primary differences first, so a later letter outranks an earlier
+        // case or accent difference, and a number lines up with whatever stands at its place in the other string
+        return super.compare(sortable(source.orEmpty()), sortable(target.orEmpty()))
     }
 
     override fun equals(other: Any?): Boolean = super.equals(other) && (other as RuleBasedCollator).numeric == numeric
 
     override fun hashCode(): Int = super.hashCode() * 31 + numeric.hashCode()
 
-    /** A run of decimal digits ([text] as ASCII digits without leading zeros) or of other characters. */
-    private class Run(val text: String, val isDigits: Boolean)
-
-    private fun runs(value: String): List<Run> {
-        val runs = ArrayList<Run>()
+    /**
+     * [value] with every run of decimal digits (any script's) replaced by ASCII digits that sort by the number's value:
+     * leading zeros dropped ("0" for zeros), after a length prefix (one '9' per 9 digits, then the rest as a digit), so
+     * a longer number sorts after a shorter one digit by digit.
+     */
+    private fun sortable(value: String): String {
+        val out = StringBuilder(value.length + 4)
         var start = 0
         while (start < value.length) {
-            val isDigits = Character.isDigit(value[start])
-            var end = start
-            while (end < value.length && Character.isDigit(value[end]) == isDigits) end++
-            val run = value.substring(start, end)
-            runs += if (isDigits) {
-                Run(run.map { Character.forDigit(Character.digit(it, 10), 10) }.joinToString("").trimStart('0'), true)
-            } else {
-                Run(run, false)
+            if (!Character.isDigit(value[start])) {
+                out.append(value[start++])
+                continue
             }
+            var end = start
+            while (end < value.length && Character.isDigit(value[end])) end++
+            val digits = value.substring(start, end).map { Character.forDigit(Character.digit(it, 10), 10) }
+                .joinToString("").trimStart('0').ifEmpty { "0" }
+            repeat((digits.length - 1) / 9) { out.append('9') }
+            out.append(Character.forDigit((digits.length - 1) % 9, 10)).append(digits)
             start = end
         }
-        return runs
+        return out.toString()
     }
 }
