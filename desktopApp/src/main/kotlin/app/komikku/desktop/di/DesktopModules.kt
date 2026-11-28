@@ -444,7 +444,7 @@ class DesktopDomainModule(
         // Reader (7.x)
         addSingletonFactory {
             ChapterCache(app, get(), get()).also {
-                DesktopInjekt.onOpened("chapter cache", File(app.cacheDir, "chapter_disk_cache")) { it.closeDiskCache() }
+                DesktopInjekt.onOpened("chapter cache", File(app.cacheDir, "chapter_disk_cache")) { ChapterCacheReflection.close(it) }
             }
         }
         addSingletonFactory { ReaderLauncher() }
@@ -459,13 +459,4 @@ class DesktopDomainModule(
             )
         }
     }
-}
-
-/**
- * Closes the chapter cache's disk cache (its journal stays open otherwise). [ChapterCache] is master's and has no
- * `close()`; until an Android-fix patch adds one, this reaches its private `diskCache` field.
- */
-private fun ChapterCache.closeDiskCache() {
-    val field = ChapterCache::class.java.getDeclaredField("diskCache").apply { isAccessible = true }
-    (field.get(this) as java.io.Closeable).close()
 }

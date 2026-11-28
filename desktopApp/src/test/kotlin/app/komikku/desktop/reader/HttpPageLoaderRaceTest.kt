@@ -1,6 +1,7 @@
 package app.komikku.desktop.reader
 
 import android.app.Application
+import app.komikku.desktop.di.ChapterCacheReflection
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.ui.browse.FixedSourceManager
 import eu.kanade.tachiyomi.data.cache.ChapterCache
@@ -95,9 +96,7 @@ class HttpPageLoaderRaceTest {
             }
             // The threads check the chapter cache right after taking an entry. Holding the cache's lock keeps a thread
             // that took the page from marking it as downloading until the other thread had the chance to take it too.
-            val diskCache = ChapterCache::class.java.getDeclaredField("diskCache")
-                .apply { isAccessible = true }
-                .get(Injekt.get<ChapterCache>())
+            val diskCache = ChapterCacheReflection.diskCache(Injekt.get<ChapterCache>())
             synchronized(diskCache) {
                 repeat(2) { scope.launch { chapter.pageLoader!!.loadPage(page) } }
                 awaitThreadsInPageLoad(atLeast = 1)
