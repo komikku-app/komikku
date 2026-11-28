@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalNativeApi::class)
+
 package app.komikku.sourcejs.bridge
 
 import app.komikku.sourcejs.bridge.LoopbackHttpServer.Response
@@ -52,7 +54,7 @@ class WKWebViewRetentionProbeTest {
         server.close()
     }
 
-    @OptIn(ExperimentalNativeApi::class, NativeRuntimeApi::class)
+    @OptIn(NativeRuntimeApi::class)
     @Test
     fun probe() = webKitTest(timeoutMillis = 90_000) {
         val host = WKWebViewHostWebView()
@@ -80,7 +82,7 @@ class WKWebViewRetentionProbeTest {
         println("PROBE variants measured in ${variantStart.elapsedNow()}")
     }
 
-    @OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
+    @OptIn(ExperimentalForeignApi::class)
     private suspend fun useAndDrop(variant: String): WeakReference<Any> {
         val configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = WKWebsiteDataStore.nonPersistentDataStore()
@@ -126,10 +128,8 @@ class WKWebViewRetentionProbeTest {
         }
     }
 
-    @OptIn(ExperimentalNativeApi::class)
     private suspend fun isFreed(weak: WeakReference<Any>): Boolean = withContext(Dispatchers.Main) { weak.value == null }
 
-    @OptIn(ExperimentalNativeApi::class)
     private fun weakAndClear(holder: kotlin.concurrent.AtomicReference<WKWebView?>): WeakReference<Any> {
         val weak = WeakReference<Any>(holder.value!!)
         holder.value = null

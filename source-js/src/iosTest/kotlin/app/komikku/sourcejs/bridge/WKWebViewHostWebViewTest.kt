@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalNativeApi::class)
+
 package app.komikku.sourcejs.bridge
 
 import app.komikku.sourcejs.bridge.LoopbackHttpServer.Response
@@ -306,13 +308,10 @@ class WKWebViewHostWebViewTest {
         }
     }
 
-    @OptIn(ExperimentalNativeApi::class)
     private suspend fun isFreed(weak: WeakReference<Any>): Boolean = withContext(Dispatchers.Main) { weak.value == null }
 
-    @OptIn(ExperimentalNativeApi::class)
     private fun weakOf(create: () -> Any): WeakReference<Any> = WeakReference(create())
 
-    @OptIn(ExperimentalNativeApi::class)
     private fun weakAndClear(holder: AtomicReference<List<WKWebView>>): List<WeakReference<Any>> {
         val weak = holder.value.map { WeakReference<Any>(it) }
         holder.value = emptyList()
