@@ -104,6 +104,43 @@ class DexPipelineTest {
     }
 
     @Test
+    fun `an inlined constructor of a class's own type inside its constructor is re-targeted`() {
+        val work = File(dir, "self").apply { mkdirs() }
+        val jar = File(work, "classes.jar")
+        val base = "$PACKAGE_PATH/Base"
+        val node = "$PACKAGE_PATH/Node"
+        FixtureClasses.jar(
+            jar,
+            mapOf(
+                SOURCE_CLASS to FixtureClasses.source(SOURCE_CLASS, id = 4242L, name = "Dex fixture"),
+                base to FixtureClasses.emptyClass(base),
+                node to FixtureClasses.selfConstructing(node, base),
+            ),
+        )
+        val apk = File(dir, "self.apk")
+        FixtureApk(
+            packageName = "eu.kanade.tachiyomi.extension.en.dexfixture",
+            sourceClass = ".DexFixtureSource",
+            dex = FixtureClasses.dex(jar, work),
+        ).writeSigned(apk, TestSigningKey.rsa())
+        val runtime = ExtensionRuntime(File(dir, "extensions"))
+        val extension = (runtime.inspect(apk) as ExtensionPackageResult.Valid).extension
+
+        val converted = runtime.load(extension).jar
+
+        val verification = ExtensionRuntime.verifyClasses(converted)
+        verification.rejected.shouldBeEmpty()
+        verification.verified shouldBe 3
+        URLClassLoader(arrayOf(converted.toURI().toURL()), javaClass.classLoader).use { loader ->
+            val nodeClass = loader.loadClass(node.replace('/', '.'))
+            val instance = nodeClass.getConstructor(Int::class.javaPrimitiveType).newInstance(5)
+            nodeClass.getMethod("number").invoke(instance) shouldBe 5
+            nodeClass.getMethod("childNumber").invoke(instance) shouldBe 0
+            nodeClass.getField("child").get(instance).javaClass shouldBe nodeClass
+        }
+    }
+
+    @Test
     fun `jars of the old cache version are converted again and pruned`() {
         val runtime = ExtensionRuntime(File(dir, "extensions"))
         val extension = (runtime.inspect(fixtureApk()) as ExtensionPackageResult.Valid).extension
