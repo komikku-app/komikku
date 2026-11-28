@@ -403,6 +403,15 @@ echo "::endgroup::"
 
 # --- Install --------------------------------------------------------------------------------------------------------
 
+# The package's post-install script (jpackage's) registers the menu entry with xdg-desktop-menu, which exits with 3
+# ("No writable system menu directory found") and fails the install when /usr/share/applications does not exist
+# (run 46120905511). A desktop system has that folder; the runner's server image may not.
+{ ls -ld /usr/share/applications /usr/local/share/applications; sudo env | grep '^XDG_' || true; } \
+  > "$out/logs/menu-folders.log" 2>&1
+if [ ! -d /usr/share/applications ]; then
+  sudo mkdir -p /usr/share/applications
+  info "Menu folder" "/usr/share/applications was missing on the runner and was created, as a desktop system has it"
+fi
 # apt resolves the package's Depends, which is a check of its own
 if sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q "${debs[0]}" > "$out/logs/apt-install.log" 2>&1; then
   installed=yes

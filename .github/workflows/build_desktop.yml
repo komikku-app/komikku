@@ -735,7 +735,8 @@ jobs:
   #   logs/app-std*-<n>.log      the launcher's stdout / stderr (empty on Windows if the GUI launcher drops them);
   #                              logs/second-start-std*.log the same for the second start
   #   log-problems.txt           every error-level and stack-trace line of the app log that is not allow-listed
-  #   logs/install.log, apt-*.log, uninstall.log, xvfb.log, openbox.log, windows-<n>.txt, jstack.txt  as they apply
+  #   logs/install.log, apt-*.log, menu-folders.log, uninstall.log, xvfb.log, openbox.log, windows-<n>.txt, jstack.txt
+  #                              as they apply
   # Attempt 2 exists only when no window appeared with Skiko's default renderer and the app was started again with
   # SKIKO_RENDER_API=SOFTWARE; that is a finding even when attempt 2 passes.
   smoke:
