@@ -31,11 +31,13 @@ fun addUrlScheme(entry: File, packageName: String) {
     check(exec.size == 1 && "/opt/komikku/bin/Komikku" in exec[0] && "%" !in exec[0]) {
         "$packageName's menu entry runs $exec; update desktopApp/packaging/linux"
     }
-    check(lines.none { it.startsWith("MimeType=") }) {
+    // jpackage's template always writes a MimeType line, empty without file associations
+    check(lines.none { it.startsWith("MimeType=") && it.removePrefix("MimeType=").isNotBlank() }) {
         "$packageName's menu entry already has a MimeType; update desktopApp/packaging/linux"
     }
     entry.writeText(
-        lines.joinToString("\n", postfix = "\n") { if (it == exec[0]) "$it %u" else it } +
+        lines.filterNot { it.startsWith("MimeType=") }
+            .joinToString("\n", postfix = "\n") { if (it == exec[0]) "$it %u" else it } +
             "MimeType=x-scheme-handler/$urlScheme;\n",
     )
 }
