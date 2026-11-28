@@ -101,12 +101,13 @@ open class Canvas(bitmap: Bitmap) {
         NativeBitmaps.locked(bitmap.pixels, target.pixels) {
             if (bitmap.pixels.closed) throw RuntimeException("Canvas: trying to use a recycled bitmap $bitmap")
             target.change("drawBitmap") {
-                val image = bitmap.pixels.snapshot()
-                val skPaint = paint?.toSkia()
-                try {
-                    skia.drawImageRect(image, src, dst, sampling, skPaint, false)
-                } finally {
-                    skPaint?.close()
+                bitmap.pixels.withImage(copy = bitmap.pixels === target.pixels) { image ->
+                    val skPaint = paint?.toSkia()
+                    try {
+                        skia.drawImageRect(image, src, dst, sampling, skPaint, false)
+                    } finally {
+                        skPaint?.close()
+                    }
                 }
             }
         }

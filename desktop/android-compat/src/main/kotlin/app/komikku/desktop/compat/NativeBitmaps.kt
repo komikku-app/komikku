@@ -81,8 +81,8 @@ internal object NativeBitmaps {
     }
 
     /**
-     * A bitmap's native objects: the pixels, the image last drawn from them and the canvases drawing into them. Every
-     * access holds this object's lock; [run] (recycle or cleaner) closes them all once.
+     * A bitmap's native objects: the pixels and the canvases drawing into them. Every access holds this object's lock;
+     * [run] (recycle or cleaner) closes them all once.
      */
     class Pixels(val skia: SkBitmap) : Runnable {
         val id = ids.incrementAndGet()
@@ -92,21 +92,25 @@ internal object NativeBitmaps {
         var closed = false
             private set
 
-        /** Bumped by every change of the pixels, so [snapshot] knows when its image is stale. */
-        var version = 0L
-
-        private var image: Image? = null
-        private var imageVersion = -1L
         private val canvases = mutableListOf<SkCanvas>()
 
-        /** The pixels as an image to draw from, reused until they change. */
-        fun snapshot(): Image {
-            val current = image
-            if (current != null && imageVersion == version) return current
-            current?.close()
-            return Image.makeFromBitmap(skia).also {
-                image = it
-                imageVersion = version
+        /**
+         * Runs [block] with the pixels as an image to draw or encode from, closed afterwards; only while this lock is
+         * held. The image shares the pixels (no second buffer), except with [copy], for a bitmap drawn onto itself
+         * (the draw would read pixels it is writing): that copy is counted in [liveBytes] while it exists.
+         */
+        fun <T> withImage(copy: Boolean = false, block: (Image) -> T): T {
+            val image = if (copy) {
+                live.addAndGet(bytes)
+                Image.makeFromBitmap(skia)
+            } else {
+                checkNotNull(skia.peekPixels()) { "Could not read the pixels" }.use { Image.makeFromPixmap(it) }
+            }
+            try {
+                return block(image)
+            } finally {
+                image.close()
+                if (copy) live.addAndGet(-bytes)
             }
         }
 
@@ -118,8 +122,6 @@ internal object NativeBitmaps {
                 closed = true
                 canvases.forEach { it.close() }
                 canvases.clear()
-                image?.close()
-                image = null
                 skia.close()
             }
             live.addAndGet(-bytes)

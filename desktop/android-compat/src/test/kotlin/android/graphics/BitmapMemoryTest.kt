@@ -27,6 +27,90 @@ class BitmapMemoryTest {
     }
 
     @Test
+    fun `drawing and compressing keep one native buffer per bitmap`() {
+        val width = 300
+        val height = 200
+        val start = settledLiveBytes()
+        val source = Bitmap.createBitmap(TestImages.pattern(width, height), width, height, Bitmap.Config.ARGB_8888)
+        val target = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val oneBuffer = width * height * 4L
+        NativeBitmaps.liveBytes() shouldBe start + 2 * oneBuffer
+
+        Canvas(target).drawBitmap(source, 0f, 0f, null)
+        target.compress(Bitmap.CompressFormat.PNG, 100, ByteArrayOutputStream())
+        // Drawn onto itself: a copy for the draw only
+        Canvas(target).drawBitmap(target, Rect(0, 0, 100, 100), Rect(50, 50, 150, 150), null)
+        NativeBitmaps.liveBytes() shouldBe start + 2 * oneBuffer
+
+        // The image a draw or an encode reads shares the bitmap's pixels: a change shows in it at once
+        synchronized(target.pixels) {
+            target.pixels.withImage { image ->
+                target.setPixel(0, 0, 0xffff0000.toInt())
+                org.jetbrains.skia.Bitmap.makeFromImage(image).use { it.getColor(0, 0) } shouldBe 0xffff0000.toInt()
+            }
+        }
+
+        source.recycle()
+        target.recycle()
+        NativeBitmaps.liveBytes() shouldBe start
+    }
+
+    @Test
+    fun `two threads drawing A into B and B into A at once do not deadlock`() {
+        val a = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888)
+        a.setPixels(TestImages.pattern(64, 64), 0, 64, 0, 0, 64, 64)
+        val b = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888)
+        val pool = Executors.newFixedThreadPool(2)
+        val barrier = CyclicBarrier(2)
+        try {
+            listOf(a to b, b to a).map { (from, to) ->
+                pool.submit {
+                    barrier.await(10, TimeUnit.SECONDS)
+                    val canvas = Canvas(to)
+                    repeat(500) { canvas.drawBitmap(from, Rect(0, 0, 32, 32), Rect(32, 32, 64, 64), null) }
+                }
+            }.forEach { it.get(30, TimeUnit.SECONDS) }
+        } finally {
+            pool.shutdownNow()
+        }
+        a.recycle()
+        b.recycle()
+    }
+
+    @Test
+    fun `a recycle on another thread during a draw waits for it, and later draws are refused`() {
+        val source = Bitmap.createBitmap(TestImages.pattern(1500, 1500), 1500, 1500, Bitmap.Config.ARGB_8888)
+        val target = Bitmap.createBitmap(3000, 3000, Bitmap.Config.ARGB_8888)
+        val started = java.util.concurrent.CountDownLatch(1)
+        val pool = Executors.newSingleThreadExecutor()
+        val drawing = pool.submit<Int> {
+            val canvas = Canvas(target)
+            val filtering = Paint()
+            var draws = 0
+            try {
+                while (true) {
+                    started.countDown()
+                    canvas.drawBitmap(source, null, Rect(0, 0, 3000, 3000), filtering)
+                    draws++
+                }
+            } catch (e: RuntimeException) {
+                e.message!! shouldBe "Canvas: trying to use a recycled bitmap $source"
+            }
+            draws
+        }
+        try {
+            started.await(10, TimeUnit.SECONDS).shouldBeTrue()
+            Thread.sleep(30)
+            source.recycle()
+            drawing.get(30, TimeUnit.SECONDS)
+        } finally {
+            pool.shutdownNow()
+        }
+        source.pixels.closed.shouldBeTrue()
+        target.recycle()
+    }
+
+    @Test
     fun `a bitmap an extension forgets is freed by the cleaner`() {
         // The pixels (not the Bitmap) are kept to watch them; the Bitmap and its canvas become unreachable
         val pixels = forgottenBitmap()
@@ -37,6 +121,20 @@ class BitmapMemoryTest {
         }
         pixels.closed.shouldBeTrue()
         pixels.skia.isClosed.shouldBeTrue()
+    }
+
+    /** [NativeBitmaps.liveBytes] once bitmaps other tests forgot have been cleaned (it no longer changes). */
+    private fun settledLiveBytes(): Long {
+        var last = -1L
+        var stable = 0
+        while (stable < 3) {
+            System.gc()
+            Thread.sleep(50)
+            val now = NativeBitmaps.liveBytes()
+            if (now == last) stable++ else stable = 0
+            last = now
+        }
+        return last
     }
 
     private fun forgottenBitmap(): NativeBitmaps.Pixels {

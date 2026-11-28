@@ -128,7 +128,7 @@ class Bitmap private constructor(skia: SkBitmap, private val mutable: Boolean) {
             CompressFormat.WEBP_LOSSY -> EncodedImageFormat.WEBP to quality
             CompressFormat.WEBP_LOSSLESS -> EncodedImageFormat.WEBP to 100
         }
-        val encoded = use("compress") { it.snapshot().encodeToData(skiaFormat, skiaQuality)?.use { data -> data.bytes } }
+        val encoded = use("compress") { pixels -> pixels.withImage { it.encodeToData(skiaFormat, skiaQuality)?.use { data -> data.bytes } } }
             ?: return false
         stream.write(encoded)
         return true
@@ -149,10 +149,7 @@ class Bitmap private constructor(skia: SkBitmap, private val mutable: Boolean) {
     }
 
     /** [use] for a change of the pixels. */
-    internal inline fun change(member: String, block: (NativeBitmaps.Pixels) -> Unit) = use(member) {
-        block(it)
-        it.version++
-    }
+    internal inline fun change(member: String, block: (NativeBitmaps.Pixels) -> Unit) = use(member, block)
 
     private fun checkMutable() = check(mutable) { "Bitmap is immutable" }
 

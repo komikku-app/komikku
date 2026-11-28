@@ -37,6 +37,30 @@ class CanvasTest {
     }
 
     @Test
+    fun `a bitmap drawn onto itself with overlapping rectangles reads its pixels from before the draw`() {
+        val row = Bitmap.createBitmap(8, 1, Bitmap.Config.ARGB_8888)
+        row.setPixels(IntArray(8) { TestImages.argb(255, it * 30, 0, 0) }, 0, 8, 0, 0, 8, 1)
+
+        Canvas(row).drawBitmap(row, Rect(0, 0, 6, 1), Rect(2, 0, 8, 1), null)
+
+        row.argb().map { (it shr 16) and 0xff } shouldBe listOf(0, 30, 0, 30, 60, 90, 120, 150)
+        row.recycle()
+    }
+
+    @Test
+    fun `a source rectangle reaching past the image is clipped and the destination shrunk in proportion`() {
+        val row = Bitmap.createBitmap(IntArray(8) { TestImages.argb(255, it * 30, 0, 0) }, 8, 1, Bitmap.Config.ARGB_8888)
+        val target = Bitmap.createBitmap(8, 1, Bitmap.Config.ARGB_8888)
+
+        Canvas(target).drawBitmap(row, Rect(4, 0, 12, 1), Rect(0, 0, 8, 1), null)
+
+        target.argb().map { (it shr 16) and 0xff } shouldBe listOf(120, 150, 180, 210, 0, 0, 0, 0)
+        target.argb()[4] shouldBe 0
+        row.recycle()
+        target.recycle()
+    }
+
+    @Test
     fun `drawBitmap at a position, and with a null source rectangle, copies the whole bitmap`() {
         val source = source()
         val target = Bitmap.createBitmap(width + 5, height + 2, Bitmap.Config.ARGB_8888)
