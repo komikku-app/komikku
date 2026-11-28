@@ -508,10 +508,11 @@ mark the residual path in both modules.
   | Test and release engineer | Opus 5.5, high | D steps 1–2 committed (Windows test job, smoke test); now the containment of the review's CI supply-chain finding and the results of desktop run 46117892032; owns `build_desktop.yml` |
   | Shared-code engineer | Opus 5.5, high | one running instance per data folder (ANSWER 005 item 4) |
   | Windows and Linux engineer | Opus 5.5, high | Linux notifications without a tray (ANSWER 005 item 3); the `--ui-smoke` design (`UI_SMOKE_DESIGN.md`, item 5) |
-  | iOS engineer | Opus 5.5, high | track E done (`IOS_OPTIONS.md`); stopped until the maintainer decides (ANSWER 007); keeps the iOS checks green |
+  | iOS engineer | Opus 5.5, high | track E done (`IOS_OPTIONS.md`); now the review's iOS findings (web-view leak, two lows; ANSWER 010); no new iOS app work until the maintainer decides (ANSWER 007) |
+  | Extension runtime engineer | Opus 5.5, high | owns `:desktop:extension-runtime` and `:desktop:android-compat`: the review's three mediums, the compat-layer registry policy, the catalogue measurement (`EXTENSION_COMPAT.md`; ANSWER 010) |
 - **Where each track's state is (INSTRUCTION 006; a new session resumes from these, it does not restart):**
   - A1–A3, the #2023 check, the two unchecked `master` items: [`UPSTREAM_AUDIT.md`](UPSTREAM_AUDIT.md) (status line
-    at its top). A4, the merge of `master`: not started.
+    at its top).
   - B, the review of the M3 range and of the iOS session's commits: [`REVIEW_M3.md`](REVIEW_M3.md),
     [`REVIEW_IOS.md`](REVIEW_IOS.md) (done; fixes being routed). Reviews of later steps: `REVIEW_STEP_*.md`.
   - Android fix patches for `master` (ANSWER 003): [`android-fixes/`](android-fixes/), prepared in a local checkout
@@ -523,7 +524,13 @@ mark the residual path in both modules.
     in the commits touching `desktopApp/.../notification/`; the `--ui-smoke` design in
     [`UI_SMOKE_DESIGN.md`](UI_SMOKE_DESIGN.md).
   - One instance per data folder (ANSWER 005 item 4): the commits touching `desktopApp/.../instance/`.
-  - E, the iOS options report: [`IOS_OPTIONS.md`](IOS_OPTIONS.md).
+  - E, the iOS options report: [`IOS_OPTIONS.md`](IOS_OPTIONS.md). The iOS review fixes: the commits touching
+    `source-js/**/ios*` and `.github/workflows/build_ios_check.yml` after `8e0f5b1`.
+  - The extension runtime (ANSWER 010: path checks, converter, image formats, compat registry, catalogue
+    measurement): [`EXTENSION_COMPAT.md`](EXTENSION_COMPAT.md) and the commits touching `desktop/extension-runtime`
+    and `desktop/android-compat` after `8e0f5b1`.
+  - A4, the first merge of `master` (approved in ANSWER 009): not started; it runs in a separate local checkout on a
+    local branch and reaches `multiplatform` only when green.
 - **Open pull requests into `master` (Android bug fixes; the maintainer reviews and merges):**
   <https://github.com/komikku-app/komikku/pull/2023> — 12 fixes found during the port (ATLAS_INSTRUCTIONS.md,
   DECISION 004).
