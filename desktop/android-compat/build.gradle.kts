@@ -26,6 +26,17 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+/** Skiko's native library for the machine running the tests (the app gets it from Compose for the host OS). */
+val skikoHost: String = run {
+    val os = System.getProperty("os.name").lowercase()
+    val arch = if (System.getProperty("os.arch") in setOf("aarch64", "arm64")) "arm64" else "x64"
+    when {
+        "mac" in os -> "macos-$arch"
+        "windows" in os -> "windows-$arch"
+        else -> "linux-$arch"
+    }
+}
+
 dependencies {
     // `SharedPreferences` is backed by the desktop preference store (one JSON file per name).
     api(projects.core.preference)
@@ -41,8 +52,12 @@ dependencies {
     // `nl.adaptivity.xmlutil.core.AndroidXmlReader` (xmlutil `core-android`) over the JVM xmlutil core.
     api(kotlinx.serialization.xml.core.jvm)
 
+    // `android.graphics` (`Bitmap`, `Canvas`, …) over Skia; the native library is the app's (Compose for the host OS).
+    implementation(libs.skiko.awt)
+
     testImplementation(libs.bundles.test)
     testRuntimeOnly(libs.junit.platform.launcher)
+    testRuntimeOnly("org.jetbrains.skiko:skiko-awt-runtime-$skikoHost:${libs.skiko.awt.get().version}")
 }
 
 tasks.withType<Test>().configureEach {

@@ -85,6 +85,9 @@ xz = "org.tukaani:xz:1.12"
 dex2jar-translator = "de.femtopedia.dex2jar:dex-translator:2.4.39"
 # Tests only: X.509 certificates for APK signing fixtures.
 bouncycastle-pkix = "org.bouncycastle:bcpkix-jdk18on:1.79"
+# `android.graphics` of :desktop:android-compat over Skia without Compose: the Skiko that compose-multiplatform
+# brings (1.12.2 → 0.150.2); bump with it. Its native library comes with the app's Compose runtime for the host OS.
+skiko-awt = "org.jetbrains.skiko:skiko-awt:0.150.2"
 # KMK <--
 
 preferencektx = "androidx.preference:preference-ktx:1.2.1"
