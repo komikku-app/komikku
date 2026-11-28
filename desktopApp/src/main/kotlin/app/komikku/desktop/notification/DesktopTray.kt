@@ -100,6 +100,14 @@ class DesktopTray internal constructor(
             icon != null
         }
 
+    /**
+     * What a click on an icon does: [onOpen] shows the window. The window sets it whatever the tray setting, so the
+     * temporary icon of a notification opens it too; [install] sets it as well.
+     */
+    fun setOpenAction(onOpen: () -> Unit) {
+        openAction = onOpen
+    }
+
     /** Takes the icons out of the tray (the setting was switched off, the window is gone). */
     fun remove() {
         serialized(Unit) { removeAll() }

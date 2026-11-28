@@ -128,6 +128,19 @@ class DesktopTrayTest {
     }
 
     @Test
+    fun `the temporary icon opens the window with the open action set while the user's icon was never installed`() {
+        var opened = 0
+        val tray = tray()
+        tray.setOpenAction { opened++ }
+        tray.show(note("Off"))
+
+        backend.alive.single().onAction()
+
+        opened shouldBe 1
+        backend.events shouldBe listOf("add temporary", "show temporary: Off")
+    }
+
+    @Test
     fun `with the user's icon notifications and the status go through it`() {
         val tray = tray()
         tray.installIcon() shouldBe true
