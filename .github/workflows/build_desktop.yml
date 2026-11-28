@@ -757,7 +757,10 @@ jobs:
   # again on the same data folder (the single-instance lock must restore the window and end that start with exit code
   # 0), closes the window and checks a clean exit and a log without errors (apart from an allow-list in the scripts,
   # each entry with its reason), then uninstalls. Driven only from outside (window system, keyboard shortcuts); Linux on Xvfb
-  # with openbox. Scripts: .github/scripts/desktop_smoke_linux.sh and desktop_smoke_windows.ps1.
+  # with openbox. On Linux also the installed launcher's `--self-test-notify` (WINDOWS_LINUX_TEST_PLAN.md, section 5),
+  # each run on a session bus of its own with dbus-monitor: without a notification service (must fail), then with dunst
+  # the plain self-test (no notification), notify-send and gdbus. Scripts: .github/scripts/desktop_smoke_linux.sh and
+  # desktop_smoke_windows.ps1.
   # Non-blocking (`continue-on-error`), and `release` must keep depending only on `package` until this job has been
   # green on ten consecutive runs (ATLAS_INSTRUCTIONS.md, ANSWER 005).
   #
@@ -773,6 +776,9 @@ jobs:
   #   logs/app-std*-<n>.log      the launcher's stdout / stderr (empty on Windows if the GUI launcher drops them);
   #                              logs/second-start-std*.log the same for the second start
   #   log-problems.txt           every error-level and stack-trace line of the app log that is not allow-listed
+  #   logs/notify-<run>.*        Linux, runs c / silent / a / b: the self-test report (.txt), its exit code (.exit),
+  #                              the Notify calls dbus-monitor saw (.monitor.log); screenshots/notify-<run>.png the
+  #                              screen while that run's bus was up (dunst's popup for a and b)
   #   logs/install.log, apt-*.log, menu-folders.log, uninstall.log, xvfb.log, openbox.log, windows-<n>.txt, jstack.txt
   #                              as they apply
   # Attempt 2 exists only when no window appeared with Skiko's default renderer and the app was started again with

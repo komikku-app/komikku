@@ -5,7 +5,9 @@
 # default one) on a virtual display (Xvfb + openbox), waits for the window, takes screenshots, switches the top-level
 # tabs with Ctrl+2…5 and Ctrl+1, minimizes the window and starts the launcher a second time on the same data folder (the
 # single-instance lock must show the running window and end that start with exit code 0), closes the window, checks
-# that the process ends with exit code 0 and that the log has no exception, then uninstalls. The app is driven only from outside (window system and keyboard shortcuts).
+# that the process ends with exit code 0 and that the log has no exception, runs the launcher's notification self-test
+# (`--self-test-notify`, section 5) on session buses of its own, then uninstalls. The app is driven only from outside
+# (window system and keyboard shortcuts).
 #
 #   desktop_smoke_linux.sh <packages dir> <output dir>
 #
@@ -390,10 +392,13 @@ if [ "${#debs[@]}" -ne 1 ] || [ ! -f "${debs[0]}" ]; then
 fi
 
 echo "::group::Install the test tools"
+# notify-send (libnotify-bin), gdbus (libglib2.0-bin), dbus-run-session (dbus-daemon) and dbus-monitor (dbus-bin) for
+# the notification self-tests; not dunst yet, see "Notifications" below
+tools=(xvfb openbox xdotool wmctrl imagemagick x11-utils libnotify-bin libglib2.0-bin dbus-daemon dbus-bin)
 if { sudo apt-get update -q \
-  && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends \
-    xvfb openbox xdotool wmctrl imagemagick x11-utils; } > "$out/logs/apt-tools.log" 2>&1; then
-  echo "Installed: xvfb openbox xdotool wmctrl imagemagick x11-utils"
+  && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends "${tools[@]}"; } \
+  > "$out/logs/apt-tools.log" 2>&1; then
+  echo "Installed: ${tools[*]}"
 else
   tail -n 40 "$out/logs/apt-tools.log"
   echo "::endgroup::"
@@ -560,7 +565,6 @@ fi
 # --- Second start ---------------------------------------------------------------------------------------------------
 
 second_start
-info "Notifications" "not observed yet"
 
 # --- Close ----------------------------------------------------------------------------------------------------------
 
@@ -636,4 +640,108 @@ if [ "$default_data_existed" = no ] && [ -e "$default_data" ]; then
   fail "Default data folder untouched" "$default_data was created although -Dkomikku.dataDir was set"
 else
   pass "Default data folder untouched" "$default_data (existed before: $default_data_existed)"
+fi
+
+# --- Notifications --------------------------------------------------------------------------------------------------
+
+# The installed launcher's `--self-test-notify[=<backend>]` (WINDOWS_LINUX_TEST_PLAN.md, section 5), each run on its own
+# session bus with dbus-monitor recording the Notify calls: C without a notification service (must fail), then with
+# dunst: the plain self-test (must post nothing), A in the app's order (notify-send) and B through gdbus.
+notify_title="Komikku self-test"
+notify_body_pieces=('"quotes"' '&amp; &lt;tags&gt;' 'ü 漫画 😀')
+
+# notify_run <name> <self-test arguments...>: writes logs/notify-<name>.{txt,exit,monitor.log} and, while the bus (and
+# dunst on it) still runs, screenshots/notify-<name>.png
+notify_run() {
+  local name=$1
+  shift
+  dbus-run-session -- bash -c '
+    out=$1 name=$2 launcher=$3; shift 3
+    dbus-monitor --session "type=method_call,interface=org.freedesktop.Notifications,member=Notify" \
+      > "$out/logs/notify-$name.monitor.log" 2>&1 &
+    monitor=$!
+    sleep 1
+    timeout 120 "$launcher" "--self-test=$out/logs/notify-$name.txt" "$@" \
+      > "$out/logs/notify-$name.stdout.log" 2>&1
+    echo $? > "$out/logs/notify-$name.exit"
+    sleep 2
+    import -silent -display "$DISPLAY" -window root "$out/screenshots/notify-$name.png"
+    kill "$monitor"
+  ' notify-run "$out" "$name" "$launcher" "$@"
+}
+
+notify_exit() { cat "$out/logs/notify-$1.exit" 2> /dev/null || echo none; }
+notify_line() { grep -m 1 '^\(OK  \|FAIL\) system notification: ' "$out/logs/notify-$1.txt" 2> /dev/null; }
+notify_calls() { grep -c 'member=Notify' "$out/logs/notify-$1.monitor.log" 2> /dev/null; }
+
+# The body string of the first Notify call: its arguments are app name, replaces id, icon, summary, body, … (the fourth
+# string)
+notify_body() {
+  awk '/member=Notify/ { call = 1; n = 0; next } call && /^ +string "/ { if (++n == 4) { print; exit } }' \
+    "$out/logs/notify-$1.monitor.log" 2> /dev/null
+}
+
+# notify_check_call <name>: the one Notify call carries the app name, the title and the escaped body
+notify_check_call() {
+  local name=$1 log="$out/logs/notify-$1.monitor.log" calls missing=() piece
+  calls=$(notify_calls "$name")
+  grep -q -F 'string "Komikku"' "$log" || missing+=('string "Komikku"')
+  grep -q -F "string \"$notify_title\"" "$log" || missing+=("string \"$notify_title\"")
+  for piece in "${notify_body_pieces[@]}"; do grep -q -F "$piece" "$log" || missing+=("$piece"); done
+  if [ "$calls" = 1 ] && [ "${#missing[@]}" -eq 0 ]; then
+    pass "Notify call on the bus ($name)" "app name, title and escaped body as expected"
+  else
+    fail "Notify call on the bus ($name)" "$calls Notify call(s); missing: ${missing[*]:-nothing} (logs/notify-$name.monitor.log)"
+  fi
+  info "Notification body as dbus-monitor shows it ($name)" "$(notify_body "$name" | sed 's/^ *//')"
+}
+
+ls /usr/share/dbus-1/services > "$out/logs/dbus-services-before-dunst.txt" 2>&1
+if [ -z "${DISPLAY:-}" ] || ! command -v dbus-run-session > /dev/null || ! command -v dbus-monitor > /dev/null; then
+  fail "Notifications" "no display or no dbus-run-session / dbus-monitor (logs/apt-tools.log); not run"
+else
+  notify_run c --self-test-notify
+  line=$(notify_line c)
+  if [ "$(notify_exit c)" = 1 ] && [[ $line == "FAIL system notification: "* ]]; then
+    pass "Notification without a notification service fails (C)" "exit code 1; ${line#FAIL system notification: }"
+  else
+    fail "Notification without a notification service fails (C)" \
+      "exit code $(notify_exit c), report line '${line:-none}' (logs/notify-c.txt, dbus-services-before-dunst.txt)"
+  fi
+  info "Notify calls without a service (C)" "$(notify_calls c) (logs/notify-c.monitor.log)"
+
+  if sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q dunst > "$out/logs/apt-dunst.log" 2>&1; then
+    pass "Notification service installed" "dunst (started by D-Bus activation on the first Notify)"
+    notify_run silent
+    if [ "$(notify_exit silent)" = 0 ] && [ "$(notify_calls silent)" = 0 ] && [ -z "$(notify_line silent)" ]; then
+      pass "Plain self-test posts no notification" "exit code 0, no Notify call"
+    else
+      fail "Plain self-test posts no notification" \
+        "exit code $(notify_exit silent), $(notify_calls silent) Notify call(s), report line '$(notify_line silent)'"
+    fi
+
+    for run in "a|--self-test-notify|notify-send" "b|--self-test-notify=gdbus|gdbus"; do
+      IFS='|' read -r name argument backend <<< "$run"
+      notify_run "$name" "$argument"
+      line=$(notify_line "$name")
+      expected="OK   system notification: $backend exited with 0 (accepted)"
+      if [ "$(notify_exit "$name")" = 0 ] && [ "$line" = "$expected" ]; then
+        pass "Notification through $backend (${name^^})" "exit code 0; screenshots/notify-$name.png"
+      else
+        fail "Notification through $backend (${name^^})" \
+          "exit code $(notify_exit "$name"), report line '${line:-none}' (logs/notify-$name.txt)"
+      fi
+      notify_check_call "$name"
+    done
+    body_a=$(notify_body a)
+    body_b=$(notify_body b)
+    if [ -n "$body_a" ] && [ "$body_a" = "$body_b" ]; then
+      pass "notify-send and gdbus send the same body"
+    else
+      fail "notify-send and gdbus send the same body" "A: '${body_a:-none}', B: '${body_b:-none}'"
+    fi
+  else
+    tail -n 40 "$out/logs/apt-dunst.log"
+    fail "Notification service installed" "apt-get could not install dunst (logs/apt-dunst.log); A, B and the plain run skipped"
+  fi
 fi
