@@ -11,10 +11,35 @@
  * are replaced and `rpmbuild` run again as jpackage ran it. The build fails when jpackage's scripts run anything else
  * than the one menu command, so a later jpackage or a new packaging option (file associations, services) is noticed
  * instead of dropped.
+ *
+ * The menu entry also opens komikku:// links (tracker logins redirect there): jpackage's entry gets
+ * `MimeType=x-scheme-handler/komikku;` and `%u` after the launcher in `Exec`, in the package's copy of it, and the
+ * scripts refresh the desktop database that browsers look the handler up in.
  */
 
 val debScripts = layout.projectDirectory.dir("packaging/linux")
 val desktopFile = "/opt/komikku/lib/komikku-Komikku.desktop"
+/** The menu entry inside the packages (without the leading `/`). */
+val packagedDesktopFile = desktopFile.removePrefix("/")
+val urlScheme = "komikku"
+
+/** jpackage's entry with the komikku:// handler; fails when the entry is not the one this was written for. */
+fun addUrlScheme(entry: File, packageName: String) {
+    check(entry.isFile) { "$packageName has no $packagedDesktopFile; update desktopApp/packaging/linux" }
+    val lines = entry.readLines()
+    val exec = lines.filter { it.startsWith("Exec=") }
+    check(exec.size == 1 && "/opt/komikku/bin/Komikku" in exec[0] && "%" !in exec[0]) {
+        "$packageName's menu entry runs $exec; update desktopApp/packaging/linux"
+    }
+    check(lines.none { it.startsWith("MimeType=") }) {
+        "$packageName's menu entry already has a MimeType; update desktopApp/packaging/linux"
+    }
+    entry.writeText(
+        lines.joinToString("\n", postfix = "\n") { if (it == exec[0]) "$it %u" else it } +
+            "MimeType=x-scheme-handler/$urlScheme;\n",
+    )
+}
+
 val expectedCommands = mapOf(
     "postinst" to "xdg-desktop-menu install $desktopFile",
     "prerm" to "xdg-desktop-menu uninstall $desktopFile",
@@ -39,6 +64,18 @@ tasks.named { it == "packageDeb" || it == "packageReleaseDeb" }.configureEach {
                 }
                 script.copyTo(original, overwrite = true)
                 original.setExecutable(true, false)
+            }
+            val entry = work.resolve(packagedDesktopFile)
+            addUrlScheme(entry, deb.name)
+            val md5sums = control.resolve("md5sums")
+            if (md5sums.isFile) {
+                val md5 = java.security.MessageDigest.getInstance("MD5").digest(entry.readBytes())
+                    .joinToString("") { "%02x".format(it) }
+                val updated = md5sums.readLines().map { line ->
+                    if (line.endsWith("  $packagedDesktopFile")) "$md5  $packagedDesktopFile" else line
+                }
+                check(updated != md5sums.readLines()) { "${deb.name}: md5sums has no $packagedDesktopFile" }
+                md5sums.writeText(updated.joinToString("\n", postfix = "\n"))
             }
             runTool("dpkg-deb", "--root-owner-group", "--build", work.path, deb.path)
         }
@@ -68,6 +105,7 @@ tasks.named { it == "packageRpm" || it == "packageReleaseRpm" }.configureEach {
         val spec = jpackageTemp.resolve("SPECS").listFiles { file -> file.extension == "spec" }?.singleOrNull()
             ?: error("$name: no spec in $jpackageTemp/SPECS")
         spec.writeText(replaceRpmScriptlets(spec.readText(), rpm.name))
+        addUrlScheme(jpackageTemp.resolve("images").resolve(packagedDesktopFile), rpm.name)
         runTool(
             "rpmbuild", "-bb", spec.path,
             "--define", "%_sourcedir ${jpackageTemp.resolve("images")}",

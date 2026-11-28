@@ -8,4 +8,9 @@ if ! xdg-desktop-menu install "$desktop_file"; then
         echo "komikku: the menu entry could not be installed" >&2
     fi
 fi
+# The entry handles komikku:// links (MimeType=x-scheme-handler/komikku); browsers find it in the desktop database,
+# which xdg-desktop-menu refreshes but a copied entry needs refreshed here.
+if command -v update-desktop-database > /dev/null 2>&1; then
+    update-desktop-database -q /usr/share/applications || true
+fi
 exit 0

@@ -11,6 +11,10 @@ case "$1" in
         # Fails without the folders it needs (see postinst), when postinst copied the entry itself
         xdg-desktop-menu uninstall "$desktop_file" || true
         rm -f /usr/share/applications/komikku-Komikku.desktop
+        # Takes the komikku:// link handler out of the desktop database (see postinst)
+        if command -v update-desktop-database > /dev/null 2>&1; then
+            update-desktop-database -q /usr/share/applications || true
+        fi
     ;;
 
     failed-upgrade)
