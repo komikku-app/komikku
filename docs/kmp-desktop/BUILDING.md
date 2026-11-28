@@ -154,10 +154,11 @@ workflow runs only its `pr-check` job (`:desktopApp:compileKotlin`, `:desktopApp
 **Testing on a Mac** (getting the CI `.dmg` or building it, opening the unsigned app, data and logs, a first test
 pass, what to send back): [`TESTING_MAC.md`](TESTING_MAC.md).
 
-**Installing on Linux:** `.deb`: `sudo apt install ./Komikku-<v>-linux-x64.deb`. The `.rpm` is **unsigned**, and
-Fedora's rpm (Fedora 45 in the smoke job) refuses it ("package komikku-<v>-1.x86_64 does not verify: no signature"):
-install it with `sudo dnf install --nogpgcheck ./Komikku-<v>-linux-x64.rpm` (resolves the dependencies), or
-`sudo rpm -i --nosignature ./Komikku-<v>-linux-x64.rpm` (upgrade: `sudo rpm -U --nosignature …`). Skipping the check
+**Installing on Linux:** `.deb`: `sudo apt install ./Komikku-<v>-linux-x64.deb`. The `.rpm` is **unsigned**.
+`sudo dnf install ./Komikku-<v>-linux-x64.rpm` installs it as it is (a local file; Fedora 45 in the smoke job, which
+also resolves the dependencies), but Fedora's plain `rpm` refuses it ("package komikku-<v>-1.x86_64 does not verify: no
+signature"): use `sudo rpm -i --nosignature ./Komikku-<v>-linux-x64.rpm` (upgrade: `sudo rpm -U --nosignature …`).
+Either way nothing checks a signature: skipping the check
 means nothing proves that the package was built by Komikku and not changed since, so compare its SHA-256 with the
 release's checksum file first. The signing hook is built but off until the maintainer's key is set ("Signing", Linux);
 a signed RPM installs after `sudo rpm --import Komikku-<v>-linux-x64-rpm-signing-key.asc` without either flag. The
@@ -252,8 +253,9 @@ the trigger and the marker file when the port reaches master.
 ## Signing
 
 Off unless set: a build without these settings is exactly the unsigned one (macOS: Gatekeeper warns, open with
-right-click → Open; Windows: SmartScreen warns; Linux: the `.rpm` is unsigned, which Fedora's rpm refuses without
-`--nosignature` / `--nogpgcheck`, see "Installing on Linux" under "Package"). The `.deb` is never signed (below). Nothing
+right-click → Open; Windows: SmartScreen warns; Linux: the `.rpm` is unsigned, which `dnf` installs as it is and
+Fedora's plain rpm refuses without `--nosignature`, see "Installing on Linux" under "Package"). The `.deb` is never
+signed (below). Nothing
 secret is in the repository.
 
 **macOS** (Compose plugin `macOS { signing { … }; notarization { … } }`, configured in `desktopApp/build.gradle.kts`

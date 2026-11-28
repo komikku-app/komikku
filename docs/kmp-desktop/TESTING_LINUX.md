@@ -23,19 +23,19 @@ Check the download first, in its folder: `sha256sum -c --ignore-missing Komikku-
 
 The packages install to `/opt/komikku` and add the menu entry `komikku-Komikku.desktop`.
 
-**The `.rpm` is not signed.** Fedora's `rpm` refuses it ("package komikku-<v>-1.x86_64 does not verify: no signature")
-unless the signature check is skipped:
+**The `.rpm` is not signed.** `dnf` installs a local unsigned package as it is; Fedora's plain `rpm` refuses it
+("package komikku-<v>-1.x86_64 does not verify: no signature") unless the signature check is skipped:
 
 ```sh
-sudo dnf install --nogpgcheck ./Komikku-<v>-linux-x64.rpm   # also installs the dependencies
+sudo dnf install ./Komikku-<v>-linux-x64.rpm                # also installs the dependencies
 sudo rpm -i --nosignature ./Komikku-<v>-linux-x64.rpm       # dependencies must already be there
 sudo rpm -U --nosignature ./Komikku-<v>-linux-x64.rpm       # upgrade an installed one
 ```
 
-Skipping the check means nothing proves that the package was built by Komikku and not changed since, so check its
+Without a signature nothing proves that the package was built by Komikku and not changed since, so check its
 SHA-256 (above) before installing it. Once the maintainer's signing key is set (BUILDING.md, "Signing"), the release
-also has `Komikku-<v>-linux-x64-rpm-signing-key.asc`: `sudo rpm --import` it once, and the commands above work without
-`--nogpgcheck` / `--nosignature`; `rpm -K Komikku-<v>-linux-x64.rpm` then says "digests signatures OK".
+also has `Komikku-<v>-linux-x64-rpm-signing-key.asc`: `sudo rpm --import` it once, and `rpm` works without
+`--nosignature`; `rpm -K Komikku-<v>-linux-x64.rpm` then says "digests signatures OK".
 
 The `.deb` needs no flag: `apt` does not check signatures of a local `.deb` file.
 
