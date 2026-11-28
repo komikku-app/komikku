@@ -111,6 +111,8 @@ fun main(args: Array<String>) {
         }
         KomikkuWindow(app = app, onCloseRequest = ::exitApplication, singleInstance = singleInstance)
     }
+    // The window is gone: a new start must wait for the lock, not be told that this exiting process showed its window
+    singleInstance.stopListening()
     // The work runs on daemon threads: stop it and let it clean up before the JVM exits (bounded).
     runBlocking { stopDesktopWork(scheduler, Injekt.get(), Injekt.get()) }
     singleInstance.close()

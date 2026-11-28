@@ -33,8 +33,8 @@ import kotlin.time.Duration.Companion.seconds
  *
  * A start that finds the lock taken asks the running instance to show its window and exits with code 0 ([ensure]); when
  * no answer comes within [ANSWER_TIMEOUT] (it keeps retrying until then: the running instance may only just have taken
- * the lock, or may be quitting and release it), a dialog says another Komikku is using the data folder and it exits
- * with code 1. A port file left by a process that died is never trusted: the next holder of the lock replaces it.
+ * the lock, or may be quitting, which stops answering at once ([stopListening]) and releases the lock when it exits), a
+ * dialog says another Komikku is using the data folder and it exits with code 1. A port file left by a process that died is never trusted: the next holder of the lock replaces it.
  * Different data folders (`-Dkomikku.dataDir`) do not affect each other.
  *
  * Within one JVM the lock is also tracked in [held]: `tryLock` there throws [OverlappingFileLockException], and on
@@ -57,14 +57,24 @@ class DesktopSingleInstance private constructor(
             server?.onShowRequest = value
         }
 
-    /** Stops listening, removes the port file and releases the lock. */
-    override fun close() {
+    /**
+     * Stops answering other starts and removes the port file, but keeps the lock: for the shutdown after the window
+     * closed. A start in that time then keeps retrying the lock (and gets it once this process ends) instead of being
+     * told its window was shown by a process that is about to exit.
+     */
+    fun stopListening() {
         server?.close()
         if (lock == null) return
         try {
             Files.deleteIfExists(lockFile.resolveSibling(PORT_FILE))
         } catch (_: IOException) {
         }
+    }
+
+    /** Stops listening, removes the port file and releases the lock. */
+    override fun close() {
+        stopListening()
+        if (lock == null) return
         synchronized(held) {
             try {
                 channel?.use { lock.release() }

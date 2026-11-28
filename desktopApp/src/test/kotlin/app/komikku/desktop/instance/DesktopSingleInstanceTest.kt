@@ -31,7 +31,8 @@ import kotlin.time.Duration.Companion.milliseconds
  * [DesktopSingleInstance]: one running instance per data folder. Second starts run in a child JVM where it matters (the
  * lock is per process): they exit with 0 and the running instance's "show window" callback runs; a killed holder's lock
  * is released by the system and its port file ignored; two data folders do not affect each other; a wrong token or
- * garbage is dropped without an answer; no answer within the timeout means "busy" (exit 1).
+ * garbage is dropped without an answer; no answer within the timeout means "busy" (exit 1). An instance that is shutting
+ * down no longer answers.
  */
 class DesktopSingleInstanceTest {
 
@@ -183,6 +184,28 @@ class DesktopSingleInstanceTest {
         assumeTrue("posix" in portFile.fileSystem.supportedFileAttributeViews())
 
         PosixFilePermissions.toString(Files.getPosixFilePermissions(portFile)) shouldBe "rw-------"
+    }
+
+    @Test
+    fun `a start while the running instance shuts down is not told shown and takes the folder once it is free`() {
+        val dataDir = folder("data")
+        val quitting = primary(dataDir)
+        quitting.onShowRequest = { error("a quitting instance must not be asked to show its window") }
+
+        quitting.stopListening()
+        Files.exists(dataDir.toPath().resolve(DesktopSingleInstance.PORT_FILE)) shouldBe false
+        DesktopSingleInstance.acquire(dataDir, answerTimeout = 300.milliseconds) shouldBe
+            DesktopSingleInstance.Outcome.OtherNotAnswering
+        val exited = thread {
+            Thread.sleep(500)
+            quitting.close()
+        }
+
+        val outcome = DesktopSingleInstance.acquire(dataDir)
+
+        exited.join()
+        instances -= quitting
+        instances += outcome.shouldBeInstanceOf<DesktopSingleInstance.Outcome.Primary>().instance
     }
 
     @Test
