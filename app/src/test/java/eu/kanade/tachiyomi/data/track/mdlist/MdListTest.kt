@@ -1,18 +1,28 @@
 package eu.kanade.tachiyomi.data.track.mdlist
 
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.service.TrackPreferences
+import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import exh.md.network.MangaDexSessionNotifier
 import exh.md.utils.MdUtil
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.mockkConstructor
+import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkConstructor
+import io.mockk.unmockkObject
 import io.mockk.verify
+import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Request
@@ -23,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import tachiyomi.core.common.preference.InMemoryPreferenceStore
 import tachiyomi.core.common.preference.InMemoryPreferenceStore.InMemoryPreference
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.InjektScope
 import uy.kohesive.injekt.api.addSingleton
@@ -103,6 +114,32 @@ class MdListTest {
 
         verify(exactly = 1) { anyConstructed<MangaDexSessionNotifier>().dismiss() }
     }
+
+    // KMK -->
+    @Test
+    fun `a missing MangaDex source is looked up again on the next use, a found one is kept`() = runTest {
+        // Resolved by the default arguments of MdUtil.getEnabledMangaDex(), whose result is stubbed below
+        Injekt.addSingleton(mockk<SourcePreferences>())
+        Injekt.addSingleton(mockk<SourceManager>())
+        val mangaDex = mockk<MangaDex>()
+        coEvery { mangaDex.fetchTrackingInfo(any()) } returns Track.create(TrackerManager.MDLIST)
+        val track = Track.create(TrackerManager.MDLIST).apply { tracking_url = "${MdUtil.baseUrl}/title/id" }
+        mockkObject(MdUtil)
+        try {
+            // Not installed, not enabled or not loaded yet at the first use; there at the second
+            every { MdUtil.getEnabledMangaDex(any(), any()) } returnsMany listOf(null, mangaDex)
+
+            shouldThrow<MdList.MangaDexNotFoundException> { mdList.refresh(track) }
+            mdList.refresh(track)
+            mdList.refresh(track)
+
+            verify(exactly = 2) { MdUtil.getEnabledMangaDex(any(), any()) }
+            coVerify(exactly = 2) { mangaDex.fetchTrackingInfo(track.tracking_url) }
+        } finally {
+            unmockkObject(MdUtil)
+        }
+    }
+    // KMK <--
 
     /** Sends a request through [MdList.interceptor] and returns it as it reached the network. */
     private fun sendThroughInterceptor(): Request {
