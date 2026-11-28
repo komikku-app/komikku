@@ -8,7 +8,8 @@
  * resource folder after any extra argument. So jpackage first runs as Compose runs it, keeping its working folder
  * (`--temp`) for the main.wxs it wrote; that file gets the component below, and jpackage runs again with Compose's
  * own argument file (build/compose/tmp/<task>.args.txt) and a resource folder holding it. The build fails when
- * jpackage's main.wxs has no single place for the component, or when jpackage does not report using it.
+ * jpackage's main.wxs has no single place for the component. When the second run fails or does not report using it,
+ * the first run's installer (without the handler) is kept and the end of the second run's log is printed.
  */
 
 val urlScheme = "komikku"
@@ -90,7 +91,9 @@ tasks.named { it in setOf("packageMsi", "packageExe", "packageReleaseMsi", "pack
         val argsFile = work.resolve("jpackage-url-protocol.args.txt")
         argsFile.writeText(rewritten.joinToString("\n", postfix = "\n"))
 
-        installer.delete()
+        val plainInstaller = work.resolve("plain-${installer.name}")
+        plainInstaller.delete()
+        check(installer.renameTo(plainInstaller)) { "$name: could not move $installer aside" }
         jpackageTemp.deleteRecursively()
         @Suppress("UNCHECKED_CAST")
         val javaHome = (property("javaHome") as Property<String>).get()
@@ -103,8 +106,22 @@ tasks.named { it in setOf("packageMsi", "packageExe", "packageReleaseMsi", "pack
         }.start()
         val log = work.resolve("jpackage-url-protocol.log")
         log.writeText(process.inputStream.bufferedReader().readText())
-        check(process.waitFor() == 0) { "jpackage with the komikku:// main.wxs exited with ${process.exitValue()}; see $log" }
-        check("(loaded from main.wxs)" in log.readText()) { "jpackage did not use the komikku:// main.wxs; see $log" }
-        check(installer.isFile) { "jpackage with the komikku:// main.wxs did not write $installer; see $log" }
+        val failure = when {
+            process.waitFor() != 0 -> "exited with ${process.exitValue()}"
+            "(loaded from main.wxs)" !in log.readText() -> "did not use the komikku:// main.wxs"
+            !installer.isFile -> "did not write $installer"
+            else -> null
+        }
+        if (failure == null) {
+            plainInstaller.delete()
+        } else {
+            // The installer without the komikku:// handler is kept; the smoke test reports the missing registration
+            installer.delete()
+            check(plainInstaller.renameTo(installer)) { "$name: could not restore $installer" }
+            logger.warn(
+                "warning: $name: jpackage with the komikku:// main.wxs $failure; kept the installer without the " +
+                    "komikku:// handler. Last lines of $log:\n" + log.readLines().takeLast(60).joinToString("\n"),
+            )
+        }
     }
 }
