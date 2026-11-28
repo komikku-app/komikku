@@ -14,7 +14,9 @@ import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.extension.testing.FixtureApk
 import app.komikku.desktop.extension.testing.FixtureClasses
 import app.komikku.desktop.extension.testing.TestSigningKey
+import app.komikku.desktop.extensions.DesktopExtensionManager
 import dev.icerock.moko.resources.StringResource
+import kotlinx.coroutines.runBlocking
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
@@ -22,25 +24,33 @@ import mockwebserver3.RecordedRequest
 import okio.Buffer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.io.TempDir
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.io.File
 
 /**
  * Headless UI test of the Extensions tab against [MockWebServer]: add a (generated) extension store
  * through the stores dialog, see its extension as available, install it (generated, signed APK with
- * dex code), and find its source in the Sources tab.
+ * dex code), and find its source in the Sources tab; an extension that needs what desktop cannot do is listed as
+ * unsupported, with what it needs.
  */
 @OptIn(ExperimentalTestApi::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class ExtensionsUiTest {
 
     private val server = MockWebServer()
     private lateinit var app: Application
     private val routes = mutableMapOf<String, ByteArray>()
+    private lateinit var unsupportedApk: File
 
     @BeforeAll
     fun setUp(@TempDir dir: File) {
@@ -56,6 +66,18 @@ class ExtensionsUiTest {
             sourceClass = ".UiFixtureSource",
             dex = FixtureClasses.dex(jar, work),
         ).writeSigned(apk, key)
+
+        val loopingClass = "eu/kanade/tachiyomi/extension/en/uilooping/UiFixtureSource"
+        val loopingJar = File(work, "looping.jar")
+        val looping = FixtureClasses.source(loopingClass, 7778L, "UI looping source", constructorCall = "android/os/Looper" to "loop")
+        FixtureClasses.jar(loopingJar, mapOf(loopingClass to looping))
+        unsupportedApk = File(work, "uilooping.apk")
+        FixtureApk(
+            packageName = UNSUPPORTED_PKG,
+            label = "Tachiyomi: UI looping",
+            sourceClass = ".UiFixtureSource",
+            dex = FixtureClasses.dex(loopingJar, work),
+        ).writeSigned(unsupportedApk, key)
 
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -98,6 +120,7 @@ class ExtensionsUiTest {
     }
 
     @Test
+    @Order(1)
     fun `add a store, install an extension, use its source`() = runDesktopComposeUiTest(width = 1280, height = 900) {
         setContent { KomikkuApp(context = app) }
 
@@ -122,5 +145,24 @@ class ExtensionsUiTest {
         // The extension's source is listed in the Sources tab
         onNodeWithText(MR.strings.label_sources.text()).performClick()
         waitForText("UI fixture source")
+    }
+
+    @Test
+    @Order(2)
+    fun `an extension that needs what desktop cannot do is listed as unsupported`() = runDesktopComposeUiTest(width = 1280, height = 900) {
+        // Signed by the store's key, which the first test trusted by adding the store
+        runBlocking { Injekt.get<DesktopExtensionManager>().installApkFile(unsupportedApk, UNSUPPORTED_PKG) }
+        setContent { KomikkuApp(context = app) }
+
+        onNodeWithText(MR.strings.browse.text()).performClick()
+        onNodeWithText(MR.strings.label_extensions.text()).performClick()
+        waitForText(KMR.strings.desktop_ext_unsupported.text())
+        waitForText("UI looping")
+        // "Unsupported on desktop: needs android.os.Looper.loop()", in the row
+        onNodeWithText("android.os.Looper.loop()", substring = true).assertExists()
+    }
+
+    private companion object {
+        const val UNSUPPORTED_PKG = "eu.kanade.tachiyomi.extension.en.uilooping"
     }
 }

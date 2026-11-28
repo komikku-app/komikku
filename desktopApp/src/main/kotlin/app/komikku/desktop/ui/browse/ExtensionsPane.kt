@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.extensions.ExtensionIconDrawable
+import app.komikku.desktop.extensions.UnsupportedExtension
 import app.komikku.desktop.log.DesktopLogFile
 import app.komikku.desktop.platform.DesktopBrowser
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -62,8 +63,8 @@ import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 /**
- * Extensions tab: toolbar (refresh, extension stores), then updates pending / installed / untrusted /
- * available extensions with install, update, uninstall, trust and cancel actions and install progress.
+ * Extensions tab: toolbar (refresh, extension stores), then updates pending / installed / unsupported on desktop /
+ * untrusted / available extensions with install, update, uninstall, trust and cancel actions and install progress.
  */
 @Composable
 fun ExtensionsPane(model: ExtensionsScreenModel) {
@@ -91,7 +92,7 @@ fun ExtensionsPane(model: ExtensionsScreenModel) {
         when {
             extensions == null -> LoadingScreen()
             state.stores.isEmpty() && extensions.installed.isEmpty() && extensions.updates.isEmpty() &&
-                extensions.untrusted.isEmpty() -> EmptyScreen(stringRes = MR.strings.extensionStoresScreen_emptyLabel)
+                extensions.untrusted.isEmpty() && state.unsupported.isEmpty() -> EmptyScreen(stringRes = MR.strings.extensionStoresScreen_emptyLabel)
             else -> LazyColumn(modifier = Modifier.fillMaxSize()) {
                 if (extensions.updates.isNotEmpty()) {
                     item(key = "header-updates") {
@@ -108,6 +109,12 @@ fun ExtensionsPane(model: ExtensionsScreenModel) {
                     item(key = "header-installed") { ListGroupHeader(text = stringResource(MR.strings.ext_installed)) }
                     items(extensions.installed, key = { "installed-${it.pkgName}" }) { extension ->
                         ExtensionRow(extension, state.steps[extension.pkgName], model)
+                    }
+                }
+                if (state.unsupported.isNotEmpty()) {
+                    item(key = "header-unsupported") { ListGroupHeader(text = stringResource(KMR.strings.desktop_ext_unsupported)) }
+                    items(state.unsupported, key = { "unsupported-${it.pkgName}" }) { extension ->
+                        UnsupportedExtensionRow(extension, model)
                     }
                 }
                 if (extensions.untrusted.isNotEmpty()) {
@@ -225,6 +232,36 @@ private fun ExtensionRow(extension: Extension, step: InstallStep?, model: Extens
                 ) { Text(stringResource(MR.strings.ext_trust)) }
             },
             dismissButton = { TextButton(onClick = { confirmTrust = false }) { Text(stringResource(MR.strings.action_cancel)) } },
+        )
+    }
+}
+
+/** An installed extension that is not loaded: what it needs, and uninstall. */
+@Composable
+private fun UnsupportedExtensionRow(extension: UnsupportedExtension, model: ExtensionsScreenModel) {
+    var confirmUninstall by remember { mutableStateOf(false) }
+    ListItem(
+        modifier = Modifier.testTag("unsupported-${extension.pkgName}"),
+        leadingContent = { Icon(Icons.Outlined.Extension, contentDescription = null, modifier = Modifier.size(40.dp)) },
+        headlineContent = { Text(extension.name) },
+        supportingContent = {
+            Text(
+                extension.versionName + " • " + stringResource(KMR.strings.desktop_ext_unsupported_needs, extension.needs),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        },
+        trailingContent = {
+            OutlinedButton(onClick = { confirmUninstall = true }) { Text(stringResource(MR.strings.ext_uninstall)) }
+        },
+    )
+    if (confirmUninstall) {
+        ExtensionUninstallDialog(
+            name = extension.name,
+            onConfirm = {
+                confirmUninstall = false
+                model.uninstall(extension)
+            },
+            onDismiss = { confirmUninstall = false },
         )
     }
 }

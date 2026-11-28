@@ -21,15 +21,23 @@ object FixtureClasses {
     /**
      * A class implementing `eu.kanade.tachiyomi.source.Source` with constant `id`, `name`, `lang`
      * and `supportsLatest = false`. The suspend members are left abstract (never called by the
-     * loader); it only needs to be instantiated and identified.
+     * loader); it only needs to be instantiated and identified. With [constructorCall] (`owner` to `method`), the
+     * constructor also calls that static `()V` method.
      */
-    fun source(internalName: String, id: Long, name: String, lang: String = "en"): ByteArray {
+    fun source(
+        internalName: String,
+        id: Long,
+        name: String,
+        lang: String = "en",
+        constructorCall: Pair<String, String>? = null,
+    ): ByteArray {
         val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
         writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER, internalName, null, "java/lang/Object", arrayOf(SOURCE))
         writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null).apply {
             visitCode()
             visitVarInsn(Opcodes.ALOAD, 0)
             visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false)
+            constructorCall?.let { (owner, method) -> visitMethodInsn(Opcodes.INVOKESTATIC, owner, method, "()V", false) }
             visitInsn(Opcodes.RETURN)
             visitMaxs(0, 0)
             visitEnd()

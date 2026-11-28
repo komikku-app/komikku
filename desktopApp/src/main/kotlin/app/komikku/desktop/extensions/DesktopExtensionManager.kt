@@ -2,6 +2,7 @@ package app.komikku.desktop.extensions
 
 import android.content.Context
 import android.widget.Toast
+import app.komikku.desktop.compat.UnsupportedOnDesktop
 import app.komikku.desktop.extension.ExtensionPackageResult
 import app.komikku.desktop.extension.ExtensionPaths
 import app.komikku.desktop.extension.ExtensionRuntime
@@ -52,6 +53,13 @@ import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import java.io.File
+import java.io.IOException
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.LinkOption
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
@@ -129,6 +137,14 @@ class DesktopExtensionManager(
     /** Why the last install or load of a package failed (one line), shown by the Extensions tab ([installError]). */
     private val installErrors = ConcurrentHashMap<String, String>()
 
+    private val unsupportedList = MutableStateFlow(emptyList<UnsupportedExtension>())
+
+    /**
+     * Installed extensions whose code needs a compat member that cannot work on desktop ([UnsupportedOnDesktop]):
+     * not loaded, listed by the Extensions tab as "unsupported on desktop: needs …" until uninstalled or updated.
+     */
+    val unsupportedExtensionsFlow: StateFlow<List<UnsupportedExtension>> = unsupportedList.asStateFlow()
+
     init {
         scope.launch {
             mutex.withLock { initExtensions() }
@@ -165,6 +181,7 @@ class DesktopExtensionManager(
             is ExtensionPackageResult.Valid -> result.extension
         }
         loadedApkHashes[extension.pkgName] = extension.apk.sha256
+        setUnsupported(extension.pkgName, null)
         val stores = storeRepository.getAll()
         val storeName = stores.firstOrNull { store -> extension.signatures.all { it == store.signingKey } }?.label
 
@@ -193,7 +210,16 @@ class DesktopExtensionManager(
             runtime.load(extension)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Extension load error: ${extension.name} (${extension.pkgName})" }
-            failed(extension.pkgName, e.message ?: e.toString())
+            val unsupported = generateSequence<Throwable>(e) { it.cause }.filterIsInstance<UnsupportedOnDesktop>().firstOrNull()
+            if (unsupported == null) {
+                failed(extension.pkgName, e.message ?: e.toString())
+            } else {
+                failed(extension.pkgName, "Unsupported on desktop: needs ${unsupported.needs}")
+                setUnsupported(
+                    extension.pkgName,
+                    UnsupportedExtension(extension.name, extension.pkgName, extension.versionName, unsupported.needs),
+                )
+            }
             return LoadResult.Error
         }
 
@@ -486,7 +512,16 @@ class DesktopExtensionManager(
     /** [uninstallExtension] that returns when the extension is gone. */
     suspend fun uninstall(pkgName: String) = mutex.withLock {
         ExtensionPaths.packageFileOrNull(apkDir, pkgName, APK_SUFFIX)?.delete()
+        // Like Android, uninstalling deletes the extension's data
+        ExtensionPaths.packageFileOrNull(runtime.dataDir, pkgName)?.let { folder ->
+            try {
+                deleteTree(folder.toPath())
+            } catch (e: IOException) {
+                logcat(LogPriority.WARN, e) { "Could not delete $folder" }
+            }
+        }
         loadedApkHashes.remove(pkgName)
+        setUnsupported(pkgName, null)
         unregister(pkgName)
         runtime.pruneJarCache(loadedApkHashes.values.toSet())
     }
@@ -563,6 +598,13 @@ class DesktopExtensionManager(
         }
     }
 
+    /** Lists [pkgName] as [unsupported], or not when `null`. */
+    private fun setUnsupported(pkgName: String, unsupported: UnsupportedExtension?) {
+        unsupportedList.update { list ->
+            (list.filterNot { it.pkgName == pkgName } + listOfNotNull(unsupported)).sortedBy { it.name.lowercase() }
+        }
+    }
+
     private fun setAvailable(map: Map<String, Extension.Available>) {
         availableMap.value = map
         val blacklistEnabled = preferences.enableSourceBlacklist().get()
@@ -573,4 +615,27 @@ class DesktopExtensionManager(
         private const val APK_EXTENSION = "apk"
         private const val APK_SUFFIX = ".$APK_EXTENSION"
     }
+}
+
+/** An installed extension that [DesktopExtensionManager] does not load: its code needs [needs], which desktop lacks. */
+data class UnsupportedExtension(val name: String, val pkgName: String, val versionName: String, val needs: String)
+
+/** Deletes [root] and what is under it without following symbolic links (an extension's links point anywhere). */
+@Throws(IOException::class)
+private fun deleteTree(root: Path) {
+    if (!Files.exists(root, LinkOption.NOFOLLOW_LINKS)) return
+    Files.walkFileTree(
+        root,
+        object : SimpleFileVisitor<Path>() {
+            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                Files.delete(file)
+                return FileVisitResult.CONTINUE
+            }
+
+            override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
+                Files.delete(dir)
+                return FileVisitResult.CONTINUE
+            }
+        },
+    )
 }
