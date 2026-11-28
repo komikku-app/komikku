@@ -438,6 +438,10 @@ a declaration-level line, never behaviour (ANSWER 014).
   shared modules' `build.gradle.kts` (11), `gradle/*.versions.toml` (3).
 - **Moved files** (16 byte-identical moves to `androidMain` / `core/preference`, carried by rename detection).
 - **Small rest:** `i18n-kmk` base `strings.xml` (our block at the end), `AGENTS.md`, `.gitattributes`.
+- **Temporary differences** (a fix `master` gets as a patch, kept here until then; ANSWER 015):
+  - `app/src/main/java/eu/kanade/tachiyomi/ui/reader/loader/HttpPageLoader.kt`: the reader download race fix
+    (`0a77c5bc21`, one KMK block and an import), sent to `master` as `android-fixes/httppageloader-race.patch` for
+    #2023, byte-identical to this branch's file. Exit: removed by the merge of `master` that contains #2023.
 
 **`CloudflareInterceptor.kt` is not byte-identical, by one line.** `NetworkHelper.kt` (shared code, byte-identical to
 `master`) constructs it, so on this branch it is an `expect class` in `core/common/src/jvmSharedMain`, and Kotlin

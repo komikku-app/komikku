@@ -86,7 +86,36 @@ and the patch's tests. The new tests were written before the fix.
 - **Gates:** `:app:testDebugUnitTest --tests '…MdListTest'` 2 tests, 0 failed; `spotlessApply`, `spotlessCheck`,
   `:app:compileDebugKotlin` successful.
 
+## `httppageloader-race.patch`
+
+`fix(reader): Load an online page on one thread at a time so it is never ready before its image is cached`
+
+- **Bug:** `HttpPageLoader` runs `eh_reader_threads` (default 2) threads over one priority queue, and a page is in it
+  once per `loadPage` call (the viewer's preload of the neighbours, its shown page, the earlier pages' preload). A
+  thread skips an entry only when the page is no longer `Queue`, and marks it `DownloadImage` only after the chapter
+  cache lookup, so two threads that take the page in that window both download it. The cache's editor goes to the
+  first; the second's `putImageToCache` gets none and returns without writing, and that thread sets the page `Ready`
+  while the image is not in the cache yet.
+- **On Android:** the viewer decodes on `Ready`, fails (no file yet) and shows the page's error; the first thread's
+  later `Ready` is the same state, so nothing retries until the user taps "Retry". Also one wasted download.
+- **Reproduced:** on the `multiplatform` branch, where the desktop reader runs this same file: `ReaderWidePagesUiTest`
+  failed on it once in CI, and a test that holds the chapter cache's lock while two `loadPage` calls queue one page
+  showed two downloads and `Ready` before the file existed. On `master` by the new unit test; not run on a device.
+- **Fix:** a set of the pages a thread is loading now: a thread that takes a page another thread is loading skips
+  that entry, and one that takes it after the other finished loads it only while it is still `Queue`. The file is
+  byte-identical to `multiplatform`'s (commit `0a77c5bc21`, KMK block included), so merging `master` back after this
+  patch needs no resolution there.
+- **Test:** new `app/src/test/.../ui/reader/loader/HttpPageLoaderTest.kt`: two `loadPage` calls for one page with a
+  mocked chapter cache that, like the real one, lets only one writer per key write, and whose lookup waits (at most
+  1 s) for a second caller. It checks that the image is cached when the page first turns `Ready` and that it was
+  downloaded once. Before the fix it failed (`Ready` with the image not cached); after it, 5 of 5 runs passed. On
+  `multiplatform` the reader test package passed 15 of 15 runs under load with the fix.
+- **Gates:** `:app:testDebugUnitTest --tests '…HttpPageLoaderTest'` 1 test, 0 failed; `spotlessApply`,
+  `spotlessCheck`, `:app:compileDebugKotlin` successful.
+
 ## Local branches
 
 The commits are on local branches of the `master` checkout used for the gates (never pushed):
-`fix/app-release-odd-tag`, `fix/library-update-category-filter`, `fix/mdlist-missing-source`.
+`fix/app-release-odd-tag`, `fix/library-update-category-filter`, `fix/mdlist-missing-source`. The
+`httppageloader-race.patch` commit is on the local branch `fix/httppageloader-race` of this repository (made in a
+temporary worktree, since removed).
