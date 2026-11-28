@@ -22,6 +22,8 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.nio.channels.FileChannel
+import java.nio.channels.FileLock
 import java.nio.file.Files
 import java.nio.file.attribute.AclEntryType
 import java.nio.file.attribute.AclFileAttributeView
@@ -290,12 +292,73 @@ class DesktopSingleInstanceTest {
         primary(dataDir)
     }
 
+    @Test
+    fun `with a folder that cannot be locked a second start signals the running instance and exits with code 0`() {
+        val dataDir = folder("data")
+        val shown = Semaphore(0)
+        val running = primary(dataDir, tryLock = SingleInstanceChild.unlockable)
+        running.lockUnsupported shouldBe true
+        running.onShowRequest = { shown.release() }
+
+        val second = startChild(dataDir, unlockable = true)
+
+        second.process.waitFor(CHILD_TIMEOUT_S, TimeUnit.SECONDS) shouldBe true
+        second.process.exitValue() shouldBe 0
+        shown.tryAcquire(5, TimeUnit.SECONDS) shouldBe true
+    }
+
+    @Test
+    fun `with a folder that cannot be locked a stale port file is taken over`() {
+        val dataDir = folder("data")
+        val portFile = dataDir.toPath().resolve(DesktopSingleInstance.PORT_FILE)
+        val closedPort = ServerSocket(0, 1, InstanceSignal.loopback).use { it.localPort }
+        val stale = InstancePortFile.Endpoint(closedPort, InstanceSignal.newToken())
+        InstancePortFile.write(portFile, stale)
+
+        val instance = primary(dataDir, tryLock = SingleInstanceChild.unlockable)
+
+        instance.lockUnsupported shouldBe true
+        val current = InstancePortFile.read(portFile).shouldNotBeNull()
+        current shouldNotBe stale
+        val shown = Semaphore(0)
+        instance.onShowRequest = { shown.release() }
+        val second = startChild(dataDir, unlockable = true)
+        second.process.waitFor(CHILD_TIMEOUT_S, TimeUnit.SECONDS) shouldBe true
+        second.process.exitValue() shouldBe 0
+        shown.tryAcquire(5, TimeUnit.SECONDS) shouldBe true
+    }
+
+    @Test
+    fun `a folder that cannot be locked logs a warning on every start`() {
+        val dataDir = folder("data")
+        val lines = mutableListOf<String>()
+        val previous = DesktopLog.sink
+        DesktopLog.sink = { _, tag, message -> synchronized(lines) { lines += "$tag: $message" } }
+        try {
+            val instance = primary(dataDir, tryLock = SingleInstanceChild.unlockable)
+            instance.warnIfUnlockable()
+            primary(folder("lockable")).warnIfUnlockable()
+        } finally {
+            DesktopLog.sink = previous
+        }
+
+        synchronized(lines) { lines.filter { "cannot be locked" in it } }.size shouldBe 2
+    }
+
     private class Exit(val code: Int) : RuntimeException()
 
     private fun folder(name: String): File = File(tempDir, name).apply { mkdirs() }
 
-    private fun primary(dataDir: File, readTimeoutMs: Long = 1_000): DesktopSingleInstance {
-        val outcome = DesktopSingleInstance.acquire(dataDir, requestReadTimeout = readTimeoutMs.milliseconds)
+    private fun primary(
+        dataDir: File,
+        readTimeoutMs: Long = 1_000,
+        tryLock: (FileChannel) -> FileLock? = { it.tryLock() },
+    ): DesktopSingleInstance {
+        val outcome = DesktopSingleInstance.acquire(
+            dataDir,
+            requestReadTimeout = readTimeoutMs.milliseconds,
+            tryLock = tryLock,
+        )
         return outcome.shouldBeInstanceOf<DesktopSingleInstance.Outcome.Primary>().instance.also { instances += it }
     }
 
@@ -365,7 +428,7 @@ class DesktopSingleInstanceTest {
     }
 
     /** Starts [SingleInstanceChild] on [dataDir] in a new JVM with this test's class path (through an argument file). */
-    private fun startChild(dataDir: File): Child {
+    private fun startChild(dataDir: File, unlockable: Boolean = false): Child {
         val index = children.size
         val argFile = File(tempDir, "child-$index.args")
         val classPath = System.getProperty("java.class.path").replace("\\", "\\\\").replace("\"", "\\\"")
@@ -377,6 +440,7 @@ class DesktopSingleInstanceTest {
             "@${argFile.path}",
             SingleInstanceChild::class.java.name,
             dataDir.path,
+            *listOfNotNull(SingleInstanceChild.UNLOCKABLE.takeIf { unlockable }).toTypedArray(),
         ).start()
         return Child(process).also { children += it }
     }

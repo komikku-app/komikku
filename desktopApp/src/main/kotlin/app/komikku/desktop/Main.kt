@@ -16,6 +16,7 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.instance.DesktopSingleInstance
+import app.komikku.desktop.instance.UnlockableFolderBanner
 import app.komikku.desktop.log.DesktopLogFile
 import app.komikku.desktop.notification.DesktopNotifications
 import app.komikku.desktop.notification.DesktopTray
@@ -87,6 +88,7 @@ fun main(args: Array<String>) {
     // before the log file, which belongs to the running instance, and before `DesktopInjekt.init()` opens the database
     val singleInstance = DesktopSingleInstance.ensure(dataDir)
     DesktopLogFile.start(dataDir, BuildConfig.VERSION_NAME)
+    singleInstance.warnIfUnlockable()
     val app = DesktopInjekt.init(dataDir)
     smoke?.onInjektReady()
     // SY's log level, once the preferences are there (applied at once when it changes)
@@ -197,6 +199,7 @@ fun ApplicationScope.KomikkuWindow(
         KomikkuApp(
             context = app,
             shortcuts = shortcuts,
+            unlockableDataFolder = singleInstance?.lockUnsupported == true,
             onToggleFullscreen = {
                 windowState.placement = if (windowState.placement == WindowPlacement.Fullscreen) {
                     WindowPlacement.Floating
@@ -211,11 +214,13 @@ fun ApplicationScope.KomikkuWindow(
 /**
  * Window content: compat [LocalContext] (for `stringResource` & co.), the desktop Coil image loader,
  * the app theme, the snackbar host behind compat toasts, the navigation shell and the reader above it.
+ * [unlockableDataFolder]: the warning banner above the shell ([UnlockableFolderBanner]).
  */
 @Composable
 fun KomikkuApp(
     context: Context,
     shortcuts: DesktopShortcuts? = null,
+    unlockableDataFolder: Boolean = false,
     onToggleFullscreen: (() -> Unit)? = null,
 ) {
     setSingletonImageLoaderFactory { platformContext ->
@@ -238,7 +243,7 @@ fun KomikkuApp(
             AppLockGate(lock = remember { Injekt.get<DesktopAppLock>() }) {
                 DesktopToastHost {
                     ReaderHost(launcher = remember { Injekt.get<ReaderLauncher>() }, onToggleFullscreen = onToggleFullscreen) {
-                        HomeShell(shortcuts = shortcuts)
+                        UnlockableFolderBanner(show = unlockableDataFolder) { HomeShell(shortcuts = shortcuts) }
                         AppUpdateDialogHost()
                     }
                 }

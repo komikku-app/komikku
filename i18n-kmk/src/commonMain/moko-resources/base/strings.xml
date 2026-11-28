@@ -376,4 +376,5 @@
     <string name="desktop_migration_failed">Could not migrate %1$s</string>
     <string name="desktop_migration_no_sources">None of the sources chosen for migration is installed. Choose the sources to search again.</string>
     <string name="desktop_single_instance_busy">Another Komikku is using this data folder and did not respond:\n%1$s\n\nClose it, or start Komikku with a different data folder.</string>
+    <string name="desktop_unlockable_data_folder">This data folder does not support file locking, so Komikku cannot always tell when it is already open. Do not open it from two computers at the same time.</string>
 </resources>

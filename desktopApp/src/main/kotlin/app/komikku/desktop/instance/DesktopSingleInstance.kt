@@ -39,12 +39,20 @@ import kotlin.time.Duration.Companion.seconds
  *
  * Within one JVM the lock is also tracked in [held]: `tryLock` there throws [OverlappingFileLockException], and on
  * POSIX systems closing a second channel on the lock file would release the first one's lock.
+ *
+ * A data folder whose file system cannot lock (`tryLock` throws, e.g. some NFS / SMB shares; ANSWER 013) falls back to
+ * the port file as an advisory lock ([lockUnsupported]): a start signals the instance it names when that answers, and
+ * otherwise takes the folder over. It cannot stop two starts at the same moment, or on two computers, so the app warns
+ * about it in a banner ([UnlockableFolderBanner]) and in the log on every start.
  */
 class DesktopSingleInstance private constructor(
     private val lockFile: Path,
     private val channel: FileChannel?,
     private val lock: FileLock?,
     private val server: InstanceSignal.Server?,
+    private val token: String?,
+    /** The data folder cannot be locked: only the port file guards it, see the class description. */
+    val lockUnsupported: Boolean,
 ) : AutoCloseable {
 
     /**
@@ -64,20 +72,25 @@ class DesktopSingleInstance private constructor(
      */
     fun stopListening() {
         server?.close()
-        if (lock == null) return
+        val portFile = lockFile.resolveSibling(PORT_FILE)
         try {
-            Files.deleteIfExists(lockFile.resolveSibling(PORT_FILE))
+            // Without the lock another start may have taken the folder over and written its own
+            if (!lockUnsupported || InstancePortFile.read(portFile)?.token == token) Files.deleteIfExists(portFile)
         } catch (_: IOException) {
         }
+    }
+
+    /** Logs the [lockUnsupported] warning again, for the log file that is only set up after the check. */
+    fun warnIfUnlockable() {
+        if (lockUnsupported) xLogW(unlockableWarning(lockFile))
     }
 
     /** Stops listening, removes the port file and releases the lock. */
     override fun close() {
         stopListening()
-        if (lock == null) return
         synchronized(held) {
             try {
-                channel?.use { lock.release() }
+                channel?.use { lock?.release() }
             } catch (_: IOException) {
             }
             held.remove(lockFile)
@@ -119,7 +132,8 @@ class DesktopSingleInstance private constructor(
             dataDir: File,
             exit: (Int) -> Nothing = { exitProcess(it) },
             showBusy: (File) -> Unit = ::showBusyDialog,
-        ): DesktopSingleInstance = when (val outcome = acquire(dataDir)) {
+            tryLock: (FileChannel) -> FileLock? = { it.tryLock() },
+        ): DesktopSingleInstance = when (val outcome = acquire(dataDir, tryLock = tryLock)) {
             is Outcome.Primary -> outcome.instance
             Outcome.ShownOther -> {
                 xLogI("Single instance: Komikku already runs on this data folder; asked it to show its window")
@@ -134,12 +148,14 @@ class DesktopSingleInstance private constructor(
 
         /**
          * Takes [dataDir]'s lock, or asks its holder to show its window; retries both until [answerTimeout] has passed.
-         * [requestReadTimeout] bounds how long the holder waits for a request line.
+         * [requestReadTimeout] bounds how long the holder waits for a request line. [tryLock] takes the lock (tests: a
+         * file system that cannot lock).
          */
         fun acquire(
             dataDir: File,
             answerTimeout: Duration = ANSWER_TIMEOUT,
             requestReadTimeout: Duration = REQUEST_READ_TIMEOUT,
+            tryLock: (FileChannel) -> FileLock? = { it.tryLock() },
         ): Outcome {
             val directory = try {
                 dataDir.toPath().toRealPath()
@@ -150,11 +166,13 @@ class DesktopSingleInstance private constructor(
             val portFile = directory.resolve(PORT_FILE)
             val deadline = System.nanoTime() + answerTimeout.inWholeNanoseconds
             while (true) {
-                when (val attempt = tryLock(lockFile)) {
-                    is LockAttempt.Locked -> return Outcome.Primary(becomePrimary(lockFile, attempt, requestReadTimeout))
+                when (val attempt = lock(lockFile, tryLock)) {
+                    is LockAttempt.Locked -> {
+                        return Outcome.Primary(becomePrimary(lockFile, attempt.channel, attempt.lock, requestReadTimeout))
+                    }
                     is LockAttempt.Unsupported -> {
-                        xLogW("Single instance: the data folder cannot be locked, not guarding it", attempt.error)
-                        return Outcome.Primary(DesktopSingleInstance(lockFile, null, null, null))
+                        val remaining = (deadline - System.nanoTime()).coerceAtLeast(1)
+                        return advisory(lockFile, attempt.error, remaining.nanoseconds, requestReadTimeout)
                     }
                     LockAttempt.Taken -> {
                         val remaining = (deadline - System.nanoTime()).coerceAtLeast(0)
@@ -167,7 +185,28 @@ class DesktopSingleInstance private constructor(
             }
         }
 
-        private fun tryLock(lockFile: Path): LockAttempt = synchronized(held) {
+        /**
+         * The lock cannot be taken on this file system: the port file is the lock, an advisory one (ANSWER 013). The
+         * instance it names is asked to show its window once, within [answerTimeout]; when none answers (no port file,
+         * or one left by a process that died) this start takes the folder over and writes its own. An instance that is
+         * quitting has removed its port file already, so a start then does not wait for it to exit.
+         */
+        private fun advisory(lockFile: Path, error: IOException, answerTimeout: Duration, readTimeout: Duration): Outcome {
+            xLogW(unlockableWarning(lockFile), error)
+            val portFile = lockFile.resolveSibling(PORT_FILE)
+            if (InstanceSignal.requestShow(portFile, answerTimeout)) return Outcome.ShownOther
+            synchronized(held) {
+                if (lockFile in held) return Outcome.OtherNotAnswering
+                held.add(lockFile)
+            }
+            return Outcome.Primary(becomePrimary(lockFile, null, null, readTimeout))
+        }
+
+        private fun unlockableWarning(lockFile: Path) =
+            "Single instance: the data folder ${lockFile.parent} cannot be locked; $PORT_FILE is an advisory lock only, " +
+                "do not open the folder from two computers at the same time"
+
+        private fun lock(lockFile: Path, tryLock: (FileChannel) -> FileLock?): LockAttempt = synchronized(held) {
             if (lockFile in held) return LockAttempt.Taken
             val channel = try {
                 FileChannel.open(lockFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
@@ -175,7 +214,7 @@ class DesktopSingleInstance private constructor(
                 return LockAttempt.Unsupported(e)
             }
             val lock = try {
-                channel.tryLock()
+                tryLock(channel)
             } catch (_: OverlappingFileLockException) {
                 null
             } catch (e: IOException) {
@@ -190,11 +229,17 @@ class DesktopSingleInstance private constructor(
             LockAttempt.Locked(channel, lock)
         }
 
-        private fun becomePrimary(lockFile: Path, locked: LockAttempt.Locked, readTimeout: Duration): DesktopSingleInstance {
+        /** Listens for other starts; [lock] is `null` when the file system cannot lock ([advisory]). */
+        private fun becomePrimary(
+            lockFile: Path,
+            channel: FileChannel?,
+            lock: FileLock?,
+            readTimeout: Duration,
+        ): DesktopSingleInstance {
             val portFile = lockFile.resolveSibling(PORT_FILE)
+            val token = InstanceSignal.newToken()
             val server = try {
                 Files.deleteIfExists(portFile)
-                val token = InstanceSignal.newToken()
                 InstanceSignal.Server(token, readTimeout).also { server ->
                     try {
                         InstancePortFile.write(portFile, InstancePortFile.Endpoint(server.port, token))
@@ -208,7 +253,7 @@ class DesktopSingleInstance private constructor(
                 xLogE("Single instance: cannot listen for other starts; they will report the data folder as busy", e)
                 null
             }
-            return DesktopSingleInstance(lockFile, locked.channel, locked.lock, server)
+            return DesktopSingleInstance(lockFile, channel, lock, server, token, lockUnsupported = lock == null)
         }
 
         /** Asks the OS to bring this app to the front (macOS; elsewhere showing the window is enough). */
