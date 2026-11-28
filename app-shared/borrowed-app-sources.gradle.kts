@@ -428,7 +428,8 @@ run {
     // The MangaDex delegate (P4) with its API layer and the MDList tracker it logs in / syncs through (replaces the
     // desktop MDList stub). Not borrowed: MangaDexLoginActivity (the desktop logs in through Settings → Tracking, an
     // OAuth paste handed to the MangaDex source's login, `DesktopTrackerLogin`), the follows / similar screens and their
-    // paging sources.
+    // paging sources. Desktop counterpart in app-shared/src/desktopMain: MangaDexSessionNotifier (logs instead of
+    // notifying).
     desktopCopy(
         "eu/kanade/tachiyomi/data/track/mdlist/MdList.kt",
         "eu/kanade/tachiyomi/source/online/all/MangaDex.kt",

@@ -470,8 +470,11 @@ byte-identical. Beyond the list in 7.2:
 
 - The desktop has no "MangaDex session expired" notification (`master`'s notifier): the counterpart logs, and
   Settings > Tracking shows MDList logged out.
-- `master`'s Cloudflare work beyond detection (one solve per host, non-GET requests solved on the site's root,
-  interactive challenges) has desktop equivalents of its own (`CloudflareHostState`); not compared line by line.
+- `master`'s Cloudflare work beyond detection: one solve per host and the memory of a failed solve have desktop
+  equivalents of their own (`CloudflareHostState`). Two parts do not (REVIEW_A4.md 2.1 / 2.2, follow-ups after the
+  landing): the desktop hands a challenged non-GET request's own URL to the browser instead of the site's root
+  (`master`'s `14c94f5cec`), so a challenged POST waits for the 30 s timeout and fails; and it does not give up when
+  the challenge turns interactive (`b672f8028e`), so it holds the host until the same timeout.
 - The library's "reset info" confirmation (`084750b89b`) has no desktop counterpart because the desktop library has no
   batch "reset info".
 - Section 2.2 item 11 still applies, except for the WebView header rules (ported in `CloudflareChallenge`) and range
