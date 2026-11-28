@@ -6,7 +6,8 @@ name: Desktop builder
 # are set. Branch runs so far build only (release mode none; first green runs 45623103294 and 45625758564); the release
 # jobs have not attached to a release yet. See docs/kmp-desktop/BUILDING.md "Release pipeline" and "Signing".
 # KMK -->
-# A non-blocking job never holds up a release: the desktop tests on Windows (`windows-test`).
+# Two non-blocking jobs never hold up a release: the desktop tests on Windows (`windows-test`) and a smoke test of the
+# installed app on Linux and Windows (`smoke`; how to read it: the comment above that job).
 # KMK <--
 
 on:
@@ -436,12 +437,89 @@ jobs:
             desktopApp/build/reports/tests/test
             desktopApp/build/test-results/test
           retention-days: 14
+
+  # Track D, step 2 (WINDOWS_LINUX_TEST_PLAN.md, section 4): installs what `package` built on a fresh runner, starts the
+  # installed app on a fresh data folder (-Dkomikku.dataDir, never the default one), waits for its window, takes
+  # screenshots, switches the top-level tabs with Ctrl+2…5 and Ctrl+1, closes the window and checks a clean exit and a
+  # log without exceptions, then uninstalls. Driven only from outside (window system, keyboard shortcuts); Linux on Xvfb
+  # with openbox. Scripts: .github/scripts/desktop_smoke_linux.sh and desktop_smoke_windows.ps1.
+  # Non-blocking (`continue-on-error`), and `release` must keep depending only on `package` until this job has been
+  # green on ten consecutive runs (ATLAS_INSTRUCTIONS.md, ANSWER 005).
+  #
+  # Reading a run: the job summary has one table per OS (PASS / FAIL / INFO per check); the artifact
+  # desktop-smoke-<os>-X64-<sha> (always uploaded, 14 days) holds
+  #   summary.md                 the same table
+  #   screenshots/01-start.png   the window's content after start, then 02-ctrl2-updates … 06-ctrl1-library.png after
+  #                              each shortcut (each one taken once the screen stopped changing); 01-start-screen.png is
+  #                              the whole screen; no-window-<n>.png / close-timeout.png only when that went wrong
+  #   logs/data-<n>/komikku.log  the app's own log of attempt n (debug level), with the data folder's file list
+  #   logs/app-std*-<n>.log      the launcher's stdout / stderr (empty on Windows if the GUI launcher drops them)
+  #   log-problems.txt           every error-level and stack-trace line of the app log
+  #   logs/install.log, apt-*.log, uninstall.log, xvfb.log, openbox.log, windows-<n>.txt, jstack.txt  as they apply
+  # Attempt 2 exists only when no window appeared with Skiko's default renderer and the app was started again with
+  # SKIKO_RENDER_API=SOFTWARE; that is a finding even when attempt 2 passes.
+  smoke:
+    name: Smoke test (${{ matrix.os }}, non-blocking)
+    needs: package
+    # Also when another OS's packaging failed; a missing artifact for this OS then fails the download step
+    if: ${{ !cancelled() && needs.package.result != 'skipped' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: 'ubuntu-24.04'
+            asset-os: linux
+          - os: 'windows-2022'
+            asset-os: windows
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    timeout-minutes: 30
+    concurrency:
+      group: ${{ github.workflow }}-smoke-${{ github.ref }}-${{ matrix.os }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+
+    steps:
+      # Only the scripts, at this run's commit
+      - name: Clone scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
+      - name: Download packages
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: Komikku-desktop-${{ matrix.asset-os }}-${{ runner.arch }}-${{ github.sha }}
+          path: packages
+
+      - name: Smoke test (Linux)
+        if: runner.os == 'Linux'
+        timeout-minutes: 20
+        run: .github/scripts/desktop_smoke_linux.sh packages smoke-output
+
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        timeout-minutes: 20
+        shell: pwsh
+        run: ./.github/scripts/desktop_smoke_windows.ps1 -Packages packages -Output smoke-output
+
+      - name: Upload screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-smoke-${{ matrix.asset-os }}-${{ runner.arch }}-${{ github.sha }}
+          path: smoke-output/
+          if-no-files-found: warn
+          retention-days: 14
   # KMK <--
 
   release:
     name: Attach to release ${{ needs.plan.outputs.tag }}
     # KMK -->
-    # Never on `windows-test` while it is non-blocking (ATLAS_INSTRUCTIONS.md, ANSWER 005)
+    # Never on `windows-test` or `smoke` while they are non-blocking (ATLAS_INSTRUCTIONS.md, ANSWER 005)
     # KMK <--
     needs:
       - plan

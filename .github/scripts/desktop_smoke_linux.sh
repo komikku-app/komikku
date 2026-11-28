@@ -1,0 +1,509 @@
+#!/usr/bin/env bash
+# KMK: first smoke test of the packaged Linux app (docs/kmp-desktop/WINDOWS_LINUX_TEST_PLAN.md, section 4), run by
+# .github/workflows/build_desktop.yml (job `smoke`, ubuntu-24.04) on the `package` job's artifact. Installs the .deb
+# with apt, starts the installed launcher on a fresh data folder (-Dkomikku.dataDir under $RUNNER_TEMP, never the
+# default one) on a virtual display (Xvfb + openbox), waits for the window, takes screenshots, switches the top-level
+# tabs with Ctrl+2…5 and Ctrl+1, closes the window, checks that the process ends with exit code 0 and that the log has
+# no exception, then uninstalls. The app is driven only from outside (window system and keyboard shortcuts).
+#
+#   desktop_smoke_linux.sh <packages dir> <output dir>
+#
+#   <packages dir>  the artifact Komikku-desktop-linux-X64-<sha> (Komikku-<v>-linux-x64.deb and its SHA256SUMS)
+#   <output dir>    screenshots/, logs/, summary.md and the other files the workflow uploads (created)
+#
+# Every check is printed as [PASS] / [FAIL] / [INFO] and written to <output dir>/summary.md and the job summary; the
+# script exits 1 when a check failed. How to read the output: the comment above the `smoke` job in the workflow.
+set -uo pipefail
+
+if [ "$#" -ne 2 ]; then
+  echo "usage: $0 <packages dir> <output dir>" >&2
+  exit 2
+fi
+packages=$(cd "$1" && pwd) || exit 2
+mkdir -p "$2/screenshots" "$2/logs" || exit 2
+out=$(cd "$2" && pwd)
+tmp=$(mktemp -d)
+work=${RUNNER_TEMP:-$tmp}
+
+display=:99
+# Seconds: the first window after start, the process end after the close request, one screen to stop changing
+window_timeout=120
+exit_timeout=30
+settle_timeout=30
+# Per 10000 pixels of the window: at most this many differ between two screenshots of a settled screen, at least this
+# many after a tab switch (deliberately low: an empty screen differs from another one only in its title and a few
+# lines of text; the screenshots are the real evidence)
+settled_max=5
+changed_min=10
+
+failures=0
+rows=()
+app_pid=""
+data=""
+launcher=""
+installed=no
+background=()
+
+record() {
+  local status=$1 name=$2 detail=${3:-}
+  rows+=("| $status | $name | ${detail//|/\\|} |")
+  echo "[$status] $name${detail:+: $detail}"
+  if [ "$status" = FAIL ]; then
+    failures=$((failures + 1))
+    echo "::error title=Desktop smoke test (Linux)::$name${detail:+: $detail}"
+  fi
+}
+pass() { record PASS "$@"; }
+fail() { record FAIL "$@"; }
+info() { record INFO "$@"; }
+# A failure after which nothing else can be checked
+fatal() {
+  fail "$@"
+  exit 1
+}
+
+# Whether the process runs (a zombie, i.e. ended but not yet waited for, does not)
+running() {
+  local state
+  state=$(ps -o stat= -p "$1" 2> /dev/null) || return 1
+  [[ $state != Z* ]]
+}
+
+# Ends the app: TERM, then KILL after 10 s
+stop_app() {
+  [ -n "$app_pid" ] || return 0
+  if running "$app_pid"; then
+    kill -TERM "$app_pid" 2> /dev/null
+    for _ in $(seq 1 10); do running "$app_pid" || break; sleep 1; done
+    running "$app_pid" && kill -KILL "$app_pid" 2> /dev/null
+  fi
+  wait "$app_pid" 2> /dev/null
+  app_pid=""
+}
+
+# Copies the data folder's logs and JVM crash files of the current attempt into <output dir>/logs/data-<attempt>
+collect_logs() {
+  [ -n "$data" ] && [ -d "$data" ] || return 0
+  local dest="$out/logs/data-$attempt"
+  mkdir -p "$dest"
+  [ -d "$data/logs" ] && cp -R "$data/logs/." "$dest/"
+  find "$data" -maxdepth 1 -name 'hs_err_pid*.log' -exec cp {} "$dest/" \;
+  (cd "$data" && find . -maxdepth 3 | LC_ALL=C sort) > "$dest/data-folder-files.txt"
+}
+
+# Also after a failure that stopped the run, as long as the package was installed
+uninstall() {
+  if sudo DEBIAN_FRONTEND=noninteractive apt-get remove -y -q komikku > "$out/logs/apt-remove.log" 2>&1 \
+    && { [ -z "$launcher" ] || [ ! -e "$launcher" ]; }; then
+    pass "Uninstall (apt-get remove)" "launcher removed"
+  else
+    fail "Uninstall (apt-get remove)" "apt-get failed or $launcher is still there (logs/apt-remove.log)"
+  fi
+  if [ -n "$data" ] && [ -d "$data" ]; then info "Data folder after uninstall" "kept"; fi
+}
+
+finish() {
+  local status=$?
+  stop_app
+  collect_logs
+  for pid in "${background[@]}"; do kill "$pid" 2> /dev/null; done
+  if [ "$installed" = yes ]; then uninstall; fi
+  {
+    echo "## Desktop smoke test (Linux)"
+    echo
+    echo "| Result | Check | Detail |"
+    echo "|--------|-------|--------|"
+    printf '%s\n' "${rows[@]}"
+    echo
+    echo "Screenshots and logs: the artifact desktop-smoke-linux-… of this run."
+  } > "$out/summary.md"
+  if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then cat "$out/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+  rm -rf "$tmp"
+  if [ "$failures" -gt 0 ]; then
+    echo "$failures check(s) failed"
+    exit 1
+  fi
+  exit "$status"
+}
+trap finish EXIT
+
+# wait_for <seconds> <command...>: runs the command every second until it succeeds
+wait_for() {
+  local seconds=$1
+  shift
+  for _ in $(seq 1 "$seconds"); do
+    "$@" > /dev/null 2>&1 && return 0
+    sleep 1
+  done
+  return 1
+}
+
+shoot_root() {
+  import -silent -display "$DISPLAY" -window root "$1"
+}
+
+# Sets X, Y, WIDTH, HEIGHT to the window $wid's position and size (clipped to the screen's top-left corner)
+read_geometry() {
+  local key value
+  X="" Y="" WIDTH="" HEIGHT=""
+  while IFS='=' read -r key value; do
+    case "$key" in
+      X) X=$value ;;
+      Y) Y=$value ;;
+      WIDTH) WIDTH=$value ;;
+      HEIGHT) HEIGHT=$value ;;
+    esac
+  done < <(xdotool getwindowgeometry --shell "$wid" 2> /dev/null)
+  [ -n "$X" ] && [ -n "$Y" ] && [ -n "$WIDTH" ] && [ -n "$HEIGHT" ] || return 1
+  if [ "$X" -lt 0 ]; then WIDTH=$((WIDTH + X)) X=0; fi
+  if [ "$Y" -lt 0 ]; then HEIGHT=$((HEIGHT + Y)) Y=0; fi
+}
+
+# The window's area of a screenshot of the whole screen
+shoot_window() {
+  read_geometry || return 1
+  shoot_root "$tmp/root.png" || return 1
+  convert "$tmp/root.png" -crop "${WIDTH}x${HEIGHT}+${X}+${Y}" +repage "$1"
+}
+
+# Number of pixels that differ between two screenshots (5 % colour tolerance); -1 when they cannot be compared
+diff_pixels() {
+  local result code
+  result=$(compare -metric AE -fuzz 5% "$1" "$2" null: 2>&1)
+  code=$?
+  if [ "$code" -gt 1 ]; then
+    echo -1
+    return
+  fi
+  # ImageMagick may print large counts in scientific notation (1.2e+06); awk reads both
+  result=$(printf '%s\n' "$result" | awk 'NR == 1 { printf "%d\n", $1 }')
+  if [[ $result =~ ^[0-9]+$ ]]; then echo "$result"; else echo -1; fi
+}
+
+percent() {
+  awk -v n="$1" -v total="$2" 'BEGIN { printf "%.2f", (total > 0 ? 100 * n / total : 0) }'
+}
+
+# settle <file>: screenshots of the window every 2 s until two in a row (almost) agree, at most $settle_timeout s;
+# the last one is kept as <file>. Sets `settled` to yes / no.
+settle() {
+  local dest=$1 previous="" current="" i changed
+  settled=no
+  for i in $(seq 1 $((settle_timeout / 2))); do
+    sleep 2
+    current="$tmp/settle-$i.png"
+    shoot_window "$current" || return 1
+    if [ -n "$previous" ]; then
+      changed=$(diff_pixels "$previous" "$current")
+      if [ "$changed" -ge 0 ] && [ "$changed" -le $((WIDTH * HEIGHT * settled_max / 10000)) ]; then
+        settled=yes
+        break
+      fi
+    fi
+    previous=$current
+  done
+  cp "$current" "$dest"
+}
+
+# Gives the window the keyboard focus (through the window manager when there is one)
+focus_window() {
+  timeout 10 xdotool windowactivate --sync "$wid" > /dev/null 2>&1 \
+    || timeout 10 xdotool windowfocus --sync "$wid" > /dev/null 2>&1
+  [ "$(xdotool getactivewindow 2> /dev/null)" = "$wid" ] \
+    || [ "$(xdotool getwindowfocus 2> /dev/null)" = "$wid" ]
+}
+
+# start_app <attempt> [SKIKO_RENDER_API]: starts the launcher on a fresh data folder; sets app_pid, data, started_at
+start_app() {
+  attempt=$1
+  local render_api=${2:-}
+  data="$work/komikku-smoke-data-$attempt"
+  case "$data" in
+    *' '*) fatal "Data folder" "'$data' contains a space, which JAVA_TOOL_OPTIONS cannot carry" ;;
+  esac
+  rm -rf "$data"
+  mkdir -p "$data"
+  stdout_log="$out/logs/app-stdout-$attempt.log"
+  stderr_log="$out/logs/app-stderr-$attempt.log"
+  (
+    # The working folder is where the JVM writes a crash file (hs_err_pid<pid>.log)
+    cd "$data" || exit 1
+    export JAVA_TOOL_OPTIONS="-Dkomikku.dataDir=$data -Dkomikku.log.level=debug -Dskiko.hardwareInfo.enabled=true"
+    if [ -n "$render_api" ]; then export SKIKO_RENDER_API=$render_api; fi
+    exec "$launcher"
+  ) > "$stdout_log" 2> "$stderr_log" &
+  app_pid=$!
+  started_at=$SECONDS
+  echo "Started $launcher (pid $app_pid, attempt $attempt${render_api:+, SKIKO_RENDER_API=$render_api}), data folder $data"
+}
+
+# Waits for a visible top-level window titled exactly "Komikku"; sets wid. 0 = found, 1 = timeout, 2 = process ended.
+wait_window() {
+  wid=""
+  while [ $((SECONDS - started_at)) -lt "$window_timeout" ]; do
+    running "$app_pid" || return 2
+    wid=$(xdotool search --onlyvisible --name '^Komikku$' 2> /dev/null | head -n 1)
+    [ -n "$wid" ] && return 0
+    sleep 1
+  done
+  return 1
+}
+
+# Records why no window appeared and ends that attempt
+no_window() {
+  local result=$1 name=$2 code
+  if [ "$result" -eq 2 ]; then
+    wait "$app_pid"
+    code=$?
+    app_pid=""
+    fail "$name" "the process ended with exit code $code before a window appeared (logs/app-stderr-$attempt.log)"
+  else
+    fail "$name" "no visible window titled Komikku within ${window_timeout} s (screenshots/no-window-$attempt.png)"
+  fi
+  shoot_root "$out/screenshots/no-window-$attempt.png"
+  wmctrl -l -p > "$out/logs/windows-$attempt.txt" 2>&1
+  xdotool search --name '.' getwindowname %@ >> "$out/logs/windows-$attempt.txt" 2>&1
+  stop_app
+  collect_logs
+}
+
+# --- Runner and package ---------------------------------------------------------------------------------------------
+
+# shellcheck source=/dev/null
+os_name=$(. /etc/os-release && echo "$PRETTY_NAME")
+info "Runner" "image ${ImageOS:-?} ${ImageVersion:-?}, $os_name, $(uname -m)"
+
+artifact_files=$(find "$packages" -mindepth 1 -maxdepth 1 -printf '%f ')
+sums=("$packages"/*-SHA256SUMS.txt)
+if [ "${#sums[@]}" -ne 1 ] || [ ! -f "${sums[0]}" ]; then
+  fatal "Package checksums" "expected one *-SHA256SUMS.txt in the artifact, found: $artifact_files"
+fi
+if (cd "$packages" && sha256sum -c "$(basename "${sums[0]}")") > "$out/checksums.txt" 2>&1; then
+  pass "Package checksums" "$(basename "${sums[0]}")"
+else
+  cat "$out/checksums.txt"
+  fatal "Package checksums" "sha256sum -c failed (checksums.txt)"
+fi
+debs=("$packages"/*.deb)
+if [ "${#debs[@]}" -ne 1 ] || [ ! -f "${debs[0]}" ]; then
+  fatal "Package" "expected one .deb in the artifact, found: $artifact_files"
+fi
+
+echo "::group::Install the test tools"
+if { sudo apt-get update -q \
+  && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends \
+    xvfb openbox xdotool wmctrl imagemagick x11-utils; } > "$out/logs/apt-tools.log" 2>&1; then
+  echo "Installed: xvfb openbox xdotool wmctrl imagemagick x11-utils"
+else
+  tail -n 40 "$out/logs/apt-tools.log"
+  echo "::endgroup::"
+  fatal "Test tools" "apt-get could not install them (logs/apt-tools.log)"
+fi
+echo "::endgroup::"
+
+# --- Install --------------------------------------------------------------------------------------------------------
+
+# apt resolves the package's Depends, which is a check of its own
+if sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q "${debs[0]}" > "$out/logs/apt-install.log" 2>&1; then
+  installed=yes
+  pass "Install (.deb with apt-get)" "$(basename "${debs[0]}")"
+else
+  tail -n 40 "$out/logs/apt-install.log"
+  fatal "Install (.deb with apt-get)" "apt-get failed (logs/apt-install.log)"
+fi
+dpkg -L komikku > "$out/installed-files.txt" 2>&1
+dpkg -s komikku > "$out/package-status.txt" 2>&1
+info "Package dependencies" "$(sed -n 's/^Depends: //p' "$out/package-status.txt")"
+launcher=$(grep -E '/bin/Komikku$' "$out/installed-files.txt" | head -n 1)
+if [ -n "$launcher" ] && [ -x "$launcher" ]; then
+  pass "Launcher installed" "$launcher"
+else
+  fatal "Launcher installed" "no executable …/bin/Komikku in dpkg -L komikku (installed-files.txt)"
+fi
+desktop_file=$(grep -E '\.desktop$' "$out/installed-files.txt" | head -n 1)
+if [ -n "$desktop_file" ]; then
+  pass "Menu entry in the package" "$desktop_file"
+else
+  fail "Menu entry in the package" "no .desktop file in dpkg -L komikku (installed-files.txt)"
+fi
+menu_entry=$(find /usr/share/applications -maxdepth 1 -iname '*komikku*.desktop' 2> /dev/null | head -n 1)
+info "Menu entry registered" "${menu_entry:-none in /usr/share/applications}"
+
+default_data="${XDG_DATA_HOME:-$HOME/.local/share}/komikku"
+default_data_existed=no
+[ -e "$default_data" ] && default_data_existed=yes
+
+# --- Display --------------------------------------------------------------------------------------------------------
+
+Xvfb "$display" -screen 0 1920x1080x24 -nolisten tcp > "$out/logs/xvfb.log" 2>&1 &
+background+=("$!")
+export DISPLAY=$display
+if wait_for 15 xdpyinfo; then
+  pass "Virtual display" "Xvfb $display, $(xdpyinfo | sed -n 's/^ *dimensions: *//p' | head -n 1)"
+else
+  fatal "Virtual display" "Xvfb did not start (logs/xvfb.log)"
+fi
+# Without a window manager AWT's focus and window state do not behave as on a desktop
+openbox --sm-disable > "$out/logs/openbox.log" 2>&1 &
+background+=("$!")
+if wait_for 15 wmctrl -m; then
+  pass "Window manager" "$(wmctrl -m | head -n 1)"
+else
+  fail "Window manager" "openbox did not start (logs/openbox.log); going on without one"
+fi
+
+# --- Start ----------------------------------------------------------------------------------------------------------
+
+start_app 1
+wait_window
+result=$?
+if [ "$result" -eq 0 ]; then
+  pass "Window appears (default renderer)" "after $((SECONDS - started_at)) s"
+else
+  no_window "$result" "Window appears (default renderer)"
+  # Skiko may not get OpenGL on Xvfb: one more try with its software renderer, recorded as a finding
+  start_app 2 SOFTWARE
+  wait_window
+  result=$?
+  if [ "$result" -eq 0 ]; then
+    pass "Window appears (SKIKO_RENDER_API=SOFTWARE)" "after $((SECONDS - started_at)) s"
+  else
+    no_window "$result" "Window appears (SKIKO_RENDER_API=SOFTWARE)"
+    exit 1
+  fi
+fi
+info "Window" "id $wid, title '$(xdotool getwindowname "$wid" 2> /dev/null)'"
+
+if read_geometry && [ "$WIDTH" -ge 480 ] && [ "$HEIGHT" -ge 360 ]; then
+  pass "Window size" "${WIDTH}x${HEIGHT} at $X,$Y"
+else
+  fail "Window size" "'${WIDTH}x${HEIGHT}' at '$X,$Y' (at least 480x360 expected)"
+fi
+if focus_window; then
+  pass "Window has the keyboard focus"
+else
+  fail "Window has the keyboard focus" "active window $(xdotool getactivewindow 2> /dev/null || echo none), the app's is $wid"
+fi
+
+# --- Screenshots and tabs -------------------------------------------------------------------------------------------
+
+start_shot="$out/screenshots/01-start.png"
+if settle "$start_shot"; then
+  shoot_root "$out/screenshots/01-start-screen.png"
+  colours=$(identify -format '%k' "$start_shot" 2> /dev/null || echo 0)
+  if [ "$colours" -ge 32 ]; then
+    pass "First screenshot is not blank" "$colours colours, settled: $settled"
+  else
+    fail "First screenshot is not blank" "$colours colours (at least 32 expected), settled: $settled"
+  fi
+else
+  fail "First screenshot" "the window could not be captured"
+fi
+
+previous=$start_shot
+number=2
+for step in "2 updates" "3 history" "4 browse" "5 more" "1 library"; do
+  key=${step%% *}
+  name=${step#* }
+  shot=$(printf '%s/screenshots/%02d-ctrl%s-%s.png' "$out" "$number" "$key" "$name")
+  number=$((number + 1))
+  if ! running "$app_pid"; then
+    fail "Ctrl+$key ($name)" "the process ended before the key was sent"
+    break
+  fi
+  focus_window || info "Focus before Ctrl+$key" "the window was not active; the key is sent anyway"
+  xdotool key --clearmodifiers "ctrl+$key"
+  if ! settle "$shot"; then
+    fail "Ctrl+$key ($name)" "the window could not be captured"
+    continue
+  fi
+  changed=$(diff_pixels "$previous" "$shot")
+  pixels=$((WIDTH * HEIGHT))
+  if [ "$changed" -lt 0 ]; then
+    fail "Ctrl+$key ($name) changes the window" "the screenshots could not be compared (size changed?)"
+  elif [ "$changed" -ge $((pixels * changed_min / 10000)) ]; then
+    pass "Ctrl+$key ($name) changes the window" "$(percent "$changed" "$pixels") % of the pixels, settled: $settled"
+  else
+    fail "Ctrl+$key ($name) changes the window" "only $(percent "$changed" "$pixels") % of the pixels, settled: $settled"
+  fi
+  previous=$shot
+done
+if [ -f "$previous" ] && [ "$previous" != "$start_shot" ] && [ -f "$start_shot" ]; then
+  changed=$(diff_pixels "$start_shot" "$previous")
+  if [ "$changed" -ge 0 ]; then
+    info "Library after Ctrl+1 against the first screenshot" "$(percent "$changed" "$((WIDTH * HEIGHT))") % of the pixels differ"
+  fi
+fi
+
+info "Second instance" "not tried yet (the single-instance lock of ANSWER 005 item 4 is being built)"
+info "Notifications" "not observed yet"
+
+# --- Close ----------------------------------------------------------------------------------------------------------
+
+if running "$app_pid"; then
+  # _NET_CLOSE_WINDOW through the window manager, which sends WM_DELETE_WINDOW (the window's close button)
+  wmctrl -i -c "$wid" || xdotool key --clearmodifiers alt+F4
+  close_at=$SECONDS
+  while running "$app_pid" && [ $((SECONDS - close_at)) -lt "$exit_timeout" ]; do sleep 1; done
+  if running "$app_pid"; then
+    fail "Process ends after the window is closed" "still running after ${exit_timeout} s; thread dump in logs/app-stdout-$attempt.log"
+    shoot_root "$out/screenshots/close-timeout.png"
+    kill -QUIT "$app_pid" 2> /dev/null
+    sleep 3
+    stop_app
+  else
+    wait "$app_pid"
+    code=$?
+    app_pid=""
+    pass "Process ends after the window is closed" "after $((SECONDS - close_at)) s"
+    if [ "$code" -eq 0 ]; then pass "Exit code 0"; else fail "Exit code 0" "exit code $code"; fi
+  fi
+else
+  fail "Process ends after the window is closed" "the process had already ended before the close request"
+fi
+
+# --- Logs -----------------------------------------------------------------------------------------------------------
+
+collect_logs
+logs=()
+for file in "$data/logs/komikku.1.log" "$data/logs/komikku.log"; do [ -f "$file" ] && logs+=("$file"); done
+if [ -s "$data/logs/komikku.log" ]; then
+  pass "Log file written" "<data>/logs/komikku.log, $(wc -l < "$data/logs/komikku.log") lines"
+else
+  fail "Log file written" "no <data>/logs/komikku.log"
+fi
+if [ "${#logs[@]}" -gt 0 ]; then
+  echo "::group::App log (last 80 lines)"
+  tail -n 80 "$data/logs/komikku.log"
+  echo "::endgroup::"
+  uncaught=$(grep -h -E 'Uncaught exception|Exception in thread|FATAL' "${logs[@]}" "$stderr_log")
+  if [ -z "$uncaught" ]; then
+    pass "Log: no uncaught exception"
+  else
+    fail "Log: no uncaught exception" "$(printf '%s\n' "$uncaught" | head -n 1)"
+  fi
+  # Error-level lines and stack-trace lines (the log writes a throwable's stack trace under its message)
+  grep -n -E '^[0-9-]{10} [0-9:.]{12} E/|^[[:space:]]+at [^ ]|^Caused by:' "${logs[@]}" > "$out/log-problems.txt"
+  problems=$(wc -l < "$out/log-problems.txt")
+  if [ "$problems" -eq 0 ]; then
+    pass "Log: no error or stack trace"
+  else
+    echo "::group::Errors and stack traces in the log (log-problems.txt)"
+    head -n 60 "$out/log-problems.txt"
+    echo "::endgroup::"
+    fail "Log: no error or stack trace" "$problems line(s), first: $(head -n 1 "$out/log-problems.txt")"
+  fi
+  tray=$(grep -h 'System tray' "${logs[@]}" | head -n 3)
+  info "System tray lines in the log" "${tray:-none (no tray error logged)}"
+fi
+crash=$(find "$data" -maxdepth 1 -name 'hs_err_pid*.log' | head -n 1)
+if [ -z "$crash" ]; then
+  pass "No JVM crash file"
+else
+  fail "No JVM crash file" "$(basename "$crash") (logs/data-$attempt/)"
+fi
+if [ "$default_data_existed" = no ] && [ -e "$default_data" ]; then
+  fail "Default data folder untouched" "$default_data was created although -Dkomikku.dataDir was set"
+else
+  pass "Default data folder untouched" "$default_data (existed before: $default_data_existed)"
+fi
