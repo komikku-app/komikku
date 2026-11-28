@@ -32,7 +32,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * lock is per process): they exit with 0 and the running instance's "show window" callback runs; a killed holder's lock
  * is released by the system and its port file ignored; two data folders do not affect each other; a wrong token or
  * garbage is dropped without an answer; no answer within the timeout means "busy" (exit 1). An instance that is shutting
- * down no longer answers.
+ * down no longer answers, and a slow client holds the listener for one read timeout at most.
  */
 class DesktopSingleInstanceTest {
 
@@ -206,6 +206,38 @@ class DesktopSingleInstanceTest {
         exited.join()
         instances -= quitting
         instances += outcome.shouldBeInstanceOf<DesktopSingleInstance.Outcome.Primary>().instance
+    }
+
+    @Test
+    fun `a client that sends its request slowly does not keep a real start from being answered`() {
+        val dataDir = folder("data")
+        val shown = Semaphore(0)
+        primary(dataDir).onShowRequest = { shown.release() }
+        val portFile = dataDir.toPath().resolve(DesktopSingleInstance.PORT_FILE)
+        val endpoint = InstancePortFile.read(portFile).shouldNotBeNull()
+        val dripping = Socket(InstanceSignal.loopback, endpoint.port)
+        val dripper = thread(isDaemon = true) {
+            try {
+                repeat(InstanceSignal.MAX_REQUEST_BYTES) {
+                    dripping.getOutputStream().apply {
+                        write('S'.code)
+                        flush()
+                    }
+                    Thread.sleep(300)
+                }
+            } catch (_: Exception) {
+                // Closed by the server, as it should be
+            }
+        }
+        Thread.sleep(200)
+
+        dripping.use {
+            val start = System.nanoTime()
+            InstanceSignal.requestShow(portFile, DesktopSingleInstance.ANSWER_TIMEOUT) shouldBe true
+            (System.nanoTime() - start) / 1_000_000 shouldBeLessThan DesktopSingleInstance.ANSWER_TIMEOUT.inWholeMilliseconds
+            shown.tryAcquire(5, TimeUnit.SECONDS) shouldBe true
+        }
+        dripper.join(5_000)
     }
 
     @Test
