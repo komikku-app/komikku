@@ -15,6 +15,7 @@ import app.komikku.network.browser.removeBrowserCookies
 import app.komikku.network.browser.storeBrowserCookies
 import eu.kanade.tachiyomi.network.AndroidCookieJar
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.interceptor.CloudflareBypassException
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
@@ -27,6 +28,7 @@ import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.RecordedRequest
 import okhttp3.Cookie
+import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterEach
@@ -39,6 +41,7 @@ import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -118,6 +121,33 @@ class DesktopCloudflareInterceptorTest {
     }
 
     @Test
+    fun `a challenged request of another method is solved on the site's root, a GET on its own address`() {
+        // master's 14c94f5cec: a browser loads pages with GET only, so a challenged POST earns the site-wide clearance on
+        // the root page (no query, no fragment), and the POST itself is sent again with its body.
+        protectedSite()
+        backend.browse = { session -> session.cookies + FakeBrowserBackend.clearance(session) }
+
+        val post = POST(server.url("/api/search?page=2").toString(), body = FormBody.Builder().add("q", "one piece").build())
+        client().newCall(post).execute().use { response ->
+            response.code shouldBe 200
+            response.body.string() shouldBe "manga list"
+        }
+
+        backend.sessions.single().url shouldBe server.url("/")
+        server.takeRequest().method shouldBe "POST"
+        val retried = server.takeRequest()
+        retried.method shouldBe "POST"
+        retried.url shouldBe server.url("/api/search?page=2")
+        retried.body!!.utf8() shouldBe "q=one+piece"
+        retried.headers["Cookie"] shouldBe "cf_clearance=solved"
+
+        jar.removeAll()
+        backend.sessions.clear()
+        client().newCall(GET(server.url("/search?q=x").toString())).execute().use { it.code shouldBe 200 }
+        backend.sessions.single().url shouldBe server.url("/search?q=x")
+    }
+
+    @Test
     fun `the default network client uses the registered backend`() {
         protectedSite()
         backend.browse = { session -> listOf(FakeBrowserBackend.clearance(session)) }
@@ -176,6 +206,33 @@ class DesktopCloudflareInterceptorTest {
         server.requestCount shouldBe 1
         // What the browser got is kept, like Android's shared WebView cookie store.
         jar.get(server.url("/")).map { it.name } shouldBe listOf("other")
+    }
+
+    @Test
+    fun `a challenge that turns interactive ends the session at once and fails the request`() {
+        // master's b672f8028e: a hidden browser cannot pass an interactive challenge, so it gives up at once instead of
+        // holding the host until the timeout. The fake blocks for the whole timeout unless the session ends early.
+        protectedSite()
+        backend.interactiveChallenge = true
+        backend.browse = { session ->
+            Thread.sleep(session.timeout.inWholeMilliseconds)
+            session.cookies
+        }
+
+        val started = System.nanoTime()
+        val error = assertThrows<CloudflareBypassException> { client().newCall(GET(server.url("/").toString())).execute() }
+        val elapsed = (System.nanoTime() - started).nanoseconds
+
+        error.reason shouldBe CloudflareBypassException.Reason.INTERACTIVE
+        error.message.orEmpty() shouldContain "Open in WebView"
+        (elapsed < 2.seconds) shouldBe true
+        backend.sessions.single().endOnInteractiveChallenge shouldBe true
+        server.requestCount shouldBe 1
+
+        // Remembered like any failed solve: the host's next request fails at once, without another browser run.
+        assertThrows<CloudflareBypassException> { client().newCall(GET(server.url("/next").toString())).execute() }
+            .reason shouldBe CloudflareBypassException.Reason.INTERACTIVE
+        backend.sessions shouldHaveSize 1
     }
 
     @Test

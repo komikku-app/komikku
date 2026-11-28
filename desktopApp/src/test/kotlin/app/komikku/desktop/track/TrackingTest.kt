@@ -26,6 +26,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
@@ -44,6 +45,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
 import java.io.File
+import java.security.MessageDigest
+import java.util.Base64
 
 /**
  * 8.3: the borrowed trackers / track interactors on desktop with an in-test tracker: credentials login,
@@ -107,6 +110,12 @@ class TrackingTest {
         mdMethod.authUrl().let {
             it shouldContain "client_id=tachiyomisy"
             it shouldContain "code_challenge_method=S256"
+            // REVIEW_A4.md 3.3: the challenge is the S256 of the verifier stored for the exchange that
+            // MangaDexLoginHelper sends: base64url without padding of its SHA-256 (java.util.Base64, not the compat class)
+            val verifier = Injekt.get<TrackPreferences>().trackPkceCodeVerifier(mdList).get()
+            verifier.isNotEmpty() shouldBe true
+            val sha256 = MessageDigest.getInstance("SHA-256").digest(verifier.toByteArray(Charsets.US_ASCII))
+            it.toHttpUrl().queryParameter("code_challenge") shouldBe Base64.getUrlEncoder().withoutPadding().encodeToString(sha256)
         }
         DesktopTrackerLogin.credentialFromRedirect(mdMethod, "tachiyomisy://mangadex-auth?code=abc") shouldBe "abc"
         runBlocking { DesktopTrackerLogin.loginWithRedirect(mdList, mdMethod, "tachiyomisy://mangadex-auth?code=abc") } shouldBe false

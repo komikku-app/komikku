@@ -11,7 +11,8 @@ data class DesktopNotification(
     val text: String,
     val level: Level = Level.Info,
 ) {
-    enum class Channel { NewChapters, LibraryErrors, Downloader, Backup, Restore, AppUpdate }
+    /** [Common]: Android's `CHANNEL_COMMON` (the MangaDex session expired notice). */
+    enum class Channel { NewChapters, LibraryErrors, Downloader, Backup, Restore, AppUpdate, Common }
 
     enum class Level { Info, Warning, Error }
 }

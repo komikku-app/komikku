@@ -93,7 +93,11 @@ class TrackingSettingsScreenModel(
         val tracker: Tracker
 
         data class Credentials(override val tracker: Tracker) : Dialog
-        data class OAuthPaste(override val tracker: Tracker, val method: TrackerLoginMethod.OAuthPaste) : Dialog
+        /**
+         * [authUrl] is the page of this login, built once: "Open the login page" reopens it, since a new authorization
+         * URL stores a new PKCE verifier and a redirect from the first page would then fail (REVIEW_A4.md 3.4).
+         */
+        data class OAuthPaste(override val tracker: Tracker, val method: TrackerLoginMethod.OAuthPaste, val authUrl: String) : Dialog
         data class Logout(override val tracker: Tracker) : Dialog
     }
 
@@ -134,8 +138,9 @@ class TrackingSettingsScreenModel(
         when (val method = DesktopTrackerLogin.method(tracker)) {
             TrackerLoginMethod.Credentials -> mutableState.update { it.copy(dialog = Dialog.Credentials(tracker), error = null) }
             is TrackerLoginMethod.OAuthPaste -> {
-                DesktopBrowser.open(method.authUrl())
-                mutableState.update { it.copy(dialog = Dialog.OAuthPaste(tracker, method), error = null) }
+                val authUrl = method.authUrl()
+                DesktopBrowser.open(authUrl)
+                mutableState.update { it.copy(dialog = Dialog.OAuthPaste(tracker, method, authUrl), error = null) }
             }
             TrackerLoginMethod.Enhanced -> (tracker as EnhancedTracker).loginNoop()
             TrackerLoginMethod.Unsupported -> {}
@@ -344,7 +349,7 @@ private fun OAuthPasteDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(stringResource(KMR.strings.desktop_tracker_paste_redirect))
-                TextButton(onClick = { DesktopBrowser.open(dialog.method.authUrl()) }) {
+                TextButton(onClick = { DesktopBrowser.open(dialog.authUrl) }, modifier = Modifier.testTag("tracker-open-login")) {
                     Text(stringResource(KMR.strings.desktop_tracker_open_login))
                 }
                 OutlinedTextField(

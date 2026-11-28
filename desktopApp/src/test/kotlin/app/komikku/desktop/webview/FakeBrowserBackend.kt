@@ -11,13 +11,15 @@ import java.util.Collections
 /**
  * A [BrowserBackend] for headless tests: no browser is started. [browse] plays the page load and returns the cookies the
  * "browser" holds afterwards; the session ends as a real backend would, by testing [BrowserSession.until] against the
- * page (met → `CONDITION_MET`, else [unmetOutcome]).
+ * page (met → `CONDITION_MET`, else [unmetOutcome]). With [interactiveChallenge] the page posts Cloudflare's
+ * `interactiveBegin` message, which ends a session with [BrowserSession.endOnInteractiveChallenge] at once.
  */
 class FakeBrowserBackend(
     var availability: BrowserAvailability = BrowserAvailability.Available,
     var userAgent: String? = null,
     var unmetOutcome: BrowserSessionResult.Outcome = BrowserSessionResult.Outcome.TIMED_OUT,
     var browse: (BrowserSession) -> List<Cookie> = { it.cookies },
+    var interactiveChallenge: Boolean = false,
 ) : BrowserBackend {
 
     val sessions: MutableList<BrowserSession> = Collections.synchronizedList(mutableListOf())
@@ -28,6 +30,9 @@ class FakeBrowserBackend(
 
     override fun run(session: BrowserSession): BrowserSessionResult {
         sessions += session
+        if (interactiveChallenge && session.endOnInteractiveChallenge) {
+            return BrowserSessionResult(BrowserSessionResult.Outcome.INTERACTIVE_CHALLENGE, session.url, session.cookies, null)
+        }
         val cookies = browse(session)
         val page = BrowserPage(url = session.url, statusCode = 200, cookies = cookies)
         val outcome = if (session.until.isMet(page)) BrowserSessionResult.Outcome.CONDITION_MET else unmetOutcome

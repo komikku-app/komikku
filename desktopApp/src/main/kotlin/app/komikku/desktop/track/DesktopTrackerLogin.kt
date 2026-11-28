@@ -35,7 +35,10 @@ sealed interface TrackerLoginMethod {
     /** Username + password (Kitsu, MangaUpdates, and in-test trackers). */
     data object Credentials : TrackerLoginMethod
 
-    /** Browser authorization + pasted redirect: [parameter] of the redirect to `komikku://[host]`. */
+    /**
+     * Browser authorization + pasted redirect: [parameter] of the redirect to `komikku://[host]`. Each [authUrl] call
+     * starts a new login (MyAnimeList and MDList store a new PKCE verifier), so call it once per login.
+     */
     data class OAuthPaste(val authUrl: () -> String, val host: String, val parameter: String) : TrackerLoginMethod
 
     /** Komga / Kavita / Suwayomi: logged in by the matching installed source (Android: `loginNoop`). */
