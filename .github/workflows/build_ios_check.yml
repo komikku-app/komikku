@@ -81,13 +81,18 @@ jobs:
 
       # The WebKit tests again, inside an app bundle: the test task spawns the bare test executable, where WebKit
       # cannot start its web content and networking processes, so those tests return early there
-      # (source-js/src/iosTest/.../WebKitTest.kt). Installed and launched as an app on a booted simulator, with
-      # KMK_WEBKIT_REQUIRED=1 so that a web view that does not work fails them (docs/kmp-desktop/IOS_CI.md, I5c)
+      # (source-js/src/iosTest/.../WebKitTest.kt). Installed as an app on a booted simulator and run from the installed
+      # bundle with KMK_WEBKIT_REQUIRED=1, so that a web view that does not work fails them (docs/kmp-desktop/IOS_CI.md,
+      # I5c). `simctl spawn` returns the test binary's exit status (`simctl launch --console-pty` returns 0 even after
+      # a failure or a crash)
       - name: WebKit tests in a simulator app
         timeout-minutes: 15
         run: |
           set -euo pipefail
+          # The test classes that use WebKit; the number of tests each must pass is read from its source
+          CLASSES="WKWebViewHostWebViewTest WebViewBridgeTest IosJsSourceRuntimeWebViewTest WKWebViewRetentionProbeTest"
           APP="$RUNNER_TEMP/SourceJsTests.app"
+          LOG="$RUNNER_TEMP/webkit-tests.log"
           BUNDLE_ID=app.komikku.sourcejs.tests
           rm -rf "$APP" && mkdir -p "$APP"
           cp source-js/build/bin/iosSimulatorArm64/debugTest/test.kexe "$APP/SourceJsTests"
@@ -123,18 +128,38 @@ jobs:
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" "$APP"
-          SIMCTL_CHILD_KMK_WEBKIT_REQUIRED=1 xcrun simctl launch --console-pty --terminate-running-process "$UDID" "$BUNDLE_ID" \
-            '--ktest_filter=*WKWebViewHostWebViewTest.*:*WebViewBridgeTest.*:*IosJsSourceRuntimeWebViewTest.*' \
-            2>&1 | tee "$RUNNER_TEMP/webkit-tests.log" || true
+          INSTALLED=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" app)
+          FILTER=$(for class in $CLASSES; do printf '*.%s.*:' "$class"; done)
+          set +e
+          SIMCTL_CHILD_KMK_WEBKIT_REQUIRED=1 xcrun simctl spawn "$UDID" "$INSTALLED/SourceJsTests" \
+            "--ktest_filter=${FILTER%:}" 2>&1 | tee "$LOG"
+          STATUS=${PIPESTATUS[0]}
+          set -e
           xcrun simctl shutdown "$UDID" || true
-          # The runner's own summary: at least the expected number of tests passed (WKWebViewHostWebViewTest 17,
-          # WebViewBridgeTest 6, IosJsSourceRuntimeWebViewTest 2; raise it with new tests), none failed, none skipped
-          # by WebKitTest
-          MIN_TESTS=25
-          PASSED=$(sed -nE 's/^\[ +PASSED +\] ([0-9]+) tests.*/\1/p' "$RUNNER_TEMP/webkit-tests.log" | tail -n 1)
-          echo "Passed: ${PASSED:-none} (expected at least $MIN_TESTS)"
-          if [ -z "$PASSED" ] || [ "$PASSED" -lt "$MIN_TESTS" ]; then exit 1; fi
-          if grep -E '^\[ +FAILED +\]|SKIPPED: ' "$RUNNER_TEMP/webkit-tests.log"; then exit 1; fi
+          FAILED=0
+          echo "Test binary exit status: $STATUS"
+          if [ "$STATUS" -ne 0 ]; then FAILED=1; fi
+          # Every test of each class passed: as many `[ OK ]` lines as the class has @Test functions
+          EXPECTED_TOTAL=0
+          for class in $CLASSES; do
+            SOURCES=$(find source-js/src -name "$class.kt")
+            if [ "$(printf '%s\n' "$SOURCES" | grep -c .)" -ne 1 ]; then
+              echo "::error::$class: expected one source file, found: ${SOURCES:-none}"
+              FAILED=1
+              continue
+            fi
+            EXPECTED=$(grep -cE '^[[:space:]]*@Test([[:space:](]|$)' "$SOURCES" || true)
+            PASSED=$(grep -cE "^\[ +OK +\] [A-Za-z0-9_.]*\.$class\.[A-Za-z0-9_]+ " "$LOG" || true)
+            echo "$class: $PASSED of $EXPECTED tests passed"
+            if [ "$EXPECTED" -eq 0 ] || [ "$PASSED" -ne "$EXPECTED" ]; then FAILED=1; fi
+            EXPECTED_TOTAL=$((EXPECTED_TOTAL + EXPECTED))
+          done
+          # The runner's own summary agrees, nothing failed, and no test returned early because WebKit did not run
+          SUMMARY=$(sed -nE 's/^\[ +PASSED +\] ([0-9]+) tests.*/\1/p' "$LOG" | tail -n 1)
+          echo "Runner summary: ${SUMMARY:-none} passed (expected $EXPECTED_TOTAL)"
+          if [ "${SUMMARY:-none}" != "$EXPECTED_TOTAL" ]; then FAILED=1; fi
+          if grep -E '^\[ +FAILED +\]|SKIPPED: ' "$LOG"; then FAILED=1; fi
+          exit "$FAILED"
 
       - name: Upload test report
         if: failure()
