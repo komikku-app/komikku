@@ -17,7 +17,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.reader.TestLibrary
 import app.komikku.desktop.ui.DesktopTheme
@@ -74,6 +74,10 @@ import java.io.IOException
  * the list, and "Migrate now" moves the entry: chapters' read state by chapter number (and the chapters up to the last
  * read one), categories, notes, the old entry out of the library, the new one in, its details shown; "Copy now" keeps
  * both and shows the copy's details; a failed migration is reported and the entry stays in the list.
+ *
+ * The v2 test runner: under v1 a composition's effect runs on the thread that resumes it (here the migration's IO
+ * worker) while layout runs on the UI thread, and Compose fails on that ("Detected multithreaded access to
+ * SnapshotStateObserver", CI run 46129485116).
  */
 @OptIn(ExperimentalTestApi::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
