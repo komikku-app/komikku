@@ -3,7 +3,7 @@
 Status: Windows and Linux engineer — done: the plan (sections 0–4, first smoke jobs built from it by the Test and
 release engineer), section 5 with `--self-test-notify`, section 6 (the Windows temporary tray icon, built), section 7
 (the .deb's install) — left: what only a real Windows run can confirm (section 6), the .deb fix proven by CI
-(section 7), section 5 in the Linux smoke job (Test and release engineer). The plan was written
+(section 7, .deb and RPM), section 5 in the Linux smoke job (Test and release engineer). The plan was written
 before anything was installed or run (ATLAS_INSTRUCTIONS.md, INSTRUCTION 001, track D). The code facts below are
 read from `multiplatform` at `9a649a5683`; the facts about products, licences and runners were read from their
 vendors' pages on 2026-11-28 (links inline) and can change. Every statement is marked **[known]** (read in the
@@ -506,9 +506,7 @@ system without a desktop (the runner's server image, containers, minimal install
 there, and the removal would fail the same way. The runner environment only exposes it; any such system fails.
 
 **Fix:** `desktopApp/packaging/linux/postinst` and `prerm` replace jpackage's in the built `.deb`
-(`deb-maintainer-scripts.gradle.kts`; **not wired yet**: it needs the line
-`apply(from = "packaging/linux/deb-maintainer-scripts.gradle.kts")` in `desktopApp/build.gradle.kts`, a file the
-Extension runtime engineer holds; until then the package still has jpackage's scripts). `postinst` still tries
+(`deb-maintainer-scripts.gradle.kts`, applied from `desktopApp/build.gradle.kts` since `299b94603a`). `postinst` still tries
 `xdg-desktop-menu install`; when that fails it copies the entry to `/usr/share/applications` (creating the folder),
 and when that fails too it warns; it never fails the install. `prerm` runs `xdg-desktop-menu uninstall` without
 failing and removes the copied entry. Compose passes jpackage its own `--resource-dir` after any extra argument
@@ -539,5 +537,24 @@ its absence after the removal; plus `dpkg-deb -e` of the built package showing o
 The Gradle part was compiled and applied on this Mac through an init script, but it configures nothing here (macOS
 registers no `.deb` task), so its unpacking and packing has not run yet: the first Linux package build shows it.
 
-**Open:** the RPM has the same calls in jpackage's `%post` / `%preun`; rpm only warns when a scriptlet fails, but
-dnf reports an error. Not changed.
+**The RPM** (we build and release one: `TargetFormat.Rpm`, `Komikku-<v>-linux-x64.rpm`). Its scriptlets, read from
+run 46120905511's RPM header (`/bin/sh`, no `-e`): `%post` is `xdg-desktop-menu install ...`, `%preun` is
+`xdg-desktop-menu uninstall ...`. Without the two folders `%post` exits with 3 (rpm warns, dnf reports an error)
+and `%preun` exits with 3, which stops the erase: the package could not be removed. jpackage's `%preun` also runs in
+an upgrade, after the new package's `%post`, and takes away the entry that was just installed. Fix (`ceb5f5b93c`):
+`packaging/linux/rpm-post.sh` and `rpm-preun.sh` replace the two scriptlets (the same fallback as `postinst`;
+`%preun` only on an erase, `$1 = 0`). The `packageRpm` / `packageReleaseRpm` tasks pass jpackage `--temp` so it
+keeps its working folder, replace the scriptlets in its spec (`SPECS/komikku.spec`) and run `rpmbuild` again with
+jpackage's own arguments (`_sourcedir` = its `images/`, `_rpmdir`, `_topdir`, `_rpmfilename`), then delete the
+folder. The build fails when the spec's `%pre`, `%post` or `%preun` differ from what jpackage 21 writes for us, or
+any line runs another `xdg-` command.
+
+Evidence on this Mac: the scriptlets against Ubuntu's real `xdg-desktop-menu` (same scratch root as above):
+jpackage's exit 3 for `%post` and both `%preun` cases without the folders; ours exit 0, copy the entry and remove it
+on an erase only; with both folders both pass, and jpackage's `%preun` in an upgrade loses the entry. The Gradle part
+ran in a stand-alone build against a stand-in `packageRpm` (a spec rendered from jpackage 21's `template.spec`, a
+fake `rpmbuild` recording its arguments): the spec handed to `rpmbuild` has our scriptlets and `%pre` unchanged, the
+arguments are jpackage's, and a spec with an extra `xdg-mime` line stops the build with the line in the message.
+What only Linux CI shows: that the real `rpmbuild` rebuilds the package from jpackage's folder (`rpm -qp --scripts`
+on the built RPM shows ours), and an install / erase on a system without the folders (no smoke job installs the RPM
+yet; a Fedora container on the runner would).
