@@ -1,4 +1,4 @@
-Status: Extension runtime engineer — done: path traversal, converter, image formats (REVIEW_M3 findings 3, 2, 4); compat layer policy (registry, `UnsupportedOnDesktop`, per-extension data folders, the Extensions tab's unsupported state); catalogue measurement (1,701 Keiyoushi extensions); `Collator`, `Spannable`, `SpannableString` — left: `android.graphics` and `RuleBasedCollator` (wait for the Architect, see below)
+Status: Extension runtime engineer — done: path traversal, converter, image formats (REVIEW_M3 findings 3, 2, 4); compat layer policy (registry, `UnsupportedOnDesktop`, per-extension data folders, the Extensions tab's unsupported state); catalogue measurement (1,701 Keiyoushi extensions); `Collator`, `Spannable`, `SpannableString`; the `android.graphics` group, `ColorMatrix` and `RuleBasedCollator` (ANSWER 016, REVIEW_GRAPHICS fixes) — left: the on-device check of the graphics group in the packaged app; text drawing (ANSWER 017, on the parity list)
 
 # Desktop extension compatibility
 
@@ -62,11 +62,11 @@ Each fix was test-first: the new test was run against the unfixed code and faile
   affected APKs: `mehgazone` (needed `Spannable`) and `projectsuki` (uses `Collator`) create their sources;
   `aquellosquetraducen` now stops at `android.icu.text.RuleBasedCollator` (below); `tenkaiscan` still needs
   `android.graphics.ColorMatrix`. Sources created: 1,699 of 1,701.
-- **Not added, needs the Architect: `android.icu.text.RuleBasedCollator`.** `aquellosquetraducen` builds its sort
-  order with `(Collator.getInstance(locale) as RuleBasedCollator)`, `setStrength`, `setNumericCollation(true)` and
-  `freeze()`; `projectsuki` references it too, in code its sources do not reach. It would be a *real behaviour*
-  subclass of `Collator` returned by `getInstance`, about 60 lines: numeric collation (digit runs compared as numbers)
-  does not exist in `java.text.Collator` and has to be written on top of it. 1 extension blocked, 2 referencing.
+- **`android.icu.text.RuleBasedCollator`** (approved in ANSWER 016, added in `9b5c9d811c`, numeric order fixed after
+  REVIEW_GRAPHICS 7.1): `aquellosquetraducen` builds its sort order with `(Collator.getInstance(locale) as
+  RuleBasedCollator)`, `setStrength`, `setNumericCollation(true)` and `freeze()`, and now creates its source;
+  `projectsuki` references it too, in code its sources do not reach (it still needs ICU's `StringSearch`,
+  `BreakIterator` and `Normalizer2`). See "`android.graphics`" below for its behaviour.
 
 ## Catalogue measurement (ANSWER 010, design point 2)
 
@@ -320,16 +320,63 @@ What the numbers mean:
 | `android.util.LruCache` | 19 |
 | `android.content.pm.ApplicationInfo` | 1 |
 
-### `android.graphics` (for the Architect; not started)
+### `android.graphics` (ANSWER 016: done; seen headless, not in the packaged app)
 
-275 extensions (16 %) reference a missing `android.graphics` class; 1 of them cannot create its sources
-(`tenkaiscan`, `ColorMatrix` and `ColorMatrixColorFilter`). The rest create their sources and fail only when the code
-runs, mostly page interceptors that unscramble images: `Bitmap` 270, `Bitmap.CompressFormat` 194, `Bitmap.Config` 184,
-`Canvas` 184, `Paint` 182, `BitmapFactory` 169, `Rect` 162; then `Point` 89, `Typeface` 31, `ColorDrawable` 30 and 15
-classes used by 10 extensions or fewer (25 classes in all, plus `Drawable.getBounds` / `invalidateSelf` in 5).
-Covering the first seven means decoding, cropping, drawing and encoding bitmaps on desktop (Skia, which the reader
-already uses), a *real behaviour* group of about seven classes; `Typeface` and text drawing (`StaticLayout`,
-`TextPaint`, 31 extensions) would be a second step.
+275 extensions (16 %) reference `android.graphics`, mostly page interceptors that unscramble images. The group added
+as *real behaviour* over Skiko (the Skia the reader already uses): `Bitmap` (with `Config`, `CompressFormat`),
+`BitmapFactory` (with `Options`), `Canvas`, `Paint` (with `Style`, `Join`, `Cap`, `Align`), `Rect`, and riding along
+`ColorFilter`, `ColorMatrix`, `ColorMatrixColorFilter` (so `tenkaiscan` creates its source). Each has a row in
+`desktop/android-compat/COMPAT_REGISTRY.md`. Unsupported members and configs throw `UnsupportedOnDesktop` naming the
+member.
+
+**Scope, from the catalogue scan** (every `android.graphics` member each extension's code references): every member
+referenced on these classes exists (Bitmap 13, Canvas 16, Paint 22, Rect 10, BitmapFactory 4, …), except those that
+need a class outside the group:
+
+| Member | Extensions | Needs |
+|---|---:|---|
+| `Paint.setTypeface(Typeface)` | 31 | text drawing |
+| `Canvas.drawPath(Path, Paint)` | 5 | `Path` |
+| `Drawable.getBounds()`, `invalidateSelf()` | 5 | drawables |
+| `Canvas.drawBitmap(Bitmap, Rect, RectF, Paint)` | 3 | `RectF` |
+| `Paint.getFontMetrics()` | 3 | text drawing |
+| `Canvas.drawRoundRect(RectF, float, float, Paint)` | 1 | `RectF` |
+| `Canvas.drawBitmap(Bitmap, Matrix, Paint)` | 1 | `Matrix` |
+
+Classes not in the group: `Point` 89, `Typeface` 31, `ColorDrawable` 30, `PdfRenderer` 6, `Path` 5, `RectF` 4,
+`Paint.FontMetrics` 3, `Color` 3, `Matrix` 1. A page whose interceptor reaches any of them, or any other missing
+Android class or member, shows the reader's "unsupported" state naming it, without a retry (`UnsupportedPage`; text
+drawing has its own message).
+
+**Pixels.** `ARGB_8888` only, stored N32 premultiplied and read and written unpremultiplied through Skia's conversion,
+as Android does; no colour space is attached, so nothing is converted (Android tags the same bitmaps sRGB, so untagged
+and sRGB images agree). EXIF orientation is not applied (as `BitmapFactory`); GIF and animated WebP give the first
+frame; a cut-off image gives the rows that arrived. Sampling is nearest without a paint and linear with a filtering
+paint, as Android's `SkiaCanvas`; same-size rectangle copies are bit for bit.
+
+**Tolerances** (`BitmapCodecTest`): PNG and GIF decode exactly; JPEG decode within 9 levels of ImageIO's (mean under
+1.5); WebP within 5 (mean under 1.0). `compress`: PNG lossless; JPEG follows the quality (at 90 within 9, mean under
+1.5); WebP is always lossy (Skiko has no lossless encoder), `WEBP_LOSSLESS` and `WEBP` at 100 within 5 (mean under 1.0)
+where Android 10+ is exact.
+
+**Memory.** One native buffer per bitmap: a draw or an encode reads the bitmap's own pixels (a copy only for a bitmap
+drawn onto itself, for that draw). `recycle()` frees at once; a bitmap an extension forgets (28 of the 195 extensions
+that create or decode bitmaps never recycle) is freed by a `Cleaner` once unreachable. The JVM's GC does not see this
+native memory (Android tells its GC through `NativeAllocationRegistry`), so forgotten bitmaps live until a GC runs for
+other reasons; `NativeBitmaps.liveBytes()` counts what is held.
+
+**Threads.** Page interceptors run on OkHttp's threads, several at once; nothing needs a UI thread. Every bitmap is its
+own lock, an operation on two takes both in a fixed order (no deadlock drawing A into B and B into A at once), and a
+recycle waits for a draw in progress.
+
+**Seen.** Headless only: the unit tests (four real scrambling schemes re-stated and run end to end) and the CI
+self-test, which serves a GigaViewer-scrambled page on the loopback interface and fetches it through the real Shonen
+Jump+ extension's own client and interceptor on Linux, Windows and both macOS, checking each block of the returned page.
+Not yet seen in the packaged app: reading a chapter of two unscrambling extensions on a device is the open check.
+
+**`RuleBasedCollator`** (`aquellosquetraducen`): `Collator.getInstance` returns one, as on Android; numeric collation
+compares digit runs by value (leading zeros ignored, any script's digits) within one whole-string comparison, so all
+primary differences come first as in ICU; `freeze()` / `cloneAsThawed()` as ICU's `Freezable`.
 
 ### Other observations
 

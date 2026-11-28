@@ -309,3 +309,65 @@ No strings were added (no `i18n*` change). The commits carry the maintainer's au
 - The on-device pass (two unscrambling extensions reading a chapter in the packaged app on the Mac): still pending.
 - Windows itself: the jar deletion code and its tests were read, not run on Windows here.
 - Text drawing, as deferred by ANSWER 017.
+
+## Response (Extension runtime engineer, 2026-11-28)
+
+Every finding is fixed except the optional parts named below. Graphics are still **seen headless, not in the packaged
+app**: the on-device pass is open. Tests, all passing: `:desktop:android-compat` 110 (was 101),
+`:desktop:extension-runtime` 37 (1 skipped: the opt-in fixture writer), `:desktopApp` 547 (1 skipped: Windows only).
+
+- **6.1 High, fixed in `c1df152536`.** The loader reads the jar into memory when it is created and keeps no file open,
+  so an update or uninstall no longer closes anything a running fetch uses: classes the old version has not loaded yet
+  still load, and the old jar is deleted at once (Windows included). The assertions that the old loader is closed
+  (`oldLoader.getResource(…) shouldBe null` after an update, and the same after an uninstall) are gone from
+  `DesktopExtensionManagerTest`. In their place, a fetch of the old version that is still running during the update
+  completes and loads `Late`, a class nothing had loaded before, from the old loader.
+- **6.2 Low, fixed.** Exit: `Main.kt` runs `DesktopInjekt.runExitActions()`, which carries out the pending jar
+  deletions (`c1df152536`). Resources: `getResource` returns `komikku-extension:` URLs, read from memory through the
+  loader's own handler, never `jar:` URLs. `e5fa409ee9` (pushed under the RPM offer's message; PROGRESS.md records it) tests the reviewer's case
+  (`javaClass.getResource("/assets/…").openStream()`): the stream is in memory, the jar deletes while it is open, and it
+  still reads.
+- **2.1 Medium, fixed in `11c3d56546`.** A draw or an encode reads an image that shares the bitmap's pixels
+  (`Image.makeFromPixmap(peekPixels())`). It is made per call under the bitmap's lock and closed afterwards, with no
+  cache. Only a bitmap drawn onto itself gets a copy, for that draw only and counted in `liveBytes()`. The `Data` in
+  `BitmapFactory` is closed (`9aba059e36`). `BitmapMemoryTest`: `liveBytes()` stays at one buffer per bitmap through a
+  draw, a compress and a self-draw, returns to its start after recycle, and a change of the pixels shows in the image at
+  once (it is shared). **Not done:** asking for a GC when `liveBytes()` grows. It is a heuristic, and with the second
+  copy gone a forgotten bitmap costs what it costs on Android until a GC; EXTENSION_COMPAT.md ("Memory") records that
+  the GC does not see this memory.
+- **4.1 Medium, fixed.** `37bc45cc78` gave the reader an "unsupported" state with no retry and no reload. It reads the
+  failure's causes and the errors suppressed into them, so OkHttp's async `IOException` wrapping is seen through. Text
+  drawing gets its own message; an `UnsupportedOnDesktop` or a missing `android.` class gets "needs …". `5c8378bc94`
+  extends it to any `LinkageError` naming an Android member (`NoSuchMethodError`, `NoSuchFieldError`, …). The state
+  names the member with its parameter types, e.g. `android.graphics.Canvas.drawBitmap(Bitmap, Matrix, Paint)`.
+  `setTypeface` and `getFontMetrics` count as text drawing. A missing `RectF`, `Matrix` or `Path` class was already
+  named. Tested with the JVM's own `NoSuchMethodError`: a generated class calls `Canvas.drawPath`, `Paint.setTypeface`
+  and `Paint.getFontMetrics` from inside an interceptor. The reader shows the `drawPath` page as unsupported, naming it,
+  and does not load it again. `Paint().setTextSize(1f)` and a missing `RectF` are also covered.
+- **1.1 Low, fixed in `9aba059e36`.** Skia's "Incomplete input" keeps the bitmap: a JPEG cut at 60 % decodes at full
+  size, its top rows equal to the full decode and the rest transparent. Any other failure still gives `null`.
+- **5.1 Low, fixed in `3cadd24998`.** The check compares each of the 16 blocks and each margin strip on its own. Every
+  block carries a dark 1-pixel line along its top and left edge; the margins have none, because in the 19-row strip
+  under the grid the line's JPEG ringing alone came to 3 levels. With the re-stated interceptor (Skia JPEG at 90, as
+  the extension re-encodes), a right page's worst block is 1.30, and blocks a pixel off in any direction give at least
+  2.26, while their whole-page mean is 1.56–2.03 (the old check passed three of the four). The tolerance is 1.8 rather
+  than the proposed 1.5, for margin on both sides. The real extension's run is CI's on the next push; its APK is not on
+  this Mac.
+- **7.1 Low, fixed in `c4c281688a`, differently from the proposal.** Every digit run becomes ASCII digits that sort by
+  value (leading zeros dropped, after a length prefix), and the whole string goes through the JDK collator once. The
+  JDK collator compares all primary weights first, then secondary, then tertiary, as ICU does: `"a1b"` > `"A1a"` at
+  `TERTIARY`. Zeros stay `"0"`. The two-pass, run-by-run proposal would still have compared a number with a whole text
+  run (`"x0"` against `"x."`); with the rewrite, a number is compared with whatever stands at its place, like the plain
+  collator (tested).
+- **8.1 Low, fixed in the commit adding this response.** EXTENSION_COMPAT.md's status line is refreshed, and its
+  "`android.graphics`" section now has the member table from the scan, the classes outside the group, the pixel model,
+  the tolerances, memory, threads and the seen state. The `RuleBasedCollator` entry is updated. HANDOVER.md lines
+  556–557 are Forge's (claimed); the replacement text was handed to Forge.
+- **T.1 Low, fixed.** `11c3d56546`: lock order (two threads drawing A into B and B into A), a bitmap drawn onto itself
+  with overlapping rectangles, a recycle during a draw on another thread (it waits, then later draws are refused with
+  Android's message), and a source rectangle reaching past the image. `9aba059e36`: a JPEG with EXIF orientation 6
+  (Skia reports `RIGHT_TOP`) decodes at its stored size, identical to the same JPEG without EXIF.
+- **Info, not done:** lossless WebP (Skiko has no lossless encoder; switching those requests to PNG would change the
+  format the extension asked for, so it waits for an extension that shows artefacts); the two intermediate arrays of
+  `getPixels` / `setPixels`; `clipRect`'s return value; a build check that `libs.skiko.awt` equals Compose's Skiko.
+  "Not checked" stays as written (embedded colour profiles, on-device pass, Windows itself, text drawing).
