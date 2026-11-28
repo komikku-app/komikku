@@ -173,6 +173,13 @@ class SkiaPageDecoder(
         val UNSUPPORTED = setOf(ImageUtil.ImageType.AVIF, ImageUtil.ImageType.JXL, ImageUtil.ImageType.HEIF)
 
         /**
+         * The formats the desktop reader and covers decode on every OS: every detected type but [UNSUPPORTED]. Also what
+         * extensions are told the reader supports (the desktop `AppInfo.getSupportedImageMimeTypes()`), so they do not
+         * ask servers for pages that would show as errors.
+         */
+        val DECODED: List<ImageUtil.ImageType> = ImageUtil.ImageType.entries.filterNot { it in UNSUPPORTED }
+
+        /**
          * The [UnsupportedPageFormatException] for a failed decode ([cause]) of an image of the detected [type] when
          * it is one of the [UNSUPPORTED] formats, else `null` (the caller keeps its own error).
          */
