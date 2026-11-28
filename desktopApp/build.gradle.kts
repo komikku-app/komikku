@@ -294,3 +294,7 @@ extensions.configure<ComposeExtension> {
         }
     }
 }
+
+// KMK -->
+apply(from = "packaging/linux/deb-maintainer-scripts.gradle.kts")
+// KMK <--
