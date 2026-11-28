@@ -1,10 +1,12 @@
 # Komikku Desktop — plan to test the Windows and Linux apps
 
-Status: **plan only** (ATLAS_INSTRUCTIONS.md, INSTRUCTION 001, track D: "report the plan before investing"). Nothing in
-it has been installed or run. The code facts below are read from `multiplatform` at `9a649a5683`; the facts about
-products, licences and runners were read from their vendors' pages on 2026-11-28 (links inline) and can change.
-Every statement is marked **[known]** (read in the repository or on a vendor page) or **[guess]** (from general
-experience, to be checked by the first run). The host for the virtual-machine options is an Apple silicon Mac.
+Status: Windows and Linux engineer — done: the plan (sections 0–4, first smoke jobs built from it by the Test and
+release engineer), section 5 with `--self-test-notify` — left: the Windows notification with the tray icon off
+(ANSWER 011 (b), section 6), section 5 in the Linux smoke job (Test and release engineer). The plan was written
+before anything was installed or run (ATLAS_INSTRUCTIONS.md, INSTRUCTION 001, track D). The code facts below are
+read from `multiplatform` at `9a649a5683`; the facts about products, licences and runners were read from their
+vendors' pages on 2026-11-28 (links inline) and can change. Every statement is marked **[known]** (read in the
+repository or on a vendor page) or **[guess]** (from general experience, to be checked by the first run). The host for the virtual-machine options is an Apple silicon Mac.
 
 Background: [`BUILDING.md`](BUILDING.md), [`TESTING_MAC.md`](TESTING_MAC.md) (the pass to reproduce),
 `.github/workflows/build_desktop.yml`, `desktopApp/build.gradle.kts`, `desktopApp/.../selftest/DesktopSelfTest.kt`.
@@ -335,37 +337,124 @@ until the first run.
 
 ## 5. Linux notifications in the smoke test (for the Test and release engineer)
 
-Written by the Windows and Linux engineer after ANSWER 005 item 3. **[known]** from the code (`LinuxNotifier.kt`,
-`DesktopSystemNotifier` in `MacOsNotifier.kt`); everything about the runner is **[guess]** until the first run.
+Written by the Windows and Linux engineer after ANSWER 005 item 3 and ANSWER 011 (a). **[known]** from the code
+(`LinuxNotifier.kt`, `NotificationSelfTest.kt`, `DesktopSystemNotifier` in `MacOsNotifier.kt`); everything about the
+runner is **[guess]** until the first run. The workflow and script change is the Test and release engineer's (through
+Forge); nothing here is implemented in `.github/` yet.
 
 **What the app does on Linux:** with "Show system notifications" on, every notification goes to
 `notify-send --app-name=Komikku -- <title> <body>` when `notify-send` is on the `PATH`, otherwise (or when it fails) to
-`gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method
-org.freedesktop.Notifications.Notify "Komikku" "uint32 0" "" <title> <body> "@as []" "@a{sv} {}" "int32 -1"`
-(GVariant text); when both fail or time out (10 s), the tray balloon, then nothing. The body is markup-escaped (`&` →
-`&amp;`). Windows keeps the tray balloon: **with the tray icon setting off, Windows shows no notification** (to record).
+`gdbus call --session --timeout 5 --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications
+--method org.freedesktop.Notifications.Notify "Komikku" "uint32 0" "" <title> <body> "@as []" "@a{sv} {}" "int32 -1"`
+(GVariant text); when both fail or time out (10 s), the tray balloon, then nothing. A command that timed out is skipped
+for ten minutes (review finding 2.1). The body is markup-escaped (`&` → `&amp;`); a server without the `body-markup`
+capability shows the entities as they are, a known limitation (finding 2.2: GNOME Shell, KDE Plasma, dunst,
+xfce4-notifyd and mako have it; asking `GetCapabilities` would cost a second process per start for the rare others).
 
-**Setup, inside the Xvfb + openbox step of section 4:**
+**The trigger: `--self-test-notify[=<backend>]`** (ANSWER 011 (a)). Added to `--self-test[=<report>]`, never on its
+own (like `--self-test-extensions`; `--self-test-notify` alone starts the app). It runs the usual checks plus one more,
+`system notification`: one fixed notification, posted with the app's own command lines, each command killed after
+10 s. Title `Komikku self-test`, text `Test notification: "quotes" & <tags> \ ü 漫画 😀` (quotes, markup, a backslash,
+non-ASCII and a character outside the BMP, so both encodings are exercised). Without `=<backend>` it is the app's order
+(`notify-send`, then `gdbus` after a failure); `=notify-send` or `=gdbus` runs only that one, so both encodings are
+checked on one runner without moving files. The check passes when a command exits with 0; the self-test then exits
+with 0. A refusal (non-zero exit), a timeout or neither tool on the `PATH` fails the check and the self-test exits
+with 1. Report lines (the line before the last one):
 
-1. `sudo apt-get install -y dunst libnotify-bin libglib2.0-bin dbus-x11` (dunst: a small notification daemon that
-   draws on the X display; `libglib2.0-bin` brings `gdbus`).
-2. Run the whole smoke script under one session bus, so the app, the daemon and the monitor share it:
-   `dbus-run-session -- bash smoke.sh`. Inside: `dunst &`, then
-   `dbus-monitor --session "type='method_call',interface='org.freedesktop.Notifications',member='Notify'" > notify-monitor.log &`.
-3. Runner sanity check, before the app: `notify-send -- "-smoke" 'a & b'` must appear in `notify-monitor.log`; if not,
-   the environment is broken, not the app (record and skip the notification checks).
-4. **Trigger:** the app must post one. Either the UI smoke step `14-new-chapter` (UI_SMOKE_DESIGN.md: the fixture
-   "Smoke Fixture & Co" gains a chapter, the library update posts "New chapters found"), or, sooner, a `--self-test`
-   check that posts one notification through `DesktopSystemNotifier` (open question for Forge / Atlas).
+```
+OK   system notification: notify-send exited with 0 (accepted)
+OK   system notification: notify-send exited with 1; gdbus exited with 0 (accepted)
+FAIL system notification: java.lang.IllegalStateException: notify-send exited with 1; gdbus timed out
+```
 
-**Check in `notify-monitor.log`** (strings only: notify-send adds its own hints, so the arrays differ):
+Accepted means `org.freedesktop.Notifications` answered `Notify`; that the text arrived intact is what `dbus-monitor`
+shows. The plain `--self-test` posts nothing, which the job checks as well.
 
-- **Run A, notify-send present:** a `member=Notify` call with `string "Komikku"`, `string "New chapters found"` and a
-  body `string "Smoke Fixture &amp; Co"`; a non-ASCII fixture title arrives intact; a backslash in a text arrives once.
-- **Run B, gdbus only** (`sudo mv /usr/bin/notify-send /usr/bin/notify-send.off`): the same strings (this proves the
-  GVariant encoding on a real `gdbus`, which the unit tests can only mirror).
-- **Run C, no daemon** (dunst not started): no exception in `komikku.log`, warnings `Linux notification: notify-send
-  exited with …` and `gdbus exited with …`, the app keeps running and exits cleanly.
-- **Run D, setting off** (`desktop_system_notifications` false in the preset): no `Notify` call at all.
-- Screenshot of the root window after the notification (`import -window root`): dunst's popup, uploaded, not asserted.
-  Upload `notify-monitor.log` with the other logs.
+On the other systems (for later smoke jobs, ANSWER 011 (a)): macOS runs `osascript` and reports its exit code (0 also
+when notifications are not allowed for Script Editor, which then shows nothing); Windows adds a temporary tray icon,
+calls `TrayIcon.displayMessage`, keeps the icon 8 s and removes it, and reports whether there was a tray, the icon
+could be added and the call returned (Windows does not say whether the toast appeared). No `=<backend>` there.
+
+**Setup, inside the Xvfb + openbox step of section 4** (`DISPLAY` set, the `.deb` installed, `$launcher` from the
+installed file list as in `desktop_smoke_linux.sh`):
+
+1. `sudo apt-get install -y libnotify-bin libglib2.0-bin dbus-daemon dbus-bin` first, **not dunst yet** (run C needs a
+   bus without a notification service; dunst's package installs a D-Bus activation file, so once it is installed any
+   `Notify` starts it). `dbus-run-session` is in `dbus-daemon`, `dbus-monitor` in `dbus-bin` [guess: Ubuntu 24.04
+   package names; the runner image may have them already].
+2. One function runs one self-test inside its own session bus, with a monitor, and keeps the report, the exit code and
+   the monitor log apart per run:
+
+```bash
+# notify_run <name> <self-test arguments...>; writes $out/logs/notify-<name>.{txt,exit,monitor.log}
+notify_run() {
+  local name=$1; shift
+  dbus-run-session -- bash -c '
+    out=$1 name=$2 launcher=$3; shift 3
+    dbus-monitor --session "type=method_call,interface=org.freedesktop.Notifications,member=Notify" \
+      > "$out/logs/notify-$name.monitor.log" 2>&1 &
+    monitor=$!
+    sleep 1
+    timeout 120 "$launcher" "--self-test=$out/logs/notify-$name.txt" "$@"
+    echo $? > "$out/logs/notify-$name.exit"
+    sleep 2
+    kill "$monitor"
+  ' notify-run "$out" "$name" "$launcher" "$@"
+}
+```
+
+3. Runs, in this order:
+   - **C, no notification service:** `notify_run c --self-test-notify`. Expect exit code 1, the report's line
+     `FAIL system notification: … notify-send exited with 1; gdbus exited with 1` [guess: a missing service is a
+     quick D-Bus error, not a timeout; a timeout would show as `timed out` and is acceptable]; the monitor log may
+     show the unanswered `Notify` calls [guess], record it as INFO. This proves the non-zero exit.
+   - Then `sudo apt-get install -y dunst` (it draws on the Xvfb display; D-Bus activation starts it on the first
+     `Notify`, so no `dunst &` is needed, but starting it in the function before the monitor is harmless).
+   - **Silent, plain self-test:** `notify_run silent` (no `--self-test-notify`). Expect exit code 0 and **no**
+     `member=Notify` line in `notify-silent.monitor.log`.
+   - **A, the app's order:** `notify_run a --self-test-notify`. Expect exit code 0, the report line
+     `OK   system notification: notify-send exited with 0 (accepted)`.
+   - **B, gdbus:** `notify_run b --self-test-notify=gdbus`. Expect exit code 0,
+     `OK   system notification: gdbus exited with 0 (accepted)`. This is the check on a real `gdbus` that the unit
+     tests can only mirror (review finding 2.3).
+4. **Check in the monitor logs of A and B** (strings only: notify-send adds its own hints, so the arrays differ). Each
+   has one `member=Notify` call with `string "Komikku"` (the app name), `string "Komikku self-test"` and a body string
+   that contains `&amp; &lt;tags&gt;`, `ü 漫画 😀` and `"quotes"`. Use `grep -F` for each piece rather than the whole
+   line: [guess] `dbus-monitor` prints a string between quotes without escaping the ones inside, and the backslash
+   should arrive as one `\`; record the body line as INFO, and if `dbus-monitor` escapes, adjust the expectation, not
+   the app. A and B must show the same body.
+5. A screenshot of the root window after run A or B (`import -window root`) shows dunst's popup: uploaded, not
+   asserted. Upload the four `notify-*` triples with the other logs.
+
+**Still for the UI smoke test (UI_SMOKE_DESIGN.md), not the self-test:** the real new-chapter path (`14-new-chapter`:
+"Smoke Fixture & Co" gains a chapter, the library update posts "New chapters found") and run D, the setting off
+(`desktop_system_notifications` false in the preset: no `Notify` call at all). The self-test checks the backend only;
+it does not read the setting.
+
+## 6. Windows notifications with the tray icon off (ANSWER 011 (b), sketch, not built)
+
+**What the first Windows smoke run shows** (run 46117892032, `windows-2022`, interactive session 2): the window, the
+shortcuts and the exit work; "System tray lines in the log: none" with the default settings (tray icon on), so the tray
+icon was added without an error; "Notification without a tray icon: not observed yet" (the run neither switched the
+icon off nor raised a notification). So the run neither confirms nor contradicts the expectation; the code does:
+**[known]** on Windows `DesktopSystemNotifier` hands every notification to `DesktopTray.show`, which returns `false`
+when no icon is installed, and AWT's `TrayIcon.displayMessage` does nothing for an icon that is not in the tray (JDK
+21 `java.awt.TrayIcon`: the call goes to the peer only when there is one). With the tray icon setting off, Windows
+shows no notification at all. That is the first of the two expectations in ANSWER 011 (b): build the temporary icon.
+
+**Sketch:**
+- `DesktopTray` keeps the user's icon (`icon`, governed by the tray setting) and gains a temporary one. `show` with no
+  user's icon: on one daemon worker (never the caller or the AWT thread), add a temporary `TrayIcon` (same image,
+  tooltip "Komikku", the same click action that opens the window, no menu), call `displayMessage`, and remove the icon
+  after a hold of about 10 s [guess: Windows shows a toast about 5 s, and taking the icon away may take its toast
+  with it, so not earlier]. A message during the hold reuses the icon and restarts the hold (one icon per burst,
+  never one per message).
+- `install` (the setting switched on) while a temporary icon is up: the temporary icon is removed first, so there are
+  never two. `remove` and the app's exit (`stopDesktopWork`) remove the temporary icon too, so none outlives the
+  process; all of it under the tray's existing lock.
+- Only where the platform needs it: Windows (and the Linux fallback after `notify-send` / `gdbus` failed, which today
+  also needs the user's icon); macOS keeps `osascript`. "Show system notifications" still decides first.
+- Tests: the AWT calls behind a small seam (add, remove, display), so a test checks add → display → remove after the
+  hold, the coalesced burst, no second icon when the setting is switched on during the hold, and removal on exit.
+- On CI: `--self-test-notify` on Windows already goes this way (a temporary icon, held 8 s); the Windows smoke job
+  can run it once it is in the workflow, plus a step with the tray setting off that raises a notification.
