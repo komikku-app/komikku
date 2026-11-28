@@ -260,6 +260,7 @@ jobs:
       MAC_SIGNING: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 != '' && secrets.MACOS_SIGNING_IDENTITY != '' }}
       MAC_NOTARIZATION: ${{ secrets.MACOS_NOTARIZATION_APPLE_ID != '' && secrets.MACOS_NOTARIZATION_PASSWORD != '' && secrets.MACOS_NOTARIZATION_TEAM_ID != '' }}
       WINDOWS_SIGNING: ${{ secrets.WINDOWS_CERTIFICATE_PFX_BASE64 != '' && secrets.WINDOWS_CERTIFICATE_PASSWORD != '' }}
+      RPM_SIGNING: ${{ secrets.RPM_SIGNING_KEY != '' }}
     defaults:
       run:
         # `./gradlew` on Windows too (Git Bash)
@@ -467,6 +468,22 @@ jobs:
           done
           rm -f "$certificate"
 
+      # Signing hook (Linux, ANSWER 018): the RPM signed with rpmsign from the OpenPGP key in RPM_SIGNING_KEY, checked
+      # with rpm -K; the key's public half becomes the asset Komikku-<v>-linux-x64-rpm-signing-key.asc. After every step
+      # that runs project code; the key is only in $RUNNER_TEMP/komikku-rpm-gnupg, which the script deletes when it ends
+      # and the step "Remove RPM signing keyring" again. The same script signs with a throwaway key in `smoke` (the CI
+      # proof). Without the secret the RPM is the unsigned one as built.
+      - name: Sign RPM
+        if: runner.os == 'Linux' && env.RPM_SIGNING == 'true'
+        env:
+          RPM_SIGNING_KEY: ${{ secrets.RPM_SIGNING_KEY }}
+          RPM_SIGNING_KEY_PASSPHRASE: ${{ secrets.RPM_SIGNING_KEY_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          key="$RUNNER_TEMP/rpm-signing-key.asc"
+          .github/scripts/desktop_rpm_sign.sh "$key" desktopApp/build/compose/binaries/main/rpm/*.rpm
+          echo "RPM_SIGNING_KEY_FILE=$key" >> "$GITHUB_ENV"
+
       - name: Collect release assets
         run: |
           .github/scripts/desktop_release_assets.sh desktopApp/build/compose/binaries/main \
@@ -475,6 +492,12 @@ jobs:
       - name: Remove macOS signing keychain
         if: always() && runner.os == 'macOS' && env.KOMIKKU_MAC_SIGNING_KEYCHAIN != ''
         run: security delete-keychain "$KOMIKKU_MAC_SIGNING_KEYCHAIN" || true
+
+      - name: Remove RPM signing keyring
+        if: always() && runner.os == 'Linux' && env.RPM_SIGNING == 'true'
+        run: |
+          gpgconf --homedir "$RUNNER_TEMP/komikku-rpm-gnupg" --kill all || true
+          rm -rf "$RUNNER_TEMP/komikku-rpm-gnupg" "$RUNNER_TEMP/komikku-rpm-keydb"
 
       - name: Upload test report
         if: failure()
@@ -758,7 +781,8 @@ jobs:
   # each run on a session bus of its own with dbus-monitor: without a notification service (must fail), then with dunst
   # the plain self-test (no notification), notify-send and gdbus; on Windows the same self-test through the temporary
   # tray icon. On Linux also the .rpm in a Fedora container: installed without menu folders, upgraded twice and erased,
-  # with the menu entry checked after each step (nothing graphical). Then, on Linux, Windows and macOS (macos-15 runs
+  # with the menu entry checked after each step (nothing graphical), then signed with a throwaway key by the release's
+  # signing script (desktop_rpm_sign.sh) and installed without --nosignature, and a tampered copy refused by rpm -K. Then, on Linux, Windows and macOS (macos-15 runs
   # only this), the app's own UI smoke mode (`--ui-smoke`, UI_SMOKE_DESIGN.md) on the installed .deb, the .msi
   # unpacked as an administrative image and the .app copied from the .dmg: a fixed script through the real window on a
   # temporary data folder, offline; rows for its exit code, report result, failing step and network attempts. Scripts:
@@ -838,7 +862,7 @@ jobs:
         run: .github/scripts/desktop_smoke_linux.sh packages smoke-output
 
       # Also when the .deb smoke test failed: it does not depend on it
-      - name: RPM install, upgrade and erase (Linux)
+      - name: RPM install, upgrade, erase and signing (Linux)
         if: ${{ !cancelled() && runner.os == 'Linux' }}
         timeout-minutes: 20
         run: .github/scripts/desktop_smoke_rpm.sh packages smoke-output/rpm

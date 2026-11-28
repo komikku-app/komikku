@@ -16,7 +16,8 @@
 # Asset names: Komikku-<version>-<os>-<arch>.<ext>
 #   windows: .msi, .exe        macos: .dmg        linux: .deb, .rpm, .tar.gz (the app image directory, packed)
 # and Komikku-<version>-<os>-<arch>-SHA256SUMS.txt (`sha256sum -c` format, "<hash>  <name>" lines sorted by name) for
-# those files.
+# those files. On Linux with RPM_SIGNING_KEY_FILE set (the public key the workflow's RPM signing hook wrote), that key
+# too, as Komikku-<version>-linux-<arch>-rpm-signing-key.asc; unset (no signing), the assets are the unsigned build's.
 # Every format the OS builds must be there exactly once, otherwise the script fails.
 set -euo pipefail
 
@@ -82,6 +83,11 @@ for format in $formats; do
   esac
   assets+=("$name")
 done
+if [ "$os" = linux ] && [ -n "${RPM_SIGNING_KEY_FILE:-}" ]; then
+  name="$base-rpm-signing-key.asc"
+  cp "$RPM_SIGNING_KEY_FILE" "$out/$name"
+  assets+=("$name")
+fi
 
 sums="$base-SHA256SUMS.txt"
 (
