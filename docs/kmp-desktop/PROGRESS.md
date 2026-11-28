@@ -4617,7 +4617,7 @@ move back next time are listed in UPSTREAM_AUDIT.md section 7.
 | `LibraryScreenModel.kt` | `master`'s file, byte-identical. Our `LibraryActions.kt` and `LibraryFilterSort.kt` became desktop copies in `app-shared/src/desktopMain` (no longer compiled for Android), with `master`'s range rule (`481bfeb75a`) ported (`611bb99ef2`). |
 | `SourceFilterDialog.kt` | `master`'s file, byte-identical (Android gets `master`'s invalid-filter fix `a222d3a220`). Our `SourceFilterItems.kt` became a desktop copy whose body is `master`'s `FilterItem` (`ed23d6fa1f`). |
 | `WebViewInterceptor.kt` (moved to `core/common` `androidMain`) | `master`'s file, byte-identical. |
-| `CloudflareInterceptor.kt` (moved to `core/common` `androidMain`) | `master`'s file plus the one-line `actual` hook of the shared `expect class` that `NetworkHelper` constructs (UPSTREAM_AUDIT.md 7.2, question to Atlas). Our `CloudflareChallenge.kt` became a desktop copy with `master`'s `cf-mitigated` detection and browser-header rules (`1e3ee2a04e`). |
+| `CloudflareInterceptor.kt` (moved to `core/common` `androidMain`) | `master`'s file plus the one-line `actual` hook of the shared `expect class` that `NetworkHelper` constructs (a borrowing hook, UPSTREAM_AUDIT.md 7.2; kept by ANSWER 014). Our `CloudflareChallenge.kt` became a desktop copy with `master`'s `cf-mitigated` detection and browser-header rules (`1e3ee2a04e`). |
 | `core/common/build.gradle.kts` | `master`'s new `androidx.webkit` goes to `androidMain.dependencies` (an Android AAR), next to `preferencektx`. |
 
 **Clean merges that needed desktop changes (in the merge commit, to keep it compiling):**
@@ -4632,14 +4632,18 @@ move back next time are listed in UPSTREAM_AUDIT.md section 7.
 P7's Cloudflare detection are no longer shared with Android; Android runs `master`'s code, the desktop runs copies that
 follow it, and tests written from `master`'s code pin the behaviour both must share.
 
-**Desktop behaviour changes from following `master`:**
+**Desktop behaviour changes from following `master`** (intended, not regressions; Android has the same behaviour):
 - Shift-click ranges start at the entry last clicked into the selection (in the same category, still selected),
   not at the last entry of the selection set; select all, invert and clear drop the anchor.
 - A filter select whose state is out of range shows no value (was: the first option); a select without values shows
-  an empty field (was: a heading); an unknown tri-state shows as ignored (was: a crash).
+  an empty field (was: a heading).
+- A filter tri-state with an unknown state shows as "ignore" (was: a crash).
 - Cloudflare: only a Cloudflare response with `cf-mitigated: challenge` is a challenge (was: a 403 / 503 with the
   challenge page markers); the headers given to a browser drop `Origin` and merge names case-insensitively, keyed in
   lower case.
+
+**Parity gaps left by the merge** (priority 5, HANDOVER.md "Left to do" item 4): no "MangaDex session expired"
+notification on desktop, no batch "reset info" in the desktop library.
 
 **Tests:** new `CloudflareChallengeTest` (`core:common`, 4), `SourceFilterItemUiTest` (3); `LibraryActionsTest`
 rewritten from `master`'s rule (5). The desktop tests' fake Cloudflare challenges carry `cf-mitigated` now;
@@ -4650,8 +4654,11 @@ which surfaced once its interactive-session test ran to the end).
 `:app:verifyBorrowedSources` and `:app:compileDebugKotlin` pass. `:desktopApp:test` 448 passed. Every module's
 `desktopTest` passes (`domain` 102, `source-js` 154, `core:quickjs` 38, `core:preference` 22, `core:archive` 9,
 `data` 6 with the migration to `48.sqm`, `core-metadata` 2, `source-local` 2) except one test in `core:common` (15 of
-16): `ImageUtilTest` "splits tall images" expects a headless JVM (2 × 2160 px parts) and gets this Mac's screen height;
-neither `ImageUtil` nor the test changed in this merge, and CI runs it headless. `testReleaseUnitTest`: `app` 60 (with
+16): `ImageUtilTest` "splits tall images" expected a headless JVM (2 × 2160 px parts) and got this Mac's screen height.
+Neither `ImageUtil` nor the test changed in this merge; both are ours (desktop only). Fixed after the merge in
+`d9f7508ef4`: the desktop `ImageUtil` takes the part height as a parameter (the downloader's call still uses the
+screens), the test passes it, and a new test checks the height rule; `core:common` `desktopTest` 17 of 17 on this
+Mac. `testReleaseUnitTest`: `app` 60 (with
 `master`'s new MDList, MangaDex login and MyAnimeList login tests), `domain` 102, `core:common` 3, `core:quickjs` 38,
 `source-js` 105, all passed.
 

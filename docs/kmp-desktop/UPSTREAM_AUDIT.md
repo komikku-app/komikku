@@ -1,4 +1,4 @@
-Status: Upstream integrator — done: A1 audit, conflict prediction, DECISION 004 check of #2023, the two `master` checks, A3 proposal, the three Android fix patches, A4 (first merge of `master`, section 7) — left: the next merge after #2023 (section 7.3), the `CloudflareInterceptor` hook question (7.2)
+Status: Upstream integrator — done: A1 audit, conflict prediction, DECISION 004 check of #2023, the two `master` checks, A3 proposal, the three Android fix patches, A4 (first merge of `master`, section 7) — left: the next merge after #2023 (section 7.3)
 
 # Upstream audit: the files `master` owns and the coming merge
 
@@ -422,10 +422,15 @@ the existing ones listed in `app-shared/borrowed-app-sources.gradle.kts`.
 
 ### 7.2 Hooks and build files: the allowed differences
 
-The rule since ANSWER 009: a file `master` owns is byte-identical to `master`'s unless it is on this list.
+The rule since ANSWER 009: a file `master` owns is byte-identical to `master`'s unless it is on this list. A hook is
+a declaration-level line, never behaviour (ANSWER 014).
 
-- **`actual` hooks**, so shared code can use a platform class: `core/common` `CloudflareInterceptor.kt` (one line,
-  new in this merge, see below) and `core/archive` `ArchiveReader.kt` (its members).
+- **Borrowing hooks (`actual`)**, so shared code can use a platform class:
+  - `core/archive/src/androidMain/kotlin/mihon/core/archive/ArchiveReader.kt`: `actual` on the class and on its six
+    members the shared `expect class` declares (one modifier per declaration line, inside KMK markers).
+  - `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/network/interceptor/CloudflareInterceptor.kt`:
+    `actual class CloudflareInterceptor actual constructor(` instead of `class CloudflareInterceptor(`, inside KMK
+    markers (kept by ANSWER 014, see below).
 - **Borrowed-source enablement hooks** (5.2): `DownloadCache`, `ReleaseServiceImpl`, `CbzCrypto`, `StorageManager`,
   `SourcePreferences`, `SetReadStatus`, `SearchScreenModel`, `CustomColorScheme`; and `MigrateMangaDialog` (public,
   `onFailure`).
@@ -440,7 +445,8 @@ requires the Android class to say `actual class CloudflareInterceptor actual con
 the same hook the file had before). The only byte-identical alternative is to move `NetworkHelper.kt` to
 `androidMain` too and keep a desktop copy of it (about 200 lines). That copy would have to be re-synced by hand and
 would silently miss what `master` adds to the clients (this merge added `MangaDexUserAgentInterceptor` there), so the
-hook was kept. **Question for Atlas:** keep the hook, or move `NetworkHelper` and keep a desktop copy?
+hook was kept, and Atlas confirmed it (ANSWER 014): if a merge of `master` ever conflicts on that line, reconsider
+then.
 
 ### 7.3 What could move back next time
 
