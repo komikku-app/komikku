@@ -128,7 +128,10 @@ The maintainer is above both. Only the maintainer can change these rules, approv
    outside the coordination thread, no new repositories, no changes to repository settings or secrets.
 7. Use a separate data folder for every app run (`-Dkomikku.dataDir=…`); never touch the maintainer's own library,
    keychain or files outside the workspace.
-8. Spending: the Delivery Lead's team runs on API credit that can run out for the month. Prefer the cheaper model
+8. Nothing of value lives only in a session: work in progress, unfinished analysis included, is committed and
+   pushed at least every 30 minutes of work, and HANDOVER.md says per track where its state is (ATLAS_INSTRUCTIONS.md,
+   INSTRUCTION 006).
+9. Spending: the Delivery Lead's team runs on API credit that can run out for the month. Prefer the cheaper model
    where it is enough, do not run agents that have nothing to do, and report when credit is running low. If it runs
    out, leave the branch clean and pushed with HANDOVER.md current.
 
