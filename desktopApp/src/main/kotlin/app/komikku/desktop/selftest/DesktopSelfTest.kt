@@ -37,7 +37,8 @@ import javax.net.ssl.SSLContext
  *
  * `--self-test-extensions=<folder>` adds one check per extension APK in the folder: converted, loaded and every class
  * verified inside the packaged runtime (CI passes real Keiyoushi extensions; their classes failed the verifier in the
- * second macOS test build while the fixture passed).
+ * second macOS test build while the fixture passed). One that unscrambles its pages also unscrambles a generated page
+ * served on the loopback interface ([ScrambledPageCheck]).
  *
  * `--self-test-notify[=<backend>]` adds the [NOTIFY_CHECK] check: one fixed notification through the OS's system
  * notifier, passed when the backend accepted it ([NotificationSelfTest]; opt-in, as it shows a notification).
@@ -258,6 +259,7 @@ object DesktopSelfTest {
      * One check per `.apk` in [dir] ([checkExtension]); a check that fails when [dir] has none. Real extensions resolve
      * the app's objects from Injekt when their sources are created (`Injekt.get<Application>()`, the network helper),
      * so the checks first build the app's graph ([DesktopInjekt]) over a temporary data folder, unless one is there.
+     * An extension that unscrambles its pages also has a page put through its interceptor ([ScrambledPageCheck]).
      */
     fun extensionChecks(dir: File): List<Check> {
         val apks = dir.listFiles { file -> file.isFile && file.extension == "apk" }.orEmpty().sortedBy { it.name }
@@ -265,7 +267,9 @@ object DesktopSelfTest {
         return apks.map { apk ->
             Check("extension ${apk.name}") { work ->
                 ensureAppGraph()
-                checkExtension(apk, work, strict = false)
+                var page: String? = null
+                checkExtension(apk, work, strict = false) { page = ScrambledPageCheck.run(it) } +
+                    page?.let { "; $it" }.orEmpty()
             }
         }
     }

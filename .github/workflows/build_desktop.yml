@@ -499,7 +499,9 @@ jobs:
   # M3: the packaged app's self-test with real extensions. The second macOS test build converted Keiyoushi's
   # extensions into classes the JVM's verifier rejects (no stack map frames, R8-inlined constructors) while the fixture
   # passed; this job converts the extensions pinned in .github/desktop-test-extensions.txt (Hiperdex, Kagane, MangaDex,
-  # Weeb Central), verifies every class and fails on classes the host libraries lack.
+  # Weeb Central, Shonen Jump+), verifies every class and fails on classes the host libraries lack. Shonen Jump+ also
+  # unscrambles a generated page served on the loopback interface through its own interceptor (ANSWER 016: a decoded
+  # page compared with the generated one; no network).
   # Contained (REVIEW_M3.md finding 1, ATLAS_INSTRUCTIONS.md ANSWER 010): creating their sources runs third-party code,
   # so it never runs where a secret can be reached or an installer is made. This job references no secret, its token
   # is read-only, it does not check out the repository (no stored credentials, no post step), and no step runs after
