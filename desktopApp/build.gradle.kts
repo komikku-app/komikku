@@ -267,6 +267,24 @@ extensions.configure<ComposeExtension> {
                     dockName = "Komikku"
                     packageVersion = packageVersionName
                     dmgPackageVersion = packageVersionName
+                    // The OAuth trackers' redirect schemes (Android's TrackLoginActivity; MDList's tachiyomisy): macOS
+                    // hands these addresses to the app as open-URL events (OAuthRedirectInbox)
+                    infoPlist {
+                        extraKeysRawXml = """
+                            |  <key>CFBundleURLTypes</key>
+                            |  <array>
+                            |    <dict>
+                            |      <key>CFBundleURLName</key>
+                            |      <string>app.komikku.tracker-login</string>
+                            |      <key>CFBundleURLSchemes</key>
+                            |      <array>
+                            |        <string>komikku</string>
+                            |        <string>tachiyomisy</string>
+                            |      </array>
+                            |    </dict>
+                            |  </array>
+                        """.trimMargin()
+                    }
                     // Signing / notarization only when their settings are there (see "Signing hooks" above).
                     if (macSigningIdentity != null) {
                         signing {
@@ -297,4 +315,5 @@ extensions.configure<ComposeExtension> {
 
 // KMK -->
 apply(from = "packaging/linux/deb-maintainer-scripts.gradle.kts")
+apply(from = "packaging/windows/url-protocol.gradle.kts")
 // KMK <--
