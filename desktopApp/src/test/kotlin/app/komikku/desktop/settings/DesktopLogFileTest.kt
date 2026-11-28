@@ -37,6 +37,23 @@ class DesktopLogFileTest {
     }
 
     @Test
+    fun `a fresh start creates the log file with its start line`() {
+        val dataDir = Files.createTempDirectory("komikku-start").toFile()
+        try {
+            val log = DesktopLogFile.start(dataDir, version = "9.8.7")
+
+            log.file shouldBe File(DesktopLogFile.directoryFor(dataDir), "komikku.log")
+            val line = log.file.readLines().single()
+            line shouldContain "I/${DesktopLogFile.START_TAG}: Komikku 9.8.7 on ${System.getProperty("os.name")}"
+            line shouldContain "(${System.getProperty("os.arch")}), Java ${System.getProperty("java.runtime.version")}"
+            line shouldContain "data folder ${dataDir.absolutePath}"
+            log.close()
+        } finally {
+            dataDir.deleteRecursively()
+        }
+    }
+
+    @Test
     fun `the log level maps to the desktop log priority, the system property wins`() {
         DesktopLogFile.priorityFor(EHLogLevel.MINIMAL.ordinal) shouldBe DesktopLog.INFO
         DesktopLogFile.priorityFor(EHLogLevel.EXTRA.ordinal) shouldBe DesktopLog.DEBUG

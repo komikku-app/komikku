@@ -83,7 +83,7 @@ fun main(args: Array<String>) {
     // One running instance per data folder: another start on it asks this one to show its window and exits. Checked
     // before the log file, which belongs to the running instance, and before `DesktopInjekt.init()` opens the database
     val singleInstance = DesktopSingleInstance.ensure(dataDir)
-    DesktopLogFile.install(DesktopLogFile.directoryFor(dataDir))
+    DesktopLogFile.start(dataDir, BuildConfig.VERSION_NAME)
     val app = DesktopInjekt.init(dataDir)
     // SY's log level, once the preferences are there (applied at once when it changes)
     val startScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

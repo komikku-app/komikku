@@ -94,6 +94,24 @@ class DesktopLogFile(val directory: File, private val maxBytes: Long = 2L * 1024
         }
 
         /**
+         * [install]s the log file of [dataDir] and logs the start line ([startLine]): a normal start logs nothing else
+         * at the default level, and the file would not exist (macOS on-device pass, F1).
+         */
+        fun start(dataDir: File, version: String): DesktopLogFile {
+            val logFile = install(directoryFor(dataDir))
+            DesktopLog.log(DesktopLog.INFO, START_TAG, startLine(version, dataDir))
+            return logFile
+        }
+
+        /** App version, system and architecture, Java and data folder of this start. */
+        fun startLine(version: String, dataDir: File): String =
+            "Komikku $version on ${System.getProperty("os.name")} ${System.getProperty("os.version")} " +
+                "(${System.getProperty("os.arch")}), Java ${System.getProperty("java.runtime.version")} " +
+                "(${System.getProperty("java.vendor")}), data folder ${dataDir.absolutePath}"
+
+        const val START_TAG = "Start"
+
+        /**
          * The desktop log priority for SY's "Log level" ([EHLogLevel], Android's verbose logging in Komikku): minimal =
          * info, extra = debug, extreme = verbose.
          */
