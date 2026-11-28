@@ -1,7 +1,8 @@
 # Review of step D1 (instance lock, Linux notifications, new desktop CI jobs)
 
 Status: Reviewer — done: steps 1, 2 and 3 reviewed up to `f28941bc1f`, first run of the new jobs (46117892032) read
-— left: the `windows-test` result of that run (still running), re-check the fixes when the owners report
+— left: the `windows-test` result of that run (still running), the containment commits `dc2995cd3d` / `5c6de95a50`
+(not covered), re-check the fixes when the owners report
 
 ## Summary
 
@@ -222,7 +223,11 @@ Smoke-test the installed desktop app on Linux and Windows (with `.github/scripts
 `desktop_smoke_windows.ps1`), `13178b7547` docs(kmp): Describe the non-blocking desktop CI jobs. Workflow state
 reviewed: `.github/workflows/build_desktop.yml` as of `71eea8c29d` (the last commit touching it on
 `origin/multiplatform` at `f28941bc1f`); the containment change for REVIEW_M3.md finding 1 (High) was not committed
-yet, so that finding is still open in this state and is not repeated here. The scripts were reviewed by reading
+yet, so that finding is still open in this state and is not repeated here. It landed afterwards (`dc2995cd3d`
+ci(kmp): Run the real-extension self-test in a job without secrets, `5c6de95a50` ci(kmp): Take only the package
+matrix's artifacts into a release) and is **not** covered by this review; a quick look at `ec0a061f97` only confirms
+that `release` still does not depend on `windows-test` or `smoke` (it now needs `plan`, `package` and the new
+`extension-check`). The scripts were reviewed by reading
 first, then checked against the first run with these jobs (46117892032, results in R.1, R.2 and below).
 
 **Specification check (ANSWER 005 item 1, plan section 4):** non-blocking `:desktopApp:test` on `windows-2022`: met
