@@ -1,4 +1,4 @@
-Status: Test and release engineer — done: run 46120905511 read, Linux smoke install fixed — left: R.2 (ReaderWidePagesUiTest), the Windows unit test failures, the macOS smoke design
+Status: Test and release engineer — done: run 46120905511 read, Linux smoke install fixed, R.2 cause found — left: R.2 fix and its repeated runs, the Windows unit test failures, the macOS smoke design
 
 # Desktop CI: test and release notes
 
@@ -27,3 +27,25 @@ designs not built yet. Forge folds what matters into PROGRESS.md / HANDOVER.md.
   prints because the Windows GUI launcher can drop stdout). Cosmetic, left as is.
 - The Windows app log of the smoke run had one line (the single-instance hand-over); the automatic backup error of run
   46117892032 (R.1) did not appear.
+
+## R.2: `ReaderWidePagesUiTest` "rotate wide pages to fit" (cause found)
+
+- **Which wait:** the Linux test report of run 46117892032 (artifact `desktop-test-report-linux-X64-…`) has the full
+  trace: line 207, the wait for the wide page (`page-2`) to be taller than wide. Everything before it took about 1.4 s,
+  so the page was shown and stayed wrong for 15 s; slowness alone does not explain it. In the last 17 desktop runs it
+  failed once (the other UI test failures were other tests, once each).
+- **Not reproduced by load:** 10 runs of the class under 6 busy loops on this Mac, and runs with the wide page's
+  download delayed by 0.3 / 1 / 3 s, all passed.
+- **Cause (Android code, `HttpPageLoader`, also on `master`):** two reader threads (`eh_reader_threads`, default 2)
+  take pages from one priority queue, and a page can be in it several times (every `loadPage` caller queues it: the
+  paged viewer's preload of the neighbours and its shown slot, plus the `preloadNextPages` of earlier pages). A thread
+  skips an entry only when the page is no longer `Queue`, and it marks the page as downloading only after a chapter
+  cache lookup. Two threads that take the page within that window both download it. The chapter cache's editor goes
+  to the first; the second one's `putImageToCache` gets no editor and returns without writing, and that thread sets
+  the page's stream and `Ready` while the image is not in the cache. The desktop reader decodes on `Ready`, gets
+  `FileNotFoundException` and shows the error placeholder; the first thread's later `Ready` changes nothing (same state),
+  so the page never decodes again. Likelier on a cold JVM (first test of a fresh test JVM, first cache access), which
+  is where it failed. Android's reader has the same path (decode on `Ready`).
+- **Shown deterministically:** a scratch test holding the chapter cache's lock while two `loadPage` calls queue the
+  same page: both threads download it (2 requests) and at the first `Ready` the image file does not exist
+  (`FileNotFoundException …/chapter_disk_cache/<key>.0`), final state `Ready`.
