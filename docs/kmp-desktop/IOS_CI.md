@@ -1,9 +1,8 @@
 # iOS check (CI)
 
-Status: iOS engineer — done: the REVIEW_IOS.md fixes are committed (deallocation asserted, late navigation answered
-"cancel", the WebKit step fails on the app's exit status and counts each class's tests) — left: a green run with
-them (the check is **red** since run 46120277810; 46120905490 failed because `simctl spawn` has no WebKit), then
-removing the temporary retention probe.
+Status: iOS engineer — done: the REVIEW_IOS.md fixes (deallocation asserted, late navigation answered "cancel",
+the WebKit step fails on the app's exit status and counts each class's tests), green in run 46123856675 — left: a
+green run after the retention probe's removal (`a05e98674e`, 26 WebKit tests expected).
 
 History: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
 simulator, including deep recursion on the 4 MiB JS stack; 122 with I5a (run 45545772720, commit `eca24347e1`,
@@ -546,17 +545,20 @@ where it fails. The tests that need no page (URL refusal, timeout, the message l
 
 - Real sites, TLS, Cloudflare-style challenges: only the loopback server (no network). Redirects to another host
   only as `127.0.0.1` → `localhost`; cookies for subresources on other hosts are not copied in (above).
-- The web view's deallocation (REVIEW_IOS.md, medium) is asserted since `aceb0ddb0a`; **not yet confirmed in CI**
-  (the first run with the assertion, 46120905490, had no WebKit, see above). Until then the old test only printed
-  `WEBVIEW_DEALLOCATED=false`. Suspected cause, a measurement artifact rather than a leak: the old loop read
-  `weak.value` in its own frame, between `GC.collect()` calls. Each read of a Kotlin/Native `WeakReference` to an
-  Objective-C object makes a new Kotlin wrapper that retains the object until the wrapper is collected, and a
-  wrapper the frame still holds (a stack slot) keeps the view alive for as long as the loop runs. The controls were
-  only read once, after the loop, so they were freed. The same teardown in Swift frees a loaded `WKWebView` at once
-  (a stand-in app on a local iOS 27.2 simulator), so WebKit itself does not keep it. The new test reads each weak
-  reference in a function of its own on the main thread and fails if a view is still there after 8 s; the temporary
-  `WKWebViewRetentionProbeTest` prints the old reading next to the new one for the same view. The rest of this
-  paragraph is the earlier investigation. Old reading: still not freed 8 s after the call with
+- The web view's deallocation (REVIEW_IOS.md, medium) is asserted since `aceb0ddb0a` and passes (run
+  46123856675). There was no leak: the old test's measurement kept the view. Its loop read `weak.value` in its own
+  frame, between `GC.collect()` calls. Each read of a Kotlin/Native `WeakReference` to an Objective-C object makes
+  a new Kotlin wrapper that retains the object until the wrapper is collected, and a wrapper the frame still holds
+  (a stack slot) keeps the view alive for as long as the loop runs. The controls were only read once, after the
+  loop, so they were freed. Shown in run 46123856675 by a temporary probe (`WKWebViewRetentionProbeTest`, removed
+  in `a05e98674e`) on one view after a real call: read in the loop's frame, `freed=false` after 3.2 s; then read in
+  a function of its own on the main thread, `freed=true` 0.2 s later. Each part of the host's use on its own (a
+  load, with the navigation delegate, with the message handler, with `evaluateJavaScript`) was freed as well, and
+  the same teardown in Swift frees a loaded `WKWebView` at once (a stand-in app on a local iOS 27.2 simulator). The
+  test now reads each weak reference that way and fails if a view of three calls (or the never-loaded control) is
+  still there after 8 s; it took 3.8 s in all. The host's teardown is unchanged: no pool, one web view and one
+  non-persistent data store per call. The rest of this paragraph is the earlier investigation. Old reading: still
+  not freed 8 s after the call with
   `GC.collect()` every 200 ms (runs 45620605008, 45627948544; the test holds it only through a Kotlin/Native
   `WeakReference`). What was ruled out: an autorelease pool per main run loop pass in `mainRunLoopTest` (as UIKit's
   run loop has; the test process never runs `UIApplicationMain`) and around creation and teardown changed nothing
@@ -579,6 +581,12 @@ where it fails. The tests that need no page (URL refusal, timeout, the message l
 - The desktop and Android hosts still use `UnsupportedHostWebView`.
 
 ### Result
+
+Run 46123856675 (commit `117edf59dd`, the REVIEW_IOS.md fixes): job `success`. The app step: `[  PASSED  ] 27
+tests.` (`WKWebViewHostWebViewTest` 18 of 18, `WebViewBridgeTest` 6 of 6, `IosJsSourceRuntimeWebViewTest` 2 of 2,
+the temporary `WKWebViewRetentionProbeTest` 1 of 1), the app's wait status 0, the deallocation assertion and the
+late-navigation test passing. Before it: 46120277810 failed to compile the probe (a missing opt-in), 46120905490
+ran the app's executable with `simctl spawn` (no WebKit, every WebKit test failed).
 
 Run 45627948544 (commit `cbff7a0c15`, the review fixes below): job `success`. The plain simulator run: 175
 `:source-js` tests passed, none failed (the WebKit tests among them returned early). The app step: `[  PASSED  ] 25
