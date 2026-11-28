@@ -49,9 +49,17 @@ class GetSourcesWithFavoriteCount(
             }
         }
 
-        return when (direction) {
-            SetMigrateSorting.Direction.ASCENDING -> Comparator(sortFn)
-            SetMigrateSorting.Direction.DESCENDING -> Collections.reverseOrder(sortFn)
-        }
+        // KMK -->
+        // Not installed sources first in both directions: reversing sortFn for DESCENDING also reversed its stub rule
+        val stubsFirst = compareByDescending<Pair<Source, Long>> { it.first.isStub }
+        return stubsFirst.then(
+            // KMK <--
+            when (direction) {
+                SetMigrateSorting.Direction.ASCENDING -> Comparator(sortFn)
+                SetMigrateSorting.Direction.DESCENDING -> Collections.reverseOrder(sortFn)
+            },
+            // KMK -->
+        )
+        // KMK <--
     }
 }
