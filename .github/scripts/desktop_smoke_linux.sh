@@ -3,8 +3,9 @@
 # .github/workflows/build_desktop.yml (job `smoke`, ubuntu-24.04) on the `package` job's artifact. Installs the .deb
 # with apt, starts the installed launcher on a fresh data folder (-Dkomikku.dataDir under $RUNNER_TEMP, never the
 # default one) on a virtual display (Xvfb + openbox), waits for the window, takes screenshots, switches the top-level
-# tabs with Ctrl+2…5 and Ctrl+1, closes the window, checks that the process ends with exit code 0 and that the log has
-# no exception, then uninstalls. The app is driven only from outside (window system and keyboard shortcuts).
+# tabs with Ctrl+2…5 and Ctrl+1, minimizes the window and starts the launcher a second time on the same data folder (the
+# single-instance lock must show the running window and end that start with exit code 0), closes the window, checks
+# that the process ends with exit code 0 and that the log has no exception, then uninstalls. The app is driven only from outside (window system and keyboard shortcuts).
 #
 #   desktop_smoke_linux.sh <packages dir> <output dir>
 #
@@ -26,10 +27,12 @@ tmp=$(mktemp -d)
 work=${RUNNER_TEMP:-$tmp}
 
 display=:99
-# Seconds: the first window after start, the process end after the close request, one screen to stop changing
+# Seconds: the first window after start, the process end after the close request, one screen to stop changing, the end
+# of a second start on the same data folder
 window_timeout=120
 exit_timeout=30
 settle_timeout=30
+second_timeout=30
 # Per 10000 pixels of the window: at most this many differ between two screenshots of a settled screen, at least this
 # many after a tab switch (deliberately low: an empty screen differs from another one only in its title and a few
 # lines of text; the screenshots are the real evidence)
@@ -249,6 +252,61 @@ wait_window() {
   return 1
 }
 
+# Whether the window $wid is mapped as a normal window (ICCCM WM_STATE; Iconic when minimized)
+window_normal() {
+  xprop -id "$wid" WM_STATE 2> /dev/null | grep -q 'window state: Normal'
+}
+
+# Minimizes the window and starts the launcher once more on the same data folder: DesktopSingleInstance must make that
+# start ask the running app to show its window and end with exit code 0, without a second window
+second_start() {
+  local second_pid code started windows minimized
+  if ! running "$app_pid"; then
+    fail "Second start on the same data folder" "the app had already ended"
+    return
+  fi
+  timeout 10 xdotool windowminimize --sync "$wid" > /dev/null 2>&1
+  if window_normal; then minimized=no; else minimized=yes; fi
+  info "Window minimized before the second start" "$minimized"
+  (
+    cd "$data" || exit 1
+    export JAVA_TOOL_OPTIONS="-Dkomikku.dataDir=$data -Dkomikku.log.level=debug"
+    exec "$launcher"
+  ) > "$out/logs/second-start-stdout.log" 2> "$out/logs/second-start-stderr.log" &
+  second_pid=$!
+  started=$SECONDS
+  while running "$second_pid" && [ $((SECONDS - started)) -lt "$second_timeout" ]; do sleep 1; done
+  if running "$second_pid"; then
+    fail "Second start on the same data folder ends" \
+      "still running after ${second_timeout} s (screenshots/second-start-timeout.png: a busy dialog?)"
+    shoot_root "$out/screenshots/second-start-timeout.png"
+    kill -KILL "$second_pid" 2> /dev/null
+    wait "$second_pid" 2> /dev/null
+    return
+  fi
+  wait "$second_pid"
+  code=$?
+  if [ "$code" -eq 0 ]; then
+    pass "Second start on the same data folder ends with exit code 0" "after $((SECONDS - started)) s"
+  else
+    fail "Second start on the same data folder ends with exit code 0" "exit code $code (logs/second-start-stderr.log)"
+  fi
+  if wait_for 10 window_normal; then
+    pass "Running window shown again" "no longer minimized"
+  else
+    fail "Running window shown again" "still not a normal window 10 s after the second start ended"
+  fi
+  shoot_root "$out/screenshots/07-second-start-screen.png"
+  windows=$(xdotool search --onlyvisible --name '^Komikku$' 2> /dev/null | wc -l)
+  if [ "$windows" -eq 1 ]; then
+    pass "No second window"
+  else
+    fail "No second window" "$windows visible windows titled Komikku"
+    wmctrl -l -p > "$out/logs/windows-second-start.txt" 2>&1
+  fi
+  running "$app_pid" || fail "First instance still running after the second start"
+}
+
 # Records why no window appeared and ends that attempt
 no_window() {
   local result=$1 name=$2 code
@@ -435,7 +493,9 @@ if [ -f "$previous" ] && [ "$previous" != "$start_shot" ] && [ -f "$start_shot" 
   fi
 fi
 
-info "Second instance" "not tried yet (the single-instance lock of ANSWER 005 item 4 is being built)"
+# --- Second start ---------------------------------------------------------------------------------------------------
+
+second_start
 info "Notifications" "not observed yet"
 
 # --- Close ----------------------------------------------------------------------------------------------------------

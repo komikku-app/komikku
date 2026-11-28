@@ -4,8 +4,9 @@ KMK: first smoke test of the packaged Windows app (docs/kmp-desktop/WINDOWS_LINU
 .github/workflows/build_desktop.yml (job `smoke`, windows-2022) on the `package` job's artifact. Installs the .msi
 (per-user, silent), starts the installed launcher on a fresh data folder (-Dkomikku.dataDir under $env:RUNNER_TEMP,
 never the default one), waits for the window, takes screenshots (.NET screen capture), switches the top-level tabs
-with Ctrl+2…5 and Ctrl+1 (user32 key events), closes the window (WM_CLOSE), checks that the process ends with exit
-code 0 and that the log has no exception, then uninstalls. The app is driven only from outside (window system and
+with Ctrl+2…5 and Ctrl+1 (user32 key events), minimizes the window and starts the launcher a second time on the same
+data folder (the single-instance lock must show the running window and end that start with exit code 0), closes the
+window (WM_CLOSE), checks that the process ends with exit code 0 and that the log has no exception, then uninstalls. The app is driven only from outside (window system and
 keyboard shortcuts).
 
   desktop_smoke_windows.ps1 -Packages <packages dir> -Output <output dir>
@@ -23,10 +24,12 @@ param(
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
-# Seconds: the first window after start, the process end after the close request, one screen to stop changing
+# Seconds: the first window after start, the process end after the close request, one screen to stop changing, the
+# end of a second start on the same data folder
 $WindowTimeout = 120
 $ExitTimeout = 30
 $SettleTimeout = 30
+$SecondTimeout = 30
 # Per 10000 pixels of the window: at most this many differ between two screenshots of a settled screen, at least this
 # many after a tab switch (deliberately low: an empty screen differs from another one only in its title and a few
 # lines of text; the screenshots are the real evidence)
@@ -158,6 +161,8 @@ public static class SmokeWin32 {
     }
 
     public static bool Minimized(IntPtr window) { return IsIconic(window); }
+
+    public static void Minimize(IntPtr window) { ShowWindow(window, 6); }
 
     // Brings the window to the front with the keyboard focus; returns how, or "failed"
     public static string Focus(IntPtr window) {
@@ -307,6 +312,10 @@ function Find-AppWindow {
     return [IntPtr]::Zero
 }
 
+function Get-AppWindowCount {
+    @([SmokeWin32]::VisibleWindows() | Where-Object { [SmokeWin32]::Title($_) -ceq 'Komikku' }).Count
+}
+
 function Save-WindowList([string] $Path) {
     $lines = foreach ($window in [SmokeWin32]::VisibleWindows()) {
         '0x{0:X} pid {1} "{2}"' -f $window.ToInt64(), [SmokeWin32]::ProcessId($window), [SmokeWin32]::Title($window)
@@ -360,6 +369,57 @@ function Start-App([int] $Attempt, [string] $RenderApi = '') {
 }
 
 function Get-Elapsed([DateTime] $Since) { [int](([DateTime]::UtcNow - $Since).TotalSeconds) }
+
+# Minimizes the window and starts the launcher once more on the same data folder: DesktopSingleInstance must make that
+# start ask the running app to show its window and end with exit code 0, without a second window
+function Test-SecondInstance {
+    if ($script:App.HasExited) { Fail 'Second start on the same data folder' 'the app had already ended'; return }
+    [SmokeWin32]::Minimize($script:Window)
+    Start-Sleep -Seconds 1
+    Info 'Window minimized before the second start' "$([SmokeWin32]::Minimized($script:Window))"
+    $env:JAVA_TOOL_OPTIONS = "-Dkomikku.dataDir=$($script:Data) -Dkomikku.log.level=debug"
+    try {
+        $second = Start-Process -FilePath $Launcher -WorkingDirectory $script:Data -PassThru `
+            -RedirectStandardOutput (Join-Path $Logs 'second-start-stdout.log') `
+            -RedirectStandardError (Join-Path $Logs 'second-start-stderr.log')
+        $null = $second.Handle
+    } finally {
+        Remove-Item Env:JAVA_TOOL_OPTIONS -ErrorAction SilentlyContinue
+    }
+    $startedAt = [DateTime]::UtcNow
+    if (-not $second.WaitForExit($SecondTimeout * 1000)) {
+        Fail 'Second start on the same data folder ends' "still running after $SecondTimeout s (screenshots\second-start-timeout.png: a busy dialog?)"
+        Save-Desktop (Join-Path $Screens 'second-start-timeout.png')
+        Save-WindowList (Join-Path $Logs 'windows-second-start.txt')
+        Stop-Process -Id $second.Id -Force -ErrorAction SilentlyContinue
+        $second.WaitForExit(10000) | Out-Null
+        return
+    }
+    $second.WaitForExit()
+    if ($second.ExitCode -eq 0) {
+        Pass 'Second start on the same data folder ends with exit code 0' "after $(Get-Elapsed $startedAt) s"
+    } else {
+        Fail 'Second start on the same data folder ends with exit code 0' "exit code $($second.ExitCode) (logs\second-start-stderr.log)"
+    }
+    $deadline = [DateTime]::UtcNow.AddSeconds(10)
+    while ([SmokeWin32]::Minimized($script:Window) -and [DateTime]::UtcNow -lt $deadline) { Start-Sleep -Milliseconds 500 }
+    if ([SmokeWin32]::Minimized($script:Window)) {
+        Fail 'Running window shown again' 'still minimized 10 s after the second start ended'
+    } else {
+        Pass 'Running window shown again' 'no longer minimized'
+    }
+    Save-Desktop (Join-Path $Screens '07-second-start-screen.png')
+    $windows = Get-AppWindowCount
+    if ($windows -eq 1) {
+        Pass 'No second window'
+    } else {
+        Fail 'No second window' "$windows visible windows titled Komikku"
+        Save-WindowList (Join-Path $Logs 'windows-second-start.txt')
+    }
+    if ($script:App.HasExited) {
+        Fail 'First instance still running after the second start' "exit code $($script:App.ExitCode)"
+    }
+}
 
 # Waits for a visible top-level window titled exactly "Komikku"; sets Window. 'found', 'timeout' or 'ended'.
 function Wait-AppWindow {
@@ -570,7 +630,9 @@ try {
         }
     }
 
-    Info 'Second instance' 'not tried yet (the single-instance lock of ANSWER 005 item 4 is being built)'
+    # --- Second start ---------------------------------------------------------------------------------------------
+
+    Test-SecondInstance
     Info 'Notification without a tray icon' 'not observed yet: needs the tray icon switched off and a notification-raising action'
 
     # --- Close ----------------------------------------------------------------------------------------------------
