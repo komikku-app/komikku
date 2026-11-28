@@ -8,7 +8,8 @@ import org.jetbrains.skia.Paint as SkPaint
 
 /**
  * android-compat: `android.graphics.Paint`, what bitmap and shape drawing use: colour and alpha, flags (anti-alias,
- * bitmap filtering; a new paint filters bitmaps, as on Android 9 and later), style and stroke. Text members throw
+ * bitmap filtering; a new paint filters bitmaps, as on Android 9 and later), style, stroke and a colour filter
+ * ([ColorMatrixColorFilter]). Text members throw
  * `UnsupportedOnDesktop` (text drawing is not part of the desktop layer yet).
  */
 open class Paint(flags: Int) {
@@ -34,6 +35,7 @@ open class Paint(flags: Int) {
     private var strokeMiter = 4f
     private var strokeCap = Cap.BUTT
     private var strokeJoin = Join.MITER
+    private var colorFilter: ColorFilter? = null
 
     fun set(src: Paint) {
         flags = src.flags
@@ -43,6 +45,7 @@ open class Paint(flags: Int) {
         strokeMiter = src.strokeMiter
         strokeCap = src.strokeCap
         strokeJoin = src.strokeJoin
+        colorFilter = src.colorFilter
     }
 
     open fun reset() = set(Paint())
@@ -109,6 +112,13 @@ open class Paint(flags: Int) {
         strokeJoin = join
     }
 
+    open fun getColorFilter(): ColorFilter? = colorFilter
+
+    open fun setColorFilter(filter: ColorFilter?): ColorFilter? {
+        colorFilter = filter
+        return filter
+    }
+
     open fun getTextSize(): Float = unsupported(CLASS, "getTextSize")
 
     open fun setTextSize(textSize: Float): Unit = unsupported(CLASS, "setTextSize")
@@ -151,6 +161,7 @@ open class Paint(flags: Int) {
             Join.ROUND -> PaintStrokeJoin.ROUND
             Join.BEVEL -> PaintStrokeJoin.BEVEL
         }
+        it.colorFilter = colorFilter?.toSkia()
     }
 
     companion object {
