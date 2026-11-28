@@ -1,8 +1,9 @@
 # Komikku Desktop — plan to test the Windows and Linux apps
 
 Status: Windows and Linux engineer — done: the plan (sections 0–4, first smoke jobs built from it by the Test and
-release engineer), section 5 with `--self-test-notify` — left: the Windows notification with the tray icon off
-(ANSWER 011 (b), section 6), section 5 in the Linux smoke job (Test and release engineer). The plan was written
+release engineer), section 5 with `--self-test-notify`, section 6 (the Windows temporary tray icon, built), section 7
+(the .deb's install) — left: what only a real Windows run can confirm (section 6), the .deb fix proven by CI
+(section 7), section 5 in the Linux smoke job (Test and release engineer). The plan was written
 before anything was installed or run (ATLAS_INSTRUCTIONS.md, INSTRUCTION 001, track D). The code facts below are
 read from `multiplatform` at `9a649a5683`; the facts about products, licences and runners were read from their
 vendors' pages on 2026-11-28 (links inline) and can change. Every statement is marked **[known]** (read in the
@@ -431,30 +432,112 @@ notify_run() {
 (`desktop_system_notifications` false in the preset: no `Notify` call at all). The self-test checks the backend only;
 it does not read the setting.
 
-## 6. Windows notifications with the tray icon off (ANSWER 011 (b), sketch, not built)
+## 6. Windows notifications with the tray icon off (ANSWER 011 (b), built)
 
-**What the first Windows smoke run shows** (run 46117892032, `windows-2022`, interactive session 2): the window, the
-shortcuts and the exit work; "System tray lines in the log: none" with the default settings (tray icon on), so the tray
-icon was added without an error; "Notification without a tray icon: not observed yet" (the run neither switched the
-icon off nor raised a notification). So the run neither confirms nor contradicts the expectation; the code does:
-**[known]** on Windows `DesktopSystemNotifier` hands every notification to `DesktopTray.show`, which returns `false`
-when no icon is installed, and AWT's `TrayIcon.displayMessage` does nothing for an icon that is not in the tray (JDK
-21 `java.awt.TrayIcon`: the call goes to the peer only when there is one). With the tray icon setting off, Windows
-shows no notification at all. That is the first of the two expectations in ANSWER 011 (b): build the temporary icon.
+**Why it was needed** (run 46117892032 and the code): **[known]** on Windows `DesktopSystemNotifier` hands every
+notification to `DesktopTray.show`, and AWT's `TrayIcon.displayMessage` does nothing for an icon that is not in the
+tray (JDK 21 `java.awt.TrayIcon`: the call reaches the peer only when there is one). With the tray icon setting off,
+Windows showed no notification at all.
 
-**Sketch:**
-- `DesktopTray` keeps the user's icon (`icon`, governed by the tray setting) and gains a temporary one. `show` with no
-  user's icon: on one daemon worker (never the caller or the AWT thread), add a temporary `TrayIcon` (same image,
-  tooltip "Komikku", the same click action that opens the window, no menu), call `displayMessage`, and remove the icon
-  after a hold of about 10 s [guess: Windows shows a toast about 5 s, and taking the icon away may take its toast
-  with it, so not earlier]. A message during the hold reuses the icon and restarts the hold (one icon per burst,
-  never one per message).
-- `install` (the setting switched on) while a temporary icon is up: the temporary icon is removed first, so there are
-  never two. `remove` and the app's exit (`stopDesktopWork`) remove the temporary icon too, so none outlives the
-  process; all of it under the tray's existing lock.
-- Only where the platform needs it: Windows (and the Linux fallback after `notify-send` / `gdbus` failed, which today
-  also needs the user's icon); macOS keeps `osascript`. "Show system notifications" still decides first.
-- Tests: the AWT calls behind a small seam (add, remove, display), so a test checks add → display → remove after the
-  hold, the coalesced burst, no second icon when the setting is switched on during the hold, and removal on exit.
-- On CI: `--self-test-notify` on Windows already goes this way (a temporary icon, held 8 s); the Windows smoke job
-  can run it once it is in the workflow, plus a step with the tray setting off that raises a notification.
+**What was built** (`desktopApp/.../notification/DesktopTray.kt`, `TrayBackend.kt`):
+- `DesktopTray` keeps the user's icon (the tray setting, `install` / `remove` from `KomikkuWindow`) and a temporary
+  one. `show` with no user's icon adds the temporary icon (the same image, tooltip "Komikku", no menu; a click on it
+  or on its toast opens the window with the action `install` was last given — none when the setting was off since
+  the start, see the open points), calls `displayMessage` and takes the icon out 10 s after the last notification
+  (`TEMPORARY_ICON_MILLIS`) **[guess: Windows shows a toast about 5 s, and taking the icon away may take its toast
+  with it, so not earlier]**. A notification during that time reuses the icon and restarts the 10 s (one icon per
+  burst). `install` while a temporary icon is up takes it out before adding the user's icon, so there are never two.
+  `remove` (the setting switched off, the window gone at the app's exit) takes both out; `quit` does the same and
+  adds none afterwards. The first temporary icon registers a JVM shutdown hook that calls `quit` (waits at most 2 s),
+  so a notification raised after the window is gone (the exit stops the work in progress) leaves no icon behind.
+- Where: Windows, and the Linux fallback after `notify-send` / `gdbus` failed (which so far also needed the user's
+  icon). Not on macOS (`osascript`; `temporaryIcons` is off there). "Show system notifications" still decides first
+  (`DesktopSystemNotifier`).
+- Threads: every change of the icons runs on AWT's event thread (`TrayBackend.serialized`: `invokeAndWait`, or at
+  once on that thread), so the window's thread (`install` / `remove`) and a notifying thread never wait for each
+  other's lock. The removal timer is one daemon thread (`DaemonTrayTimer`). This differs from the sketch (a separate
+  worker): `show` stays synchronous, so its result still says whether the message was handed to AWT.
+- The AWT calls (`SystemTray.isSupported`, `add`, `remove`, `TrayIcon.displayMessage`, `setToolTip`) sit behind
+  `TrayBackend` (`AwtTrayBackend` in the app); the timer behind `TrayTimer`.
+- `--self-test-notify` on Windows now goes through the same temporary icon (no `install`), held 8 s, then `quit`.
+
+**Tests** (`DesktopTrayTest`, a fake backend and timer, any OS): no user's icon (temporary icon added, message shown,
+removed when the 10 s end; the exit hooked once); a second message during the wait (icon reused, wait restarted, the
+first wait's removal running late changes nothing); the setting switched on during the wait (the temporary icon
+removed before the user's is added, at most one icon at any time, the old wait ending changes nothing); the app's
+exit (the hook removes it, nothing added afterwards); `remove` with a temporary icon; its click uses the window's open
+action; with the user's icon (messages and tooltip go through it, no temporary icon); no temporary icon on macOS or
+without a tray; an icon that cannot be added (not shown, tried again next time). The existing tray tests
+(`DesktopNotificationsTest`, `MacTrayIconTest`, `NotificationSelfTestTest`) still run against the AWT backend.
+
+**What only a real Windows run can confirm:**
+1. That the toast actually appears with the tray setting off (AWT reports nothing back; the self-test passes when
+   the icon was added and `displayMessage` returned). The eye, or a screenshot in the Windows smoke job taken within
+   5 s of `--self-test-notify`.
+2. That a toast shown right after `SystemTray.add` is not lost (no delay between adding and showing is built in).
+3. What removing the icon after 10 s does to the toast: whether it vanishes from the screen and from the
+   notification centre with it (`NIM_DELETE`), and whether 10 s is enough for a user who set "show notifications
+   for" longer in Windows' accessibility settings.
+4. That no icon is left in the tray after the app exits during the 10 s (the shutdown hook), and that a burst of
+   notifications shows one icon, not a flicker of several.
+5. Clicking the temporary icon or its toast opens the window (only after the setting was on once in this run).
+
+**Open:**
+- A temporary icon's click does nothing when the tray setting was off since the start: the window's open action is
+  only handed to `DesktopTray` by `install`. Giving it always needs a line in `Main.kt` (the Shared-code engineer's).
+- The Windows smoke job could run `--self-test-notify` and a step with the tray setting off that raises a
+  notification (Test and release engineer).
+- ANSWER 011 (c): the setting's summary (`KMR.strings.desktop_tray_icon_summary`, only in `i18n-kmk` base) still
+  says notifications appear through the icon. The new text, "Quick access to the app from the system tray or menu
+  bar", waits for `i18n-kmk/.../base/strings.xml`, which the Extension runtime engineer holds.
+
+## 7. The Linux package's install (the .deb's maintainer scripts)
+
+**What failed** (run 46120905511, Linux smoke job): `Setting up komikku (1.14.1) ... xdg-desktop-menu: No writable
+system menu directory found.`, then `post-installation script subprocess returned error exit status 3`.
+
+**Cause [known]:** jpackage's own maintainer scripts (read from that run's `.deb`, `control.tar`; nothing of ours was
+in them) run `xdg-desktop-menu install /opt/komikku/lib/komikku-Komikku.desktop` in `postinst` and `xdg-desktop-menu
+uninstall ...` in `prerm`, both under `set -e`. xdg-desktop-menu (xdg-utils 1.1.3-4.1ubuntu3, Ubuntu 24.04; read in
+the script) in system mode exits with 3 ("No writable system menu directory found.") unless `XDG_DATA_DIRS`
+(default `/usr/local/share/:/usr/share/`) has **both** a writable `applications` and a writable
+`desktop-directories` folder; the `desktop-directories` check runs even when no `.directory` file is installed. A
+system without a desktop (the runner's server image, containers, minimal installs) lacks them, so the install fails
+there, and the removal would fail the same way. The runner environment only exposes it; any such system fails.
+
+**Fix:** `desktopApp/packaging/linux/postinst` and `prerm` replace jpackage's in the built `.deb`
+(`deb-maintainer-scripts.gradle.kts`; **not wired yet**: it needs the line
+`apply(from = "packaging/linux/deb-maintainer-scripts.gradle.kts")` in `desktopApp/build.gradle.kts`, a file the
+Extension runtime engineer holds; until then the package still has jpackage's scripts). `postinst` still tries
+`xdg-desktop-menu install`; when that fails it copies the entry to `/usr/share/applications` (creating the folder),
+and when that fails too it warns; it never fails the install. `prerm` runs `xdg-desktop-menu uninstall` without
+failing and removes the copied entry. Compose passes jpackage its own `--resource-dir` after any extra argument
+(jpackage keeps the last) and clears that folder in the task, so jpackage cannot be given the scripts as templates:
+the `packageDeb` / `packageReleaseDeb` tasks unpack the `.deb` with `dpkg-deb` (which jpackage needs to build one),
+replace the two scripts and pack it again (`--root-owner-group`). The build fails if jpackage's scripts run anything
+but the one menu command (a later jpackage, file associations, services), so nothing is dropped unnoticed.
+
+**Evidence on this Mac** (no container runtime here, and a `.deb` is only built on Linux): the scripts run against
+Ubuntu 24.04's real `xdg-desktop-menu` on a scratch root (`XDG_DATA_DIRS` pointing into it, `--mode system` for root,
+the absolute paths mapped into it in a copy):
+
+| Folders on the system | jpackage's postinst / prerm | ours |
+|---|---|---|
+| neither (the runner) | exit 3 / exit 3 | exit 0, entry copied / exit 0, entry gone |
+| `/usr/share/applications` only | exit 3 / exit 3 | exit 0, entry copied / exit 0, entry gone |
+| both (a desktop) | exit 0 / exit 0 | exit 0 through xdg-desktop-menu / exit 0 |
+| neither, `/usr/share` not writable | — | exit 0 with a warning / exit 0 |
+
+The second row means the smoke runner's workaround (fd0807e357 creates only `/usr/share/applications`) does not get
+jpackage's script through unless the runner already has `desktop-directories`.
+
+**What CI must prove:** the `.deb` from a build with the fix installs and uninstalls on a system without either
+folder: the Linux smoke job's "Install (.deb with apt-get)" and uninstall steps with the workaround removed (the
+runner lacks them, run 46120905511), checking `/usr/share/applications/komikku-Komikku.desktop` after the install and
+its absence after the removal; plus `dpkg-deb -e` of the built package showing our scripts.
+
+The Gradle part was compiled and applied on this Mac through an init script, but it configures nothing here (macOS
+registers no `.deb` task), so its unpacking and packing has not run yet: the first Linux package build shows it.
+
+**Open:** the RPM has the same calls in jpackage's `%post` / `%preun`; rpm only warns when a scriptlet fails, but
+dnf reports an error. Not changed.
