@@ -7,7 +7,8 @@ name: Desktop builder
 # jobs have not attached to a release yet. See docs/kmp-desktop/BUILDING.md "Release pipeline" and "Signing".
 # KMK -->
 # Two non-blocking jobs never hold up a release: the desktop tests on Windows (`windows-test`) and a smoke test of the
-# installed app on Linux and Windows (`smoke`; how to read it: the comment above that job).
+# installed app on Linux and Windows (`smoke`; how to read it: the comment above that job). Third-party extension code
+# runs only in `extension-check`, which can reach no secret (REVIEW_M3.md finding 1).
 # KMK <--
 
 on:
@@ -300,11 +301,9 @@ jobs:
       # on a fixture extension APK, EC crypto, charsets, locale data, the SQLite and QuickJS native libraries. The first
       # macOS test build lacked jdk.zipfs (no APK extension could be installed), which `run` and the tests could not
       # see. The report goes to a file as well, as the Windows launcher has no console.
-      # M3: real extensions too. The second macOS test build converted Keiyoushi's extensions into classes the JVM's
-      # verifier rejects (no stack map frames, R8-inlined constructors) while the fixture passed; the self-test now
-      # converts the current Hiperdex, Kagane, MangaDex and Weeb Central APKs (resolved from Keiyoushi's index), verifies
-      # every class and fails on classes the host libraries lack (MangaDex: constructors R8 inlined into subclasses,
-      # assets read through the class loader, eu.kanade.tachiyomi.AppInfo).
+      # M3: real extensions too, but never in this job (REVIEW_M3.md finding 1): it holds the signing identities on a
+      # release run, so it runs only the app's own code and the bundled fixture APK. The real Keiyoushi extensions are
+      # checked by the secret-free `extension-check` job below, on the installers this job uploads.
       - name: Self-test the packaged app
         timeout-minutes: 10
         run: |
@@ -315,26 +314,10 @@ jobs:
             Windows) launcher="$app/Komikku/Komikku.exe" ;;
             *) launcher="$app/Komikku/bin/Komikku" ;;
           esac
-          extensions=self-test-extensions
-          rm -rf "$extensions"
-          mkdir -p "$extensions"
-          curl -fsSL --retry 3 -o "$extensions/index.pb" https://github.com/keiyoushi/extensions/raw/repo/index.pb
-          gzip -dc "$extensions/index.pb" > "$extensions/index.bin"
-          for name in en.hiperdex all.kagane all.mangadex en.weebcentral; do
-            url=$(grep -a -o "https://github.com/keiyoushi/extensions/releases/download/[^/\"]*/tachiyomi-${name}-v[0-9.]*\.apk" \
-              "$extensions/index.bin" | head -n 1 || true)
-            if [ -z "$url" ]; then
-              echo "::error::No APK of $name in Keiyoushi's index"
-              exit 1
-            fi
-            echo "$url"
-            curl -fsSL --retry 3 -o "$extensions/${url##*/}" "$url"
-          done
-          rm -f "$extensions/index.pb" "$extensions/index.bin"
           report=self-test-report.txt
           rm -f "$report"
           status=0
-          "$launcher" "--self-test=$report" "--self-test-extensions=$extensions" || status=$?
+          "$launcher" "--self-test=$report" || status=$?
           if [ -f "$report" ]; then cat "$report"; else echo "::error::The self-test wrote no report"; fi
           if [ "$status" -ne 0 ] || [ "$(tail -n 1 "$report" 2>/dev/null | tr -d '\r')" != "SELF-TEST PASSED" ]; then
             echo "::error::The packaged app's self-test failed (exit code $status)"
@@ -393,6 +376,133 @@ jobs:
           if-no-files-found: error
 
   # KMK -->
+  # M3: the packaged app's self-test with real extensions. The second macOS test build converted Keiyoushi's
+  # extensions into classes the JVM's verifier rejects (no stack map frames, R8-inlined constructors) while the fixture
+  # passed; this job converts the current Hiperdex, Kagane, MangaDex and Weeb Central APKs (resolved from Keiyoushi's
+  # index), verifies every class and fails on classes the host libraries lack.
+  # Contained (REVIEW_M3.md finding 1): creating their sources runs third-party code, so it never runs where a secret
+  # can be reached. This job references no secret, its token is read-only, it does not check out the repository (no
+  # stored credentials), and after the extension code has run no further step runs (nothing could read a later
+  # action's runtime token). It unpacks the installers `package` uploaded (Linux .tar.gz, macOS .dmg, Windows .msi as
+  # an administrative image) instead of building again. It gates `release` as the same check did inside `package`.
+  # The downloads are not pinned yet (design question D3 in REVIEW_M3.md).
+  extension-check:
+    name: Self-test with real extensions (${{ matrix.os }})
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: 'ubuntu-24.04'
+            asset-os: linux
+          - os: 'windows-2022'
+            asset-os: windows
+          - os: 'macos-15'
+            asset-os: macos
+          - os: 'macos-15-intel'
+            asset-os: macos
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    concurrency:
+      group: ${{ github.workflow }}-extension-check-${{ github.ref }}-${{ matrix.os }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: Komikku-desktop-${{ matrix.asset-os }}-${{ runner.arch }}-${{ github.sha }}
+          path: packages
+
+      - name: Unpack the app (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          set -euo pipefail
+          tarballs=(packages/*.tar.gz)
+          app="$RUNNER_TEMP/komikku-app"
+          mkdir -p "$app"
+          tar -xzf "${tarballs[0]}" -C "$app"
+          echo "KOMIKKU_LAUNCHER=$app/Komikku/bin/Komikku" >> "$GITHUB_ENV"
+
+      - name: Unpack the app (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          set -euo pipefail
+          dmgs=(packages/*.dmg)
+          mount="$RUNNER_TEMP/komikku-dmg"
+          app="$RUNNER_TEMP/komikku-app"
+          mkdir -p "$mount" "$app"
+          # `yes` accepts a licence agreement, should the image carry one
+          hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "$mount" "${dmgs[0]}" < <(yes)
+          ditto "$mount/Komikku.app" "$app/Komikku.app"
+          hdiutil detach "$mount"
+          echo "KOMIKKU_LAUNCHER=$app/Komikku.app/Contents/MacOS/Komikku" >> "$GITHUB_ENV"
+
+      # An administrative installation only unpacks the MSI's files into a folder (nothing is registered)
+      - name: Unpack the app (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $msi = @(Get-ChildItem -LiteralPath packages -Filter '*.msi' -File)
+          if ($msi.Count -ne 1) { throw "expected one .msi, found $($msi.Count)" }
+          $app = Join-Path $env:RUNNER_TEMP 'komikku-app'
+          $log = Join-Path $env:RUNNER_TEMP 'msi-extract.log'
+          $process = Start-Process msiexec.exe -Wait -PassThru `
+            -ArgumentList @('/a', "`"$($msi[0].FullName)`"", '/qn', "TARGETDIR=`"$app`"", '/l*v', "`"$log`"")
+          if ($process.ExitCode -ne 0) {
+            Get-Content -LiteralPath $log -Tail 60 -ErrorAction SilentlyContinue
+            throw "msiexec /a exited with $($process.ExitCode)"
+          }
+          $launcher = Get-ChildItem -LiteralPath $app -Filter 'Komikku.exe' -File -Recurse | Select-Object -First 1
+          if (-not $launcher) {
+            Get-ChildItem -LiteralPath $app -Recurse -Name | Select-Object -First 60
+            throw 'no Komikku.exe in the administrative image'
+          }
+          "KOMIKKU_LAUNCHER=$($launcher.FullName)" >> $env:GITHUB_ENV
+
+      # The last step of this job (see the note above the job)
+      - name: Self-test with real extensions
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          launcher=$KOMIKKU_LAUNCHER
+          if [ "$RUNNER_OS" = Windows ]; then launcher=$(cygpath -u "$launcher"); fi
+          if [ ! -x "$launcher" ]; then
+            echo "::error::No launcher at $launcher"
+            exit 1
+          fi
+          extensions=self-test-extensions
+          rm -rf "$extensions"
+          mkdir -p "$extensions"
+          curl -fsSL --retry 3 -o "$extensions/index.pb" https://github.com/keiyoushi/extensions/raw/repo/index.pb
+          gzip -dc "$extensions/index.pb" > "$extensions/index.bin"
+          for name in en.hiperdex all.kagane all.mangadex en.weebcentral; do
+            url=$(grep -a -o "https://github.com/keiyoushi/extensions/releases/download/[^/\"]*/tachiyomi-${name}-v[0-9.]*\.apk" \
+              "$extensions/index.bin" | head -n 1 || true)
+            if [ -z "$url" ]; then
+              echo "::error::No APK of $name in Keiyoushi's index"
+              exit 1
+            fi
+            echo "$url"
+            curl -fsSL --retry 3 -o "$extensions/${url##*/}" "$url"
+          done
+          rm -f "$extensions/index.pb" "$extensions/index.bin"
+          # Relative paths: Git Bash would not turn --self-test=/d/... into a Windows path for the launcher
+          report=self-test-report.txt
+          rm -f "$report"
+          status=0
+          "$launcher" "--self-test=$report" "--self-test-extensions=$extensions" || status=$?
+          if [ -f "$report" ]; then cat "$report"; else echo "::error::The self-test wrote no report"; fi
+          if [ "$status" -ne 0 ] || [ "$(tail -n 1 "$report" 2>/dev/null | tr -d '\r')" != "SELF-TEST PASSED" ]; then
+            echo "::error::The packaged app's self-test with real extensions failed (exit code $status)"
+            exit 1
+          fi
+
   # Track D, step 1 (docs/kmp-desktop/WINDOWS_LINUX_TEST_PLAN.md): the desktop unit + headless UI tests on Windows,
   # where they had never run. Non-blocking (`continue-on-error`): a failure marks this job red but neither fails the
   # run nor holds up `release`, which depends only on `package`. The HTML report and the JUnit XML are uploaded when the
@@ -519,11 +629,15 @@ jobs:
   release:
     name: Attach to release ${{ needs.plan.outputs.tag }}
     # KMK -->
-    # Never on `windows-test` or `smoke` while they are non-blocking (ATLAS_INSTRUCTIONS.md, ANSWER 005)
+    # Never on `windows-test` or `smoke` while they are non-blocking (ATLAS_INSTRUCTIONS.md, ANSWER 005).
+    # `extension-check` is the real-extension self-test that used to run inside `package`, so it gates as before.
     # KMK <--
     needs:
       - plan
       - package
+      # KMK -->
+      - extension-check
+      # KMK <--
     if: needs.plan.outputs.mode != 'none'
     runs-on: 'ubuntu-24.04'
     # One upload per release tag at a time, never cancelled by a newer run (see the note at the top)

@@ -163,7 +163,11 @@ the trigger and the marker file when the port reaches master.
 
 - **Jobs:** `plan` (`contents: read`: decides the mode and tag and, in a release mode, checks that the release tag
   points to the run's commit), `package` (`contents: read`; one job per runner: `ubuntu-24.04` x64, `windows-2022`
-  x64, `macos-15` arm64, `macos-15-intel` x64), `release` (`contents: write`; only when the mode is not `none`).
+  x64, `macos-15` arm64, `macos-15-intel` x64; the packaged app's self-test with the bundled fixture extension only),
+  `extension-check` (`contents: read`, no secrets, no checkout; per runner, unpacks the installers `package` uploaded
+  and runs the self-test with the current Hiperdex, Kagane, MangaDex and Weeb Central APKs from Keiyoushi's index, the
+  only place third-party extension code runs), `release` (`contents: write`; needs `plan`, `package` and
+  `extension-check`; only when the mode is not `none`).
 - **Non-blocking jobs** (`continue-on-error`; `release` never depends on them): `windows-test` runs `:desktopApp:test`
   on `windows-2022` and uploads the test report when it fails; `smoke` installs the `package` job's `.deb` / `.msi` on
   `ubuntu-24.04` (Xvfb + openbox) and `windows-2022`, starts the installed app on a fresh data folder, takes
