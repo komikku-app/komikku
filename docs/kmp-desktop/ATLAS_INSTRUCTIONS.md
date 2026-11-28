@@ -96,3 +96,47 @@ Nothing else changes in 001. First `REPORT` as planned.
 - **Not yet checked on `master`**, listed as pre-existing in PROGRESS.md but fixed only on the desktop side:
   `GetApplicationRelease` with an odd tag, and the `LibraryScreenModel` group type under a category filter. Integrator:
   check whether they are bugs on `master`; if so, prepare patches as ANSWER 003 describes.
+
+## ANSWER 005 — track D, the Windows and Linux test plan (2026-11-28)
+
+Plan read (`WINDOWS_LINUX_TEST_PLAN.md`, `a721fa6`). Good work; go ahead as follows.
+
+1. **Approved now, no further question needed: steps 1 to 4 of the recommendation** (everything on free hosted
+   runners): the non-blocking `:desktopApp:test` job on `windows-2022`; the first smoke test of the installed app on
+   `ubuntu-24.04` and `windows-2022` as designed in section 4; fixing what they find; then `ubuntu-24.04-arm` and the
+   `windows-11-arm` check. Conditions: the smoke job stays non-blocking and `release` keeps depending only on
+   `package` until the smoke test has been green on ten consecutive runs; the Test and release engineer owns the
+   workflow file, so the platform engineers hand their workflow changes to that role rather than editing it in
+   parallel.
+2. **Steps 5 and 6 (virtual machines on the Mac) wait for the maintainer.** I am putting the plan's four questions
+   to him (disk space, downloading UTM and an Ubuntu image, a Windows licence or evaluation image, a person with
+   real Windows and Linux machines). Do not download or install anything for them until the answer is recorded here.
+3. **Decision — notifications on Linux do not depend on a tray.** Same rule as macOS: the "Show system
+   notifications" setting governs, the tray icon is separate. On Linux post through the desktop notification
+   service: `notify-send` when it is on the path, otherwise `gdbus call` to `org.freedesktop.Notifications`, as
+   arguments, never through a shell string; time-limited, never blocking the caller, silent fallback to the tray
+   message and then to nothing. No new library. Windows keeps the tray message (it is a real toast there); the smoke
+   test tells us whether it shows without a tray icon, report that.
+4. **Decision — one running instance per data folder, on all three desktop systems.** Two processes on one
+   database and one download folder is data loss waiting to happen. At start-up take an exclusive lock on a file in
+   the data folder (`FileChannel.tryLock`, held for the life of the process). If it is taken: ask the running
+   instance to show its window (a loopback socket on `127.0.0.1`, random port, the port and a random token written
+   next to the lock file with owner-only permissions; the request carries the token and only ever means "show the
+   window") and exit with code 0; if the running instance does not answer within two seconds, show a dialog that
+   says another Komikku is using this data folder and exit. `--self-test` and a different `-Dkomikku.dataDir` are
+   not affected. Shared-code engineer builds it, with tests for: second start exits and signals; stale lock after a
+   crash (the lock is released by the system, the stale port file is ignored); two different data folders run side
+   by side.
+5. **Decision — how the UI smoke tests drive the app.** The first smoke test may use the window system from outside
+   (start, screenshot, the Ctrl+1…5 shortcuts, close), as designed. Nothing deeper is built on coordinates. For
+   deeper checks add an in-app smoke mode: `Komikku --ui-smoke=<report dir>` starts the real app on a fresh
+   temporary data folder with a bundled fixture (local source with one small entry), walks a fixed script through
+   the app's own navigation (each top-level tab, a settings page, open the fixture entry, open a chapter, turn a
+   page, toggle the app lock), saves a screenshot of the window after each step, writes a report and exits non-zero
+   on the first failure. It is compiled into the app but does nothing unless the argument is given, opens no network
+   connection, and must never run against the user's data folder. CI runs it with the packaged launcher on every
+   desktop runner, macOS included, and uploads the screenshots. Before building it, send me a one-page design
+   (`QUESTION`): where the script lives, how it reaches the navigator without leaking test code into the screens,
+   how screenshots are taken on each system.
+
+Priorities are unchanged: A1–A3, C, B, then D, E.
