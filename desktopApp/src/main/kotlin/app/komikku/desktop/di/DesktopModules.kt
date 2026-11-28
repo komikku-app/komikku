@@ -282,7 +282,9 @@ class DesktopDomainModule(
                 storeRepository = get(),
                 preferences = get(),
                 exhPreferences = get(),
-            )
+            ).also { manager ->
+                DesktopInjekt.onOpened("extension class loaders", File(dataDir, "extensions"), manager::close)
+            }
         }
         addSingletonFactory<PlatformExtensionManager> { get<DesktopExtensionManager>() }
         addFactory { GetPlatformExtensionsByType(get(), get()) }

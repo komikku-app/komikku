@@ -69,8 +69,15 @@ class ExtensionClassLoader(
         return Collections.enumeration(urls)
     }
 
+    /**
+     * [getResource]'s order. A resource of the extension jar is opened by [URLClassLoader], which closes the jar file it
+     * opens for it in [close]: `URL.openStream()` takes it from the JDK's shared cache, where it stays open, and Windows
+     * then refuses to delete the jar after the extension is updated or uninstalled.
+     */
     override fun getResourceAsStream(name: String): InputStream? = try {
-        getResource(name)?.openStream()
+        platform.getResourceAsStream(name)
+            ?: (if (findResource(name) != null) super.getResourceAsStream(name) else null)
+            ?: parent.getResourceAsStream(name)
     } catch (_: IOException) {
         null
     }

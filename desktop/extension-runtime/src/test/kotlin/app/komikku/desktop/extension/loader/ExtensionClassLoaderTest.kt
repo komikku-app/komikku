@@ -15,6 +15,9 @@ import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.IOException
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 
 class ExtensionClassLoaderTest {
 
@@ -72,6 +75,25 @@ class ExtensionClassLoaderTest {
         loader.loadClass("okhttp3.OkHttpClient") shouldBeSameInstanceAs OkHttpClient::class.java
         loader.loadClass("eu.kanade.tachiyomi.util.ExtensionPrivateHelper").classLoader shouldBeSameInstanceAs loader
         loader.loadClass("java.lang.String") shouldBeSameInstanceAs String::class.java
+    }
+
+    @Test
+    fun `closing the loader closes the jar its resource streams read from`() {
+        val jar = File(dir, "resources.jar")
+        JarOutputStream(jar.outputStream()).use { out ->
+            out.putNextEntry(JarEntry("assets/extension-only.txt"))
+            out.write(ByteArray(64 * 1024) { 'x'.code.toByte() })
+            out.closeEntry()
+        }
+        val loader = ExtensionClassLoader(jar, javaClass.classLoader)
+        val stream = loader.getResourceAsStream("assets/extension-only.txt")!!
+        stream.read() shouldBe 'x'.code
+
+        loader.close()
+
+        // A jar file from the JDK's shared cache would stay open (and locked on Windows) and keep reading
+        shouldThrow<IOException> { stream.readBytes() }
+        jar.delete() shouldBe true
     }
 
     @Test

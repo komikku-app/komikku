@@ -52,6 +52,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import java.io.Closeable
 import java.io.File
 import java.io.IOException
 import java.nio.file.FileVisitResult
@@ -136,6 +137,16 @@ class DesktopExtensionManager(
 
     /** Why the last install or load of a package failed (one line), shown by the Extensions tab ([installError]). */
     private val installErrors = ConcurrentHashMap<String, String>()
+
+    /**
+     * The class loader of each loaded package. Closed ([closeLoader]) once the manager no longer lists its sources: an
+     * open loader keeps its converted jar open, which Windows then refuses to delete (old jars piled up on updates).
+     */
+    private val classLoaders = ConcurrentHashMap<String, Closeable>()
+
+    /** Set by [close]: a loader created afterwards is closed at once. */
+    @Volatile
+    private var closed = false
 
     private val unsupportedList = MutableStateFlow(emptyList<UnsupportedExtension>())
 
@@ -224,6 +235,10 @@ class DesktopExtensionManager(
         }
 
         installErrors.remove(extension.pkgName)
+        (loaded.classLoader as? Closeable)?.let { loader ->
+            classLoaders.put(extension.pkgName, loader)?.let { closeLoader(extension.pkgName, it) }
+            if (closed) classLoaders.remove(extension.pkgName)?.let { closeLoader(extension.pkgName, it) }
+        }
         val langs = loaded.sources.map { it.lang }.toSet()
         return LoadResult.Success(
             Extension.Installed(
@@ -471,18 +486,19 @@ class DesktopExtensionManager(
         // P22 review: the new version replaces the old entry in one emission of each list. Removing first and adding
         // after gave observers a list without the extension (an open extension info took it as uninstalled and closed,
         // the source manager dropped and re-added its sources).
-        val result = loadExtension(target)
         val pkgName = extension.pkgName
+        // The old version's loader is closed and its jar deleted once the new entry replaced it
+        val previous = classLoaders.remove(pkgName)
+        val result = loadExtension(target)
         when (result) {
             is LoadResult.Success -> replace(pkgName, installed = result.extension.withUpdateCheck())
             is LoadResult.Untrusted ->
                 replace(pkgName, untrusted = result.extension.takeUnless { it.isBlacklisted() })
-            LoadResult.Error -> {
-                replace(pkgName)
-                return@withLock false
-            }
+            LoadResult.Error -> replace(pkgName)
         }
-        true
+        previous?.let { closeLoader(pkgName, it) }
+        runtime.pruneJarCache(loadedApkHashes.values.toSet())
+        result !is LoadResult.Error
     }
 
     /**
@@ -523,7 +539,25 @@ class DesktopExtensionManager(
         loadedApkHashes.remove(pkgName)
         setUnsupported(pkgName, null)
         unregister(pkgName)
+        classLoaders.remove(pkgName)?.let { closeLoader(pkgName, it) }
         runtime.pruneJarCache(loadedApkHashes.values.toSet())
+    }
+
+    /**
+     * Closes the class loaders of the loaded extensions (app exit, test teardown), so their jars can be deleted; their
+     * sources can no longer load classes they have not used yet. Extensions loaded afterwards are closed at once.
+     */
+    fun close() {
+        closed = true
+        classLoaders.keys.toList().forEach { pkgName -> classLoaders.remove(pkgName)?.let { closeLoader(pkgName, it) } }
+    }
+
+    private fun closeLoader(pkgName: String, loader: Closeable) {
+        try {
+            loader.close()
+        } catch (e: IOException) {
+            logcat(LogPriority.WARN, e) { "Could not close the class loader of $pkgName" }
+        }
     }
 
     // ---- trust -------------------------------------------------------------------------------------

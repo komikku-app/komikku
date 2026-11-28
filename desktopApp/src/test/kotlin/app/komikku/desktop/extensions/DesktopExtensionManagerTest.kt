@@ -140,6 +140,9 @@ class DesktopExtensionManagerTest {
 
     private fun indexUrl() = server.url("/index.min.json").toString()
 
+    /** The converted jars in the cache. */
+    private fun jars(): List<File> = File(dataDir, "extensions/jars").listFiles().orEmpty().filter { it.extension == "jar" }
+
     @Test
     @Order(1)
     fun `adds a store and lists its extensions`(): Unit = runBlocking {
@@ -201,8 +204,14 @@ class DesktopExtensionManagerTest {
         val events = mutableListOf<ExtensionDetailsEvent>()
         val eventCollector = CoroutineScope(Dispatchers.Unconfined).launch { details.events.collect { synchronized(events) { events += it } } }
         withTimeout(10_000) { details.state.first { it.extension?.versionCode == 3L } }
+        val oldLoader = outdated.sources.single().javaClass.classLoader
+        val oldJar = jars().single()
 
         manager.updateExtension(outdated).toList().last() shouldBe InstallStep.Installed
+        // The old version's loader is closed and its jar deleted (Windows refuses while a loader keeps it open)
+        oldLoader.getResource("$sourceClass.class") shouldBe null
+        oldJar.exists() shouldBe false
+        jars().size shouldBe 1
         withTimeout(10_000) { details.state.first { it.extension?.versionCode == 4L } }
         recorder.cancel()
         eventCollector.cancel()
@@ -344,13 +353,17 @@ class DesktopExtensionManagerTest {
             preferences = Injekt.get(),
             exhPreferences = Injekt.get(),
         )
-        withTimeout(30_000) { reloaded.isInitialized.first { it } }
+        try {
+            withTimeout(30_000) { reloaded.isInitialized.first { it } }
 
-        val extension = reloaded.installedExtensionsFlow.value.single()
-        extension.pkgName shouldBe pkg
-        extension.versionCode shouldBe 4L
-        extension.sources.single().id shouldBe sourceId
-        File(dataDir, "extensions/jars").listFiles().orEmpty().filter { it.extension == "jar" }.size shouldBe 1
+            val extension = reloaded.installedExtensionsFlow.value.single()
+            extension.pkgName shouldBe pkg
+            extension.versionCode shouldBe 4L
+            extension.sources.single().id shouldBe sourceId
+            jars().size shouldBe 1
+        } finally {
+            reloaded.close()
+        }
     }
 
     @Test
@@ -362,17 +375,17 @@ class DesktopExtensionManagerTest {
         val executor = Executors.newSingleThreadExecutor()
         val gate = CountDownLatch(1)
         executor.execute { gate.await() }
+        val reloaded = DesktopExtensionManager(
+            context = Injekt.get<Application>(),
+            extensionsDir = File(dataDir, "extensions"),
+            runtime = Injekt.get<ExtensionRuntime>(),
+            network = Injekt.get(),
+            storeRepository = Injekt.get<ExtensionStoreRepository>(),
+            preferences = Injekt.get(),
+            exhPreferences = Injekt.get(),
+            scope = CoroutineScope(SupervisorJob() + executor.asCoroutineDispatcher()),
+        )
         try {
-            val reloaded = DesktopExtensionManager(
-                context = Injekt.get<Application>(),
-                extensionsDir = File(dataDir, "extensions"),
-                runtime = Injekt.get<ExtensionRuntime>(),
-                network = Injekt.get(),
-                storeRepository = Injekt.get<ExtensionStoreRepository>(),
-                preferences = Injekt.get(),
-                exhPreferences = Injekt.get(),
-                scope = CoroutineScope(SupervisorJob() + executor.asCoroutineDispatcher()),
-            )
             reloaded.findAvailableExtensions()
             reloaded.isInitialized.value shouldBe false
             gate.countDown()
@@ -386,6 +399,7 @@ class DesktopExtensionManagerTest {
             Injekt.get<SourcePreferences>().extensionUpdatesCount().get() shouldBe 1
         } finally {
             gate.countDown()
+            reloaded.close()
             executor.shutdown()
             routes["/index.min.json"] = storeIndex(versionCode = 4, apk = "fixture-4.apk")
         }
@@ -394,10 +408,16 @@ class DesktopExtensionManagerTest {
     @Test
     @Order(8)
     fun `uninstalls an extension`(): Unit = runBlocking {
+        val loader = manager.installedExtensionsFlow.value.single().sources.single().javaClass.classLoader
+        val jar = jars().single()
+
         manager.uninstall(pkg)
 
         manager.installedExtensionsFlow.value.shouldBeEmpty()
         File(dataDir, "extensions/apks/$pkg.apk").exists() shouldBe false
+        // Its loader is closed, so its jar could be deleted at once (Windows refuses while a loader keeps it open)
+        loader.getResource("$sourceClass.class") shouldBe null
+        jar.exists() shouldBe false
         val sourceManager = Injekt.get<SourceManager>()
         withTimeout(10_000) { sourceManager.sources.first { sources -> sources.none { it.id == sourceId } } }
         sourceManager.get(sourceId) shouldBe null
