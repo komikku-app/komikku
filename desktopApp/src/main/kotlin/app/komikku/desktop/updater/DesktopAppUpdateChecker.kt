@@ -44,6 +44,8 @@ class DesktopAppUpdateChecker(
     val config: DesktopUpdaterConfig,
     private val schedulerPreferences: DesktopSchedulerPreferences,
     private val now: () -> Long = System::currentTimeMillis,
+    /** The asset names of the releases found, filled by the `ReleaseService`'s download link selection. */
+    val releaseAssets: DesktopReleaseAssets = DesktopReleaseAssets(),
 ) {
 
     sealed interface Check {

@@ -1,5 +1,6 @@
 package app.komikku.desktop.updater
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.platform.DesktopBrowser
 import tachiyomi.domain.release.model.Release
@@ -33,7 +35,8 @@ import uy.kohesive.injekt.api.get
  * `NewUpdateScreen` texts ("New version available!", "Latest: …", the release notes), "Open on GitHub" opens the release
  * page in the browser (no in-app download / install on desktop), "Not now" dismisses it until the next check finds it.
  * When the browser cannot be opened (no AWT browse support, or it failed), the dialog stays and shows the release page
- * address as selectable text instead.
+ * address as selectable text instead. An offered `.rpm` ([RpmInstall]) adds whether it is signed, the commands that
+ * install it and a link to the release notes' Linux section.
  */
 @Composable
 fun AppUpdateDialogHost(
@@ -51,12 +54,23 @@ fun AppUpdateDialogHost(
                 if (openUrl(it.releaseLink)) checker.dismiss() else browserFailed = true
             },
             onDismiss = checker::dismiss,
+            assetNames = checker.releaseAssets.namesOf(it),
+            openUrl = openUrl,
         )
     }
 }
 
 @Composable
-fun AppUpdateDialog(release: Release, onOpen: () -> Unit, onDismiss: () -> Unit, browserFailed: Boolean = false) {
+fun AppUpdateDialog(
+    release: Release,
+    onOpen: () -> Unit,
+    onDismiss: () -> Unit,
+    browserFailed: Boolean = false,
+    /** The release's file names ([DesktopReleaseAssets]): whether an offered `.rpm` is signed. */
+    assetNames: List<String> = emptyList(),
+    openUrl: (String) -> Boolean = DesktopBrowser::open,
+) {
+    val rpm = remember(release, assetNames) { RpmInstall.of(release, assetNames) }
     AlertDialog(
         onDismissRequest = onDismiss,
         modifier = Modifier.testTag("app-update-dialog"),
@@ -77,6 +91,7 @@ fun AppUpdateDialog(release: Release, onOpen: () -> Unit, onDismiss: () -> Unit,
                             .testTag("app-update-notes"),
                     )
                 }
+                rpm?.let { RpmInstallNote(it, openUrl) }
                 if (browserFailed) {
                     Text(
                         text = stringResource(KMR.strings.desktop_browser_open_failed),
@@ -105,4 +120,42 @@ fun AppUpdateDialog(release: Release, onOpen: () -> Unit, onDismiss: () -> Unit,
             }
         },
     )
+}
+
+@Composable
+private fun RpmInstallNote(rpm: RpmInstall, openUrl: (String) -> Boolean) {
+    var browserFailed by remember(rpm) { mutableStateOf(false) }
+    Column(modifier = Modifier.padding(top = 12.dp).testTag("app-update-rpm")) {
+        Text(
+            text = stringResource(if (rpm.signingKey == null) KMR.strings.desktop_update_rpm_unsigned else KMR.strings.desktop_update_rpm_signed),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        SelectionContainer {
+            Text(
+                text = rpm.commands.joinToString("\n"),
+                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                // A command broken over two lines is easy to copy wrong
+                softWrap = false,
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .horizontalScroll(rememberScrollState())
+                    .testTag("app-update-rpm-commands"),
+            )
+        }
+        TextButton(
+            onClick = { browserFailed = !openUrl(rpm.instructionsUrl) },
+            modifier = Modifier.testTag("app-update-rpm-instructions"),
+        ) {
+            Text(stringResource(KMR.strings.desktop_update_install_instructions))
+        }
+        if (browserFailed) {
+            SelectionContainer {
+                Text(
+                    text = rpm.instructionsUrl,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.testTag("app-update-rpm-instructions-link"),
+                )
+            }
+        }
+    }
 }

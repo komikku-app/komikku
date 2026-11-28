@@ -23,6 +23,7 @@ import app.komikku.desktop.track.DesktopMangaDexSessionNotice
 import app.komikku.desktop.track.DesktopReaderTrackerHook
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.updater.DesktopAppUpdateChecker
+import app.komikku.desktop.updater.DesktopReleaseAssets
 import app.komikku.desktop.updater.DesktopUpdaterConfig
 import app.komikku.desktop.webview.DesktopCloudflare
 import app.komikku.desktop.webview.DesktopCloudflarePreferences
@@ -400,12 +401,13 @@ class DesktopDomainModule(
 
         // App update check (P6): Android's interactor on the GitHub releases, desktop installers with a comparable tag only
         addSingletonFactory { DesktopUpdaterConfig.fromSystemProperties() }
+        addSingletonFactory { DesktopReleaseAssets() }
         addSingletonFactory<ReleaseService> {
-            val config = get<DesktopUpdaterConfig>()
-            ReleaseServiceImpl(get(), get(), downloadLinkSelector = { release, _ -> config.downloadLink(release) })
+            val select = get<DesktopReleaseAssets>().selector(get<DesktopUpdaterConfig>())
+            ReleaseServiceImpl(get(), get(), downloadLinkSelector = { release, _ -> select(release) })
         }
         addFactory { GetApplicationRelease(get(), get()) }
-        addSingletonFactory { DesktopAppUpdateChecker(get(), get(), get()) }
+        addSingletonFactory { DesktopAppUpdateChecker(get(), get(), get(), releaseAssets = get()) }
         addSingletonFactory<DesktopFileDialogs> { AwtFileDialogs(get<DesktopAppLock>().locked) }
 
         // Notifications and the system tray (P17): Android's notifiers' texts through the tray icon, when there is one

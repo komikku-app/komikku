@@ -78,7 +78,16 @@ class DesktopAppUpdateCheckerTest {
         enabled: Boolean = true,
         os: DesktopOs = DesktopOs.Linux,
         arch: DesktopArch? = DesktopArch.X64,
-    ) = DesktopUpdaterConfig(enabled = enabled, isPreview = false, versionName = version, commitCount = 0, os = os, arch = arch)
+        linuxPackaging: LinuxPackaging = LinuxPackaging.Unknown,
+    ) = DesktopUpdaterConfig(
+        enabled = enabled,
+        isPreview = false,
+        versionName = version,
+        commitCount = 0,
+        os = os,
+        arch = arch,
+        linuxPackaging = linuxPackaging,
+    )
 
     private fun preview(commitCount: Int, enabled: Boolean = true) = DesktopUpdaterConfig(
         enabled = enabled,
@@ -345,7 +354,7 @@ class DesktopAppUpdateCheckerTest {
         stable(os = DesktopOs.Linux).installerLink(release) shouldBe "https://github.com/download/v1.14.0/komikku_1.14.0_amd64.deb"
         stable().installerLink(githubRelease("v1.14.0", "Komikku-v1.14.0.apk")).shouldBeNull()
 
-        // Linux package format is not distinguished: the first Linux asset wins
+        // Neither format preferred by an unknown distribution: the first Linux asset wins
         stable(os = DesktopOs.Linux).installerLink(githubRelease("v1.14.0", "komikku-1.14.0.x86_64.rpm", "komikku_1.14.0_amd64.deb")) shouldBe
             "https://github.com/download/v1.14.0/komikku-1.14.0.x86_64.rpm"
 
@@ -387,7 +396,8 @@ class DesktopAppUpdateCheckerTest {
         link(DesktopOs.Windows, DesktopArch.X64) shouldBe "Komikku-1.14.0-windows-x64.msi"
         link(DesktopOs.MacOs, DesktopArch.Arm64) shouldBe "Komikku-1.14.0-macos-arm64.dmg"
         link(DesktopOs.MacOs, DesktopArch.X64) shouldBe "Komikku-1.14.0-macos-x64.dmg"
-        link(DesktopOs.Linux, DesktopArch.X64) shouldBe "Komikku-1.14.0-linux-x64.deb"
+        // An unknown distribution gets the app image that runs anywhere
+        link(DesktopOs.Linux, DesktopArch.X64) shouldBe "Komikku-1.14.0-linux-x64.tar.gz"
         // Not built: no update offered rather than another architecture's installer.
         link(DesktopOs.Windows, DesktopArch.Arm64).shouldBeNull()
         link(DesktopOs.Linux, DesktopArch.Arm64).shouldBeNull()
@@ -439,5 +449,87 @@ class DesktopAppUpdateCheckerTest {
         DesktopArch.current("x86_64") shouldBe DesktopArch.X64
         DesktopArch.current("aarch64") shouldBe DesktopArch.Arm64
         DesktopArch.current("ppc64le").shouldBeNull()
+    }
+
+    @Test
+    fun `a Linux distribution gets its own package format`() {
+        val release = githubRelease(
+            "v1.14.0",
+            "Komikku-1.14.0-linux-x64.deb",
+            "Komikku-1.14.0-linux-x64.rpm",
+            "Komikku-1.14.0-linux-x64.tar.gz",
+        )
+        fun link(packaging: LinuxPackaging, release: GithubRelease) =
+            stable(os = DesktopOs.Linux, linuxPackaging = packaging).installerLink(release)?.substringAfterLast('/')
+
+        link(LinuxPackaging.Rpm, release) shouldBe "Komikku-1.14.0-linux-x64.rpm"
+        link(LinuxPackaging.Deb, release) shouldBe "Komikku-1.14.0-linux-x64.deb"
+        link(LinuxPackaging.Unknown, release) shouldBe "Komikku-1.14.0-linux-x64.tar.gz"
+        // Without its format: the portable app image, else whatever there is
+        link(LinuxPackaging.Rpm, githubRelease("v1.14.0", "Komikku-1.14.0-linux-x64.deb", "Komikku-1.14.0-linux-x64.tar.gz")) shouldBe
+            "Komikku-1.14.0-linux-x64.tar.gz"
+        link(LinuxPackaging.Rpm, githubRelease("v1.14.0", "Komikku-1.14.0-linux-x64.deb")) shouldBe "Komikku-1.14.0-linux-x64.deb"
+        // The format only counts on Linux
+        stable(os = DesktopOs.Windows, linuxPackaging = LinuxPackaging.Rpm)
+            .installerLink(githubRelease("v1.14.0", "Komikku-1.14.0-windows-x64.msi", "Komikku-1.14.0-linux-x64.rpm"))
+            ?.substringAfterLast('/') shouldBe "Komikku-1.14.0-windows-x64.msi"
+    }
+
+    @Test
+    fun `the package format comes from os-release`() {
+        LinuxPackaging.of("NAME=\"Fedora Linux\"\nID=fedora\nVERSION_ID=41\n") shouldBe LinuxPackaging.Rpm
+        LinuxPackaging.of("ID=\"rocky\"\nID_LIKE=\"rhel centos fedora\"\n") shouldBe LinuxPackaging.Rpm
+        LinuxPackaging.of("ID=\"opensuse-tumbleweed\"\nID_LIKE=\"opensuse suse\"\n") shouldBe LinuxPackaging.Rpm
+        LinuxPackaging.of("ID=ubuntu\nID_LIKE=debian\n") shouldBe LinuxPackaging.Deb
+        LinuxPackaging.of("ID=linuxmint\nID_LIKE=\"ubuntu debian\"\n") shouldBe LinuxPackaging.Deb
+        LinuxPackaging.of("ID=arch\n") shouldBe LinuxPackaging.Unknown
+        LinuxPackaging.of("") shouldBe LinuxPackaging.Unknown
+    }
+
+    @Test
+    fun `this system's package format is read from the first os-release file there is`(@TempDir folder: File) {
+        val etc = File(folder, "etc-os-release")
+        val usrLib = File(folder, "usr-lib-os-release").apply { writeText("ID=fedora\n") }
+        LinuxPackaging.current(listOf(etc, usrLib)) shouldBe LinuxPackaging.Rpm
+        etc.writeText("ID=debian\n")
+        LinuxPackaging.current(listOf(etc, usrLib)) shouldBe LinuxPackaging.Deb
+        LinuxPackaging.current(listOf(File(folder, "missing"))) shouldBe LinuxPackaging.Unknown
+    }
+
+    @Test
+    fun `an offered RPM comes with its install commands and the release notes' Linux section`() {
+        val assets = DesktopReleaseAssets()
+        fun offer(packaging: LinuxPackaging, vararg names: String): RpmInstall? {
+            val github = githubRelease("v1.14.0", *names)
+            val link = assets.selector(stable(linuxPackaging = packaging))(github) ?: return null
+            val release = Release(github.version, github.info, github.releaseLink, link)
+            return RpmInstall.of(release, assets.namesOf(release))
+        }
+        val rpm = "Komikku-1.14.0-linux-x64.rpm"
+        val deb = "Komikku-1.14.0-linux-x64.deb"
+
+        val unsigned = offer(LinuxPackaging.Rpm, rpm, deb).shouldNotBeNull()
+        unsigned.signingKey.shouldBeNull()
+        unsigned.instructionsUrl shouldBe "https://github.com/komikku-app/komikku/releases/tag/v1.14.0#linux"
+        unsigned.commands shouldBe listOf(
+            "sudo dnf install ./Komikku-1.14.0-linux-x64.rpm",
+            "sudo rpm -i --nosignature ./Komikku-1.14.0-linux-x64.rpm",
+        )
+
+        val signed = offer(LinuxPackaging.Rpm, rpm, "Komikku-1.14.0-linux-x64-rpm-signing-key.asc").shouldNotBeNull()
+        signed.signingKey shouldBe "Komikku-1.14.0-linux-x64-rpm-signing-key.asc"
+        signed.commands shouldBe listOf(
+            "sudo rpm --import ./Komikku-1.14.0-linux-x64-rpm-signing-key.asc",
+            "sudo dnf install ./Komikku-1.14.0-linux-x64.rpm",
+        )
+        // Another architecture's key does not sign this package
+        offer(LinuxPackaging.Rpm, rpm, "Komikku-1.14.0-linux-arm64-rpm-signing-key.asc")?.signingKey.shouldBeNull()
+
+        // A .deb or another OS's installer offered: no RPM note
+        offer(LinuxPackaging.Deb, rpm, deb).shouldBeNull()
+        RpmInstall.of(Release("v1.14.0", "", "https://github.com/x", "https://github.com/download/v1.14.0/Komikku-1.14.0-windows-x64.msi"), emptyList())
+            .shouldBeNull()
+        // A release the check did not select has no recorded names
+        assets.namesOf(Release("v1.14.0", "", "https://github.com/x", "https://github.com/download/other.rpm")).shouldBeEmpty()
     }
 }

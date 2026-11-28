@@ -253,6 +253,9 @@
     <string name="desktop_ext_store_add_failed">Could not add the extension store</string>
     <string name="desktop_ext_unsupported">Unsupported on desktop</string>
     <string name="desktop_ext_unsupported_needs">Unsupported on desktop: needs %1$s</string>
+    <string name="desktop_update_rpm_unsigned">This RPM package is not signed. dnf installs it as it is; plain rpm refuses it unless told to skip the signature check. Compare its SHA-256 with the release\'s checksum file, then install it with one of these commands:</string>
+    <string name="desktop_update_rpm_signed">This RPM package is signed. Import its signing key once, then install it:</string>
+    <string name="desktop_update_install_instructions">Installation instructions</string>
     <string name="desktop_load_more">Load more</string>
     <string name="desktop_pref_not_set">Not set</string>
     <string name="desktop_source_error">Could not load: %1$s</string>
