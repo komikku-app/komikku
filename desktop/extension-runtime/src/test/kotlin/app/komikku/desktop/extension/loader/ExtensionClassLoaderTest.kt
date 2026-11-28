@@ -9,11 +9,13 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
@@ -78,20 +80,7 @@ class ExtensionClassLoaderTest {
 
     @Test
     fun `the jar is never kept open, classes and resources still load after it is deleted`() {
-        val jar = fixtureJar()
-        val withAsset = File(dir, "with-asset.jar")
-        JarOutputStream(withAsset.outputStream()).use { out ->
-            java.util.zip.ZipFile(jar).use { zip ->
-                zip.entries().asSequence().forEach { entry ->
-                    out.putNextEntry(JarEntry(entry.name))
-                    zip.getInputStream(entry).use { it.copyTo(out) }
-                    out.closeEntry()
-                }
-            }
-            out.putNextEntry(JarEntry("assets/i18n/messages_en.properties"))
-            out.write("title=Fixture".toByteArray())
-            out.closeEntry()
-        }
+        val withAsset = fixtureJarWithAsset("with-asset.jar")
         val loader = ExtensionClassLoader(withAsset, javaClass.classLoader)
 
         // Windows refuses to delete a file that is open
@@ -106,6 +95,44 @@ class ExtensionClassLoaderTest {
             "title=Fixture"
         loader.getResource("assets/i18n/messages_en.properties")!!.readText() shouldBe "title=Fixture"
         loader.getResource("assets/missing.txt") shouldBe null
+    }
+
+    @Test
+    fun `a resource URL an extension opens reads from memory, so an open stream does not hold the jar`() {
+        val jar = fixtureJarWithAsset("open-stream.jar")
+        val loader = ExtensionClassLoader(jar, javaClass.classLoader)
+        val source = ExtensionRuntime.instantiateSources(listOf("app.komikku.desktop.extension.fixture.KotlinFixtureSource"), loader)
+            .single()
+
+        // What an extension does: javaClass.getResource("/assets/…")!!.openStream(); a jar: URL would open the file
+        val url = source.javaClass.getResource("/assets/i18n/messages_en.properties")!!
+        url.protocol shouldBe "komikku-extension"
+        url.openStream().use { stream ->
+            stream.shouldBeInstanceOf<ByteArrayInputStream>()
+            // Windows refuses to delete a file that is open
+            jar.delete() shouldBe true
+            stream.readBytes().decodeToString() shouldBe "title=Fixture"
+        }
+        url.openConnection().apply { useCaches = true }.getInputStream().use { it.readBytes().decodeToString() } shouldBe
+            "title=Fixture"
+    }
+
+    /** The fixture jar plus an asset, `assets/i18n/messages_en.properties` = `title=Fixture`. */
+    private fun fixtureJarWithAsset(name: String): File {
+        val withAsset = File(dir, name)
+        JarOutputStream(withAsset.outputStream()).use { out ->
+            java.util.zip.ZipFile(fixtureJar()).use { zip ->
+                zip.entries().asSequence().forEach { entry ->
+                    out.putNextEntry(JarEntry(entry.name))
+                    zip.getInputStream(entry).use { it.copyTo(out) }
+                    out.closeEntry()
+                }
+            }
+            out.putNextEntry(JarEntry("assets/i18n/messages_en.properties"))
+            out.write("title=Fixture".toByteArray())
+            out.closeEntry()
+        }
+        return withAsset
     }
 
     @Test
