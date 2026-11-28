@@ -2,6 +2,7 @@ package app.komikku.desktop.backup
 
 import android.app.Application
 import android.net.Uri
+import app.komikku.desktop.compat.FileUris
 import app.komikku.shared.backup.BackupProgressListener
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.data.backup.BackupFileValidator
@@ -50,7 +51,7 @@ class DesktopBackupService(
      * backup or fewer backups than before. Returns the new file.
      */
     suspend fun createAutomatic(options: BackupOptions = BackupOptions()): File = withIOContext {
-        val dir = storageManager.getAutomaticBackupsDirectory()?.uri?.path?.let(::File)
+        val dir = storageManager.getAutomaticBackupsDirectory()?.uri?.let(FileUris::file)
             ?: throw IllegalStateException(app.stringResource(MR.strings.create_backup_file_error))
         val file = create(File(dir, BackupCreator.getFilename()), options)
         val pattern = automaticBackupName()
@@ -65,7 +66,7 @@ class DesktopBackupService(
 
     /** Android `BackupCreator.getFilename()` in `<storage folder>/backup` (no directory is created here). */
     fun defaultBackupFile(): File {
-        val base = Uri.parse(storagePreferences.baseStorageDirectory().get()).path?.let(::File) ?: app.filesDir
+        val base = FileUris.file(storagePreferences.baseStorageDirectory().get()) ?: app.filesDir
         return File(File(base, "backup"), BackupCreator.getFilename())
     }
 

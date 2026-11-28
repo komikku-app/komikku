@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.backup.DesktopBackupJobs
 import app.komikku.desktop.backup.DesktopBackupService
+import app.komikku.desktop.compat.FileUris
 import app.komikku.desktop.platform.DesktopFileDialogs
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.ui.relativeTimeSpanString
@@ -110,7 +111,7 @@ class DataStorageScreenModel(
     }
 
     fun chooseStorageLocation(title: String) {
-        val current = Uri.parse(storagePreferences.baseStorageDirectory().get()).path?.let(::File)
+        val current = FileUris.file(storagePreferences.baseStorageDirectory().get())
         val dir = fileDialogs.chooseDirectory(title, current) ?: return
         dir.mkdirs()
         storagePreferences.baseStorageDirectory().set(Uri.fromFile(dir).toString())
@@ -183,7 +184,7 @@ class DataStorageScreen : Screen() {
                     LinkRow(
                         icon = Icons.Outlined.Folder,
                         title = storageTitle,
-                        subtitle = (Uri.parse(storageDir).path ?: storageDir) + "\n" + stringResource(MR.strings.pref_storage_location_info),
+                        subtitle = (FileUris.file(storageDir)?.path ?: storageDir) + "\n" + stringResource(MR.strings.pref_storage_location_info),
                         tag = "storage-location",
                         onClick = { model.chooseStorageLocation(storageTitle) },
                     )

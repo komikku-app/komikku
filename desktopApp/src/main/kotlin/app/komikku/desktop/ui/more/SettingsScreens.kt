@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.compat.FileUris
 import app.komikku.desktop.notification.DesktopTrayPreferences
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.updater.DesktopAppUpdateChecker
@@ -75,6 +76,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.io.File
 import tachiyomi.core.common.i18n.stringResource as localized
 
 /**
@@ -364,7 +366,7 @@ private fun downloadPreferences(): List<Preference> {
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.InfoPreference(
                     title = stringResource(MR.strings.pref_storage_location) + ": " +
-                        (android.net.Uri.parse(storageDir).path ?: storageDir) + "/downloads",
+                        (FileUris.file(storageDir)?.let { File(it, "downloads").path } ?: "$storageDir/downloads"),
                 ),
                 Preference.PreferenceItem.SwitchPreference(downloads.saveChaptersAsCBZ(), stringResource(MR.strings.save_chapter_as_cbz)),
                 Preference.PreferenceItem.SwitchPreference(downloads.splitTallImages(), stringResource(MR.strings.split_tall_images)),
