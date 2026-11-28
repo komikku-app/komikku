@@ -89,7 +89,8 @@ import kotlin.time.TimeSource
  * put behind its content with alpha 0.01, as flutter_inappwebview does (WebKit is unreliable with JavaScript in a web
  * view outside the view hierarchy on a device); without one (tests, a headless process) it runs offscreen. When the
  * call ends, for any reason, loading stops, the page is replaced by an empty one (its scripts and timers stop), the
- * message handler and scripts are removed and the view leaves the window; nothing keeps a reference to it.
+ * message handler and scripts are removed and the view leaves the window, and a navigation still waiting for its
+ * host's cookies is cancelled; nothing keeps a reference to it.
  *
  * Cookies: each call has its own `WKWebsiteDataStore.nonPersistentDataStore()` (no disk cache, local storage or
  * cookies left behind). Before the load, the cookies of [cookieStorage] that apply to the URL's host (its domain and
@@ -378,11 +379,19 @@ class WKWebViewHostWebView(
             decisionHandler: (WKNavigationActionPolicy) -> Unit,
         ) {
             if (closed) {
-                decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyAllow)
+                decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyCancel)
                 return
             }
+            // Answered later when the host's cookies are copied first: by then the call may have ended and the page
+            // been replaced, and the navigation must not start in the torn-down view.
             beforeNavigation(host(decidePolicyForNavigationAction.request.URL)) {
-                decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyAllow)
+                decisionHandler(
+                    if (closed) {
+                        WKNavigationActionPolicy.WKNavigationActionPolicyCancel
+                    } else {
+                        WKNavigationActionPolicy.WKNavigationActionPolicyAllow
+                    },
+                )
             }
         }
 
