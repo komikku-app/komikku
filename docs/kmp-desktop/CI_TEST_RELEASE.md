@@ -159,6 +159,33 @@ store before each test in that class; left to the merge, not changed here.
 - **Repeated runs** (`.git/forge/gradlew-locked`, JDK 21, fresh test JVM each with `--rerun`, two busy loops beside
   it): **20 of 20 passed** (16 tests each). `:desktopApp:spotlessCheck` passed.
 
+## `MigrateMangaUiTest` "migrate now moves the read state…" (fixed, `e8e46dd09e`)
+
+- **Failure** (run 46129485116 attempt 2, Linux `package`): `IllegalArgumentException: Detected multithreaded access to
+  SnapshotStateObserver` from `FlushCoroutineDispatcher.performRun` on `DefaultDispatcher-worker-1`; below it
+  `MigrationListScreenModel.removeManga` (IO) → `updateMigrationProgress` → `navigateBack` → `Channel.send`, which
+  resumed the composition's collector *unconfined* on that worker.
+- **Cause (test harness):** the deprecated v1 `runDesktopComposeUiTest` runs on `UnconfinedTestDispatcher`, and the
+  Compose test's `FlushCoroutineDispatcher` launches its frame work on that dispatcher, so a composition effect resumed
+  from a worker runs (with the snapshot notifications) on the worker while layout runs on the AWT thread. Shown with a
+  scratch probe (not committed): a `LaunchedEffect` receiving from a channel that an IO coroutine sends to ran on
+  `DefaultDispatcher-worker-1/-3` with layout on `AWT-EventQueue-0` under v1, and both on `AWT-EventQueue-0` under v2.
+  In the app the effect dispatcher is the Swing thread, so production code is not affected; nothing master-owned
+  is at fault.
+- **Fix:** the class uses `androidx.compose.ui.test.v2.runDesktopComposeUiTest` (same checks). **20 of 20** runs under
+  load passed (10 tests each, fresh JVM, two busy loops), run in a clean worktree of `HEAD` because the main tree did
+  not configure (another role's uncommitted `desktop/android-compat/build.gradle.kts`).
+- **Same exposure elsewhere:** the other 46 UI test classes still use v1; any of them whose screen model resumes a
+  composition from a worker can fail the same way, rarely. Proposal: move them to v2 one at a time with repeated runs,
+  as a separate task.
+
+## Breadth job reads the whole index (`5d7eaf656b`, Forge 16:58)
+
+The job's own grep found 1,686 APKs; the packaged checker's `--index` finds all 1,701 at `37749703df` (checked locally
+with `:desktop:extension-runtime:linkCheck --index=… --from=1695 --count=10`: `[1701/1701]`). It now downloads and
+checks one APK at a time (the grep version downloaded 8 at once), so the job takes longer; its timeout is 90 minutes.
+Progress goes to `breadth/progress.log` in the artifact.
+
 ## ANSWER 015 (master-owned files) and the Linux menu entry
 
 - **`HttpPageLoader`:** `docs/kmp-desktop/android-fixes/httppageloader-race.patch` (README entry), made from local
