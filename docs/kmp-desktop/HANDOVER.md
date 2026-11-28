@@ -483,10 +483,13 @@ mark the residual path in both modules.
 
 - **2026-11-28 ~21:00 (UTC+7): paused for API credit.** Everything is committed and pushed; no team member is
   running (the roster's "Now on" column below is older than this entry). Resume with:
-  1. **Desktop run 46149598387** (`77901f0b62`): first real package build of the `komikku://` registration. Run
-     46147854767 failed on it (`jpackage.exe` lookup on Windows, jpackage's empty `MimeType=` on Linux; fixed in
-     `77901f0b62` / `3da39e0312`). If it is green, the Windows installer, `.deb` and RPM smoke rows for the scheme
-     have their first proof; then add the smoke row that starts `Komikku "komikku://myanimelist-auth?code=test"`
+  1. **The `komikku://` registration in real package builds.** Run 46147854767 failed on it (`jpackage.exe` lookup on
+     Windows, jpackage's empty `MimeType=` on Linux; fixed in `77901f0b62` / `3da39e0312`). In run 46149598387 the
+     second jpackage run (with the patched `main.wxs`) still exited with 1 on Windows, its log not shown. Since the
+     last commit before the pause, a failed second run keeps the installer without the handler and prints the end of
+     jpackage's log as a Gradle warning in "Package (windows-2022)": read it in the last desktop run, fix
+     `desktopApp/packaging/windows/url-protocol.gradle.kts`, and expect the Windows smoke row "komikku:// handler
+     registered" to fail until then. Then add the smoke row that starts `Komikku "komikku://myanimelist-auth?code=test"`
      against the running app (Windows and Linux engineer's follow-up).
   2. **Reviewer pass, not done yet:** the tracker login redirect (`0f237fab87`, `074a5ad7b3`, the scheme registration
      `73df1e5997`, `9b6d50ab64`, `df6d4c512e`, fixes `3da39e0312`, `77901f0b62`) and the `--ui-smoke` `08-details`
