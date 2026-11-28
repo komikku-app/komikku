@@ -101,7 +101,8 @@ class DesktopSingleInstance private constructor(
         class Unsupported(val error: IOException) : LockAttempt
     }
 
-    companion object {
+    /** Named: the desktop log tags lines with the logging class's name, which would be `Companion`. */
+    companion object SingleInstance {
         const val LOCK_FILE = "instance.lock"
         const val PORT_FILE = "instance.port"
         val ANSWER_TIMEOUT = 2.seconds

@@ -1,5 +1,6 @@
 package app.komikku.desktop.instance
 
+import app.komikku.desktop.compat.DesktopLog
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.longs.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.longs.shouldBeLessThan
@@ -258,6 +259,23 @@ class DesktopSingleInstanceTest {
             shown.tryAcquire(5, TimeUnit.SECONDS) shouldBe true
         }
         dripper.join(5_000)
+    }
+
+    @Test
+    fun `a second start logs under the single-instance tag`() {
+        val dataDir = folder("data")
+        primary(dataDir)
+        val lines = mutableListOf<Pair<String, String>>()
+        val previous = DesktopLog.sink
+        DesktopLog.sink = { _, tag, message -> synchronized(lines) { lines += tag to message } }
+
+        try {
+            shouldThrow<Exit> { DesktopSingleInstance.ensure(dataDir, exit = { throw Exit(it) }) }.code shouldBe 0
+        } finally {
+            DesktopLog.sink = previous
+        }
+
+        synchronized(lines) { lines.single { "already runs" in it.second }.first } shouldBe "SingleInstance"
     }
 
     @Test
