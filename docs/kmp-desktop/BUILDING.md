@@ -144,10 +144,10 @@ attaches such assets to a release only when the maintainer asks for it.
 
 CI: `.github/workflows/build_desktop.yml` (manual, or a `desktop-v*` tag) packages on Ubuntu, Windows
 and macOS runners and uploads the installers as workflow artifacts (on Linux it also runs `:desktopApp:test`,
-`:core:quickjs:desktopTest` and `:source-js:desktopTest` first). The PR workflow has a separate `desktop` job
-(`:desktopApp:compileKotlin`, `:desktopApp:test`, then `:core:quickjs:desktopTest :source-js:desktopTest`) that
-cannot block the Android build and, while the port is
-experimental, does not fail the PR check (`continue-on-error`).
+`:core:quickjs:desktopTest` and `:source-js:desktopTest` first). On a pull request into `multiplatform` the same
+workflow runs only its `pr-check` job (`:desktopApp:compileKotlin`, `:desktopApp:test`, then
+`:core:quickjs:desktopTest :source-js:desktopTest`), which, while the port is experimental, does not fail the PR check
+(`continue-on-error`); `build_pull_request.yml` is `master`'s, unchanged.
 
 **Testing on a Mac** (getting the CI `.dmg` or building it, opening the unsigned app, data and logs, a first test
 pass, what to send back): [`TESTING_MAC.md`](TESTING_MAC.md).

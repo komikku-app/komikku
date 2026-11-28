@@ -48,6 +48,20 @@ on:
     paths:
       - '.github/desktop-build-trigger'
     # KMK <--
+  # KMK -->
+  # Pull requests into this branch run only `pr-check` (ATLAS_INSTRUCTIONS.md ANSWER 009 point 3: the desktop job left
+  # build_pull_request.yml, which is master's again); same path filter as that workflow
+  pull_request:
+    branches:
+      - multiplatform
+    paths:
+      - '**'
+      - '!**.md'
+      - '!i18n-kmk/src/commonMain/moko-resources/**/strings.xml'
+      - '!i18n-kmk/src/commonMain/moko-resources/**/plurals.xml'
+      - 'i18n-kmk/src/commonMain/moko-resources/base/strings.xml'
+      - 'i18n-kmk/src/commonMain/moko-resources/base/plurals.xml'
+  # KMK <--
 
 # No workflow-level concurrency group: a newer run of the same ref cancels an older run's packaging (job-level group
 # per runner below), but never a run that has reached its release job, which has its own group per release tag
@@ -59,8 +73,74 @@ permissions:
   contents: read
 
 jobs:
+  # KMK -->
+  # Early warning on pull requests (moved from build_pull_request.yml): compiles and tests :desktopApp, which also
+  # compiles the shared modules' desktop targets and the `app` files it borrows. `continue-on-error` keeps a desktop
+  # failure from failing the PR check while the port is experimental (remove it once it is stable).
+  pr-check:
+    name: Desktop app (compile + tests)
+    if: github.event_name == 'pull_request'
+    runs-on: 'ubuntu-24.04'
+    continue-on-error: true
+    concurrency:
+      group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version-file: .github/.java-version
+          distribution: temurin
+
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
+
+      - name: Compile desktop app
+        run: ./gradlew :desktopApp:compileKotlin --max-workers=2
+
+      - name: Run desktop tests
+        id: desktop_tests
+        run: ./gradlew :desktopApp:test --max-workers=2
+
+      - name: Upload desktop test report
+        if: failure() && steps.desktop_tests.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-test-report-${{ github.sha }}
+          path: desktopApp/build/reports/tests/test
+
+      # JavaScript source host (:source-js, not a dependency of :desktopApp yet) and the app.cash.quickjs.QuickJs
+      # engine (:core:quickjs, also run on the Android host by testReleaseUnitTest); runs even when the desktop
+      # tests failed, under the same continue-on-error policy.
+      - name: Run JavaScript source host tests
+        id: source_js_tests
+        if: ${{ !cancelled() }}
+        run: ./gradlew :core:quickjs:desktopTest :source-js:desktopTest --max-workers=2
+
+      - name: Upload JavaScript source host test report
+        if: failure() && steps.source_js_tests.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-js-test-report-${{ github.sha }}
+          path: |
+            core/quickjs/build/reports/tests/desktopTest
+            source-js/build/reports/tests/desktopTest
+  # KMK <--
+
   plan:
     name: Release plan
+    # KMK -->
+    # Nothing but `pr-check` on a pull request (this skips every job that needs `plan`)
+    if: github.event_name != 'pull_request'
+    # KMK <--
     runs-on: 'ubuntu-24.04'
     permissions:
       # Read the release tag (fetched below)
@@ -509,6 +589,7 @@ jobs:
   # tests fail.
   windows-test:
     name: Desktop tests (windows-2022, non-blocking)
+    if: github.event_name != 'pull_request'
     runs-on: 'windows-2022'
     continue-on-error: true
     timeout-minutes: 90
@@ -524,6 +605,8 @@ jobs:
     steps:
       - name: Clone repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up JDK
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
