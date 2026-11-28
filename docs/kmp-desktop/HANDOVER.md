@@ -710,6 +710,10 @@ mark the residual path in both modules.
    FlareSolverr-compatible service automatic flows hitting a challenge need the manual step; the FlareSolverr backend
    not run against a real solver; no per-source opt-out; no Settings → Advanced network group; `android.webkit.WebView`
    for extensions; not run against a real Cloudflare site or in a real window). After signing: notifications / tray.
+   From the first merge of `master` (A4; priority 5 in COORDINATION.md "Priorities", not now; UPSTREAM_AUDIT.md 7.4):
+   no "MangaDex session expired" notification (the desktop `MangaDexSessionNotifier` only logs; Settings > Tracking
+   shows MDList logged out), and no batch "reset info" in the library selection (so `master`'s confirmation for it,
+   `084750b89b`, has no desktop counterpart).
 5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).

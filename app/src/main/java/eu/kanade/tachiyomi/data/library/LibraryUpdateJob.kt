@@ -62,6 +62,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.NoChaptersException
+import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.library.model.GroupLibraryMode
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
@@ -134,6 +135,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get()
     private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get()
     private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get()
+    private val chapterRepository: ChapterRepository = Injekt.get()
     // KMK <--
 
     private var mangaToUpdate: List<LibraryManga> = mutableListOf()
@@ -157,50 +159,77 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         // KMK -->
         libraryUpdateStatus.start()
 
-        deleteLibraryUpdateErrors.cleanUnrelevantMangaErrors()
-        // KMK <--
+        // Everything below can fail before the per-manga progress loop ever runs (bad input data,
+        // a DB error while pruning stale errors, a throw while building the queue...). The
+        // status/notification cleanup therefore has to live in an outer finally: without it the
+        // library banner stays pinned at "Updating library… 0%" for the whole process lifetime and
+        // the progress notification is never cancelled.
+        return try {
+            deleteLibraryUpdateErrors.cleanUnrelevantMangaErrors()
 
-        setForegroundSafely()
-
-        val target = inputData.getString(KEY_TARGET)?.let { Target.valueOf(it) } ?: Target.CHAPTERS
-
-        // If this is a chapter update, set the last update time to now
-        if (target == Target.CHAPTERS) {
-            libraryPreferences.lastUpdatedTimestamp().set(Instant.now().toEpochMilli())
-        }
-
-        val categoryId = inputData.getLong(KEY_CATEGORY, -1L)
-        // SY -->
-        val group = inputData.getInt(KEY_GROUP, LibraryGroup.BY_DEFAULT)
-        val groupExtra = inputData.getString(KEY_GROUP_EXTRA)
-        // SY <--
-        addMangaToQueue(categoryId, group, groupExtra)
-
-        return withIOContext {
+            // Keep the shared setForegroundSafely() strict for every other worker, but make the
+            // library update resilient even if promotion to foreground fails with a non-
+            // IllegalStateException (e.g. TransactionTooLargeException from the notification
+            // parcel on API 26): the update is more useful running in the background than
+            // aborting before the first manga is processed.
             try {
-                when (target) {
-                    Target.CHAPTERS -> updateChapterList()
-                    // SY -->
-                    Target.SYNC_FOLLOWS -> syncFollows()
-                    Target.PUSH_FAVORITES -> pushFavorites()
-                    // SY <--
-                }
-                Result.success()
+                setForegroundSafely()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                if (e is CancellationException) {
-                    // Assume success although cancelled
-                    Result.success()
-                } else {
-                    logcat(LogPriority.ERROR, e)
-                    Result.failure()
-                }
-            } finally {
-                notifier.cancelProgressNotification()
-                // KMK -->
-                libraryUpdateStatus.stop()
-                // KMK <--
+                logcat(LogPriority.ERROR, e) { "Library update could not switch to foreground; continuing in background" }
             }
+
+            val target = inputData.getString(KEY_TARGET)?.let { Target.valueOf(it) } ?: Target.CHAPTERS
+
+            // If this is a chapter update, set the last update time to now
+            if (target == Target.CHAPTERS) {
+                libraryPreferences.lastUpdatedTimestamp().set(Instant.now().toEpochMilli())
+            }
+
+            val categoryId = inputData.getLong(KEY_CATEGORY, -1L)
+            // SY -->
+            val group = inputData.getInt(KEY_GROUP, LibraryGroup.BY_DEFAULT)
+            val groupExtra = inputData.getString(KEY_GROUP_EXTRA)
+            // SY <--
+            addMangaToQueue(categoryId, group, groupExtra)
+
+            // KMK <--
+            withIOContext {
+                try {
+                    when (target) {
+                        Target.CHAPTERS -> updateChapterList()
+                        // SY -->
+                        Target.SYNC_FOLLOWS -> syncFollows()
+                        Target.PUSH_FAVORITES -> pushFavorites()
+                        // SY <--
+                    }
+                    Result.success()
+                } catch (e: Exception) {
+                    if (e is CancellationException) {
+                        // Assume success although cancelled
+                        Result.success()
+                    } else {
+                        logcat(LogPriority.ERROR, e)
+                        Result.failure()
+                    }
+                }
+            }
+            // KMK -->
+        } catch (e: CancellationException) {
+            // WorkManager cancelled this job before any manga was processed (preflight phase).
+            // Propagate instead of returning success, so the work item is recorded as CANCELLED
+            // rather than FINISHED and pending manga are not silently treated as up to date; the
+            // finally below still clears the banner and the progress notification.
+            throw e
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+            Result.failure()
+        } finally {
+            notifier.cancelProgressNotification()
+            libraryUpdateStatus.stop()
         }
+        // KMK <--
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
@@ -573,27 +602,74 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                 var dbManga = getManga.await(networkManga.url, mangaDex.id)
 
+                // KMK -->
+                // The follows list already carries each entry's cover. UpdateMangaFromRemote doesn't fetch
+                // details here, so it only writes back the local manga: the cover has to be put on it first.
+                val remoteThumbnailUrl = networkManga.thumbnail_url?.takeIf { it.isNotEmpty() }
+
+                // Only new entries and entries whose cover URL changes get their cover refreshed (cached cover
+                // dropped + coverLastModified bumped). Otherwise every sync would re-download every cover.
+                var refreshCover = false
+                // KMK <--
+
                 if (dbManga == null) {
                     dbManga = networkToLocalManga(
                         Manga.create().copy(
                             url = networkManga.url,
                             ogTitle = networkManga.title,
+                            // KMK -->
+                            ogThumbnailUrl = remoteThumbnailUrl,
+                            // KMK <--
                             source = mangaDex.id,
                             favorite = true,
                             dateAdded = System.currentTimeMillis(),
                         ),
                     )
+                    // KMK -->
+                    refreshCover = true
+                    // KMK <--
                 } else if (!dbManga.favorite) {
                     updateManga.awaitUpdateFavorite(dbManga.id, true)
                 }
 
+                // KMK -->
+                // Only fill a missing cover. An existing one comes from the details parser, which applies the
+                // cover-quality and first-volume-cover preferences that the follows list doesn't.
+                if (remoteThumbnailUrl != null && dbManga.ogThumbnailUrl.isNullOrBlank()) {
+                    val shownThumbnailUrl = dbManga.thumbnailUrl
+                    dbManga = dbManga.copy(ogThumbnailUrl = remoteThumbnailUrl)
+                    // A custom thumbnail URL still wins over the filled one: its cached cover stays valid.
+                    if (dbManga.thumbnailUrl != shownThumbnailUrl) refreshCover = true
+                }
+                // KMK <--
+
                 updateMangaFromRemote(
                     manga = dbManga,
                     // KMK -->
-                    // Update cover & fetchInterval
-                    manualFetch = true,
-                    // KMK <--
+                    // manualFetch makes UpdateMangaFromRemote refresh the cover even when its URL is unchanged,
+                    // and makes SyncChaptersWithSource recalculate the fetch interval (only if it has chapters).
+                    manualFetch = refreshCover,
                 )
+                    .onSuccess {
+                        // Without manualFetch, still recalculate the fetch interval as manualFetch would.
+                        if (!refreshCover) {
+                            // Like UpdateMangaFromRemote, don't let one entry's failure stop the rest of the sync.
+                            try {
+                                // Not for an entry with no chapters (new follows, follows never updated): the
+                                // interval would be a guess, and its nextUpdate could make the "outside release
+                                // period" restriction skip it in the next library update, which fetches its
+                                // chapters. Checked right before recalculating, with a query that throws on failure
+                                // instead of returning an empty list.
+                                if (chapterRepository.getChapterByMangaId(dbManga.id).isNotEmpty()) {
+                                    updateManga.awaitUpdateFetchInterval(dbManga)
+                                }
+                            } catch (e: Exception) {
+                                if (e is CancellationException) throw e
+                                logcat(LogPriority.ERROR, e)
+                            }
+                        }
+                    }
+                // KMK <--
 
                 metadata.mangaId = dbManga.id
                 insertFlatMetadata.await(metadata)

@@ -210,4 +210,8 @@
     <string name="pref_fetch_manga_metadata_on_add_description">在將作品加入書櫃後，自動抓取標題、作者等最新漫畫資訊</string>
     <string name="pref_fetch_manga_chapters_on_add">新增至書櫃時更新章節列表</string>
     <string name="pref_fetch_manga_chapters_on_add_description">在將作品加入書櫃後，自動抓取最新章節列表</string>
+    <string name="ext_update_signature_mismatch">未更新 %1$s：更新檔的簽章金鑰與已安裝的擴充套件不符</string>
+    <string name="ext_store_signing_key_changed">擴充套件儲存庫 %1$s 目前指向 %2$s，其簽章金鑰不同，因此未進行更新。若您信任新的儲存庫，請先移除 %1$s 再重新加入。</string>
+    <string name="mangadex_session_expired_notification_title">MangaDex 登入工作階段已過期</string>
+    <string name="mangadex_session_expired_notification_text">請重新登入 MangaDex 以繼續同步您的追蹤與閱讀進度。</string>
 </resources>

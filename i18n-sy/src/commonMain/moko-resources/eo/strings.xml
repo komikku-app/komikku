@@ -48,4 +48,11 @@
     <string name="time_between_batches_24_hours">24 horoj</string>
     <string name="clear_db_exclude_read">Neforigi elementojn kun legitaj ĉapitroj</string>
     <string name="artist">Artisto</string>
+    <string name="ehentai_prefs_account_settings">Kontaj agordoj de retejo E-Hentai</string>
+    <string name="use_hentai_at_home_summary">Ĉu vi volas ŝargi bildojn tra la reto Hentai@Home, se eble? Malŝalto de ĉi tiu opcio reduktos la sumon de paĝoj kiujn vi videblos\nOpcioj:\n- Ia ajn kliento (rekomendita)\n- Nur klientoj kun defaŭlta pordo (Povas esti pli malrapida. Ŝaltu se vi estas malantaŭ fajroŝirmilo/prokurilo, kiu baras eligantaj nedefaŭltaj pordoj.)</string>
+    <string name="use_hentai_at_home_option_2">Nur klientoj kun defaŭlta pordo</string>
+    <string name="show_japanese_titles">Montri japanajn titolojn en serĉrezultoj</string>
+    <string name="show_japanese_titles_option_1">Nune montras Japanajn titolojn en serĉrezultoj. Viŝu la ĉapitran kaŝmemoron (en la \"Altnivelaj\"-sekcio), post kiam vi ŝanĝas tion</string>
+    <string name="use_original_images">Uzi originajn bildojn</string>
+    <string name="use_original_images_on">Nune uzas originajn bildojn</string>
 </resources>

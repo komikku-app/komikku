@@ -11,7 +11,10 @@ import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import exh.log.xLogW
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
+import logcat.LogPriority
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 import tachiyomi.domain.track.model.Track as DomainTrack
@@ -138,8 +141,28 @@ class MyAnimeList(id: Long) : BaseTracker(id, "MyAnimeList"), DeletableTracker {
     override suspend fun login(username: String, password: String) = login(password)
 
     suspend fun login(authCode: String) {
+        // KMK -->
+        // The verifier stored when the login URL was built, maybe by a process that was killed since.
+        val codeVerifierPreference = trackPreferences.trackPkceCodeVerifier(this)
+        val codeVerifier = codeVerifierPreference.get()
+        if (codeVerifier.isEmpty()) {
+            // Any other verifier would fail the server's PKCE check. Nothing was sent, so a session the user
+            // may already have is kept.
+            logcat(LogPriority.ERROR) { "MAL login failed: no PKCE code verifier stored for this login" }
+            return
+        }
+        val exchange = runCatching { api.getAccessToken(authCode, codeVerifier) }
+        val exchangeError = exchange.exceptionOrNull()
+        // Cancelled, e.g. because the login activity was recreated, which delivers the redirect again. The code
+        // may not have reached the server, so keep the verifier for that retry and leave the session alone.
+        if (exchangeError is CancellationException) throw exchangeError
+        // The exchange completed: a verifier is good for a single code exchange, whatever its outcome.
+        codeVerifierPreference.delete()
+        // KMK <--
         try {
-            val oauth = api.getAccessToken(authCode)
+            // KMK -->
+            val oauth = exchange.getOrThrow()
+            // KMK <--
             interceptor.setAuth(oauth)
             val username = api.getCurrentUser()
             saveCredentials(username, oauth.accessToken)

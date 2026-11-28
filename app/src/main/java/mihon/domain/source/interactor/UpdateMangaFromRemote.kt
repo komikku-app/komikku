@@ -39,6 +39,11 @@ class UpdateMangaFromRemote(
      *
      * If neither [fetchDetails] nor [fetchChapters] is `true`, it will only update cover's last modified date & fetchInterval,
      * and also perform renaming downloaded folders.
+     *
+     * KMK -->
+     * If [fetchChapters] is `false` and the manga has no chapters, chapters aren't synced: nothing is thrown, no new
+     * chapters are returned, and the fetchInterval isn't updated even with [manualFetch].
+     * KMK <--
      */
     suspend operator fun invoke(
         manga: Manga,
@@ -74,6 +79,11 @@ class UpdateMangaFromRemote(
      *
      * If neither [fetchDetails] nor [fetchChapters] is `true`, it will only update cover's last modified date & fetchInterval,
      * and also perform renaming downloaded folders.
+     *
+     * KMK -->
+     * If [fetchChapters] is `false` and the manga has no chapters, chapters aren't synced: nothing is thrown, no new
+     * chapters are returned, and the fetchInterval isn't updated even with [manualFetch].
+     * KMK <--
      */
     suspend operator fun invoke(
         source: Source,
@@ -116,6 +126,13 @@ class UpdateMangaFromRemote(
                 // SY -->
                 val newChapters = if (source is MergedSource) {
                     source.fetchChaptersAndSync(manga, downloadChapters = manualFetch)
+                    // KMK -->
+                } else if (!fetchChapters && update.chapters.isEmpty()) {
+                    // Chapters weren't fetched, so these are the manga's DB chapters, not the source's: none means
+                    // the manga hasn't fetched any yet, not that the source has none. Syncing them would only throw
+                    // NoChaptersException after the details above were saved.
+                    emptyList()
+                    // KMK <--
                 } else {
                     // SY <--
                     syncChaptersWithSource.await(
@@ -160,7 +177,11 @@ class UpdateMangaFromRemote(
         val coverLastModified = when {
             // Never refresh covers if the url is empty to avoid "losing" existing covers
             remoteManga.thumbnail_url.isNullOrEmpty() -> null
-            !manualFetch && localManga.thumbnailUrl == remoteManga.thumbnail_url -> null
+            // KMK -->
+            // Compare source URL with source URL: `thumbnailUrl` would be the user's custom cover URL
+            // when one is set, so the cover cache would be wiped on every update.
+            !manualFetch && localManga.ogThumbnailUrl == remoteManga.thumbnail_url -> null
+            // KMK <--
             localManga.isLocal() -> Instant.now().toEpochMilli()
             localManga.hasCustomCover(coverCache) -> {
                 coverCache.deleteFromCache(localManga, false)

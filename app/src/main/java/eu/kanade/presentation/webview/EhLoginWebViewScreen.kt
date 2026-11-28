@@ -2,7 +2,9 @@ package eu.kanade.presentation.webview
 
 import android.content.pm.ApplicationInfo
 import android.webkit.CookieManager
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebView
+import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +41,9 @@ import com.kevinnzou.web.rememberWebViewState
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
+import eu.kanade.tachiyomi.util.system.toast
+import logcat.LogPriority
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Button
@@ -107,6 +112,19 @@ fun EhLoginWebViewScreen(
                     super.onPageFinished(view, url)
                     onPageFinished(view, url ?: return)
                 }
+
+                // KMK -->
+                override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
+                    // Not handling it kills the app along with the page
+                    logcat(LogPriority.ERROR) {
+                        "E-Hentai login WebView renderer gone: crashed=${detail.didCrash()}, " +
+                            "priority=${detail.rendererPriorityAtExit()}"
+                    }
+                    view.context.toast(MR.strings.information_webview_crashed, Toast.LENGTH_LONG)
+                    onUp()
+                    return true
+                }
+                // KMK <--
             }
         }
         var showAdvancedOptions by rememberSaveable {

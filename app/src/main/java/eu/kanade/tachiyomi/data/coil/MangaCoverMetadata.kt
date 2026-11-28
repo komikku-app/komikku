@@ -55,19 +55,19 @@ object MangaCoverMetadata {
      * It's called along with [MangaCoverFetcher.fetch] everytime a cover is **displayed** (anywhere).
      *
      * When called:
-     *  - It removes saved colors from saved Prefs of [MangaCover.dominantCoverColorMap] if manga is not favorite.
-     *  - If a favorite manga already restored [MangaCover.dominantCoverColors] then it
-     * will skip actually reading bitmap, only extract ratio. Except when [MangaCover.vibrantCoverColor]
-     * is not loaded then it will read bitmap & extract vibrant color.
-     * => always set [force] to true so it will always re-calculate ratio & color.
+     *  - It removes saved ratio & [MangaCover.dominantCoverColors] if manga is not favorite.
+     *  - It only reads the bitmap if [needsColorUpdate], otherwise it returns without touching ratio or colors.
+     *  E.g. a favorite manga which already restored [MangaCover.dominantCoverColors] is skipped, unless its
+     *  [MangaCover.vibrantCoverColor] is wanted too (not [onlyDominantColor]) and not loaded yet.
      *
-     * Set [MangaCover.dominantCoverColors] for favorite manga only.
+     * Set [MangaCover.dominantCoverColors] and ratio for favorite manga only.
      * Set [MangaCover.vibrantCoverColor] for all mangas.
      *
      * @param bufferedSource if not null then it will load bitmap from [BufferedSource], regardless of [ogFile]
      * @param ogFile if not null then it will load bitmap from [File]. If it's null then it will try to load bitmap
      *  from [CoverCache] using either [CoverCache.customCoverCacheDir] or [CoverCache.cacheDir]
-     * @param force if true then it will always re-calculate ratio & color for favorite mangas.
+     * @param force if true then it will re-calculate ratio & colors even if they are known, except in the cases
+     *  where [needsColorUpdate] always skips.
      *
      * This is only for loading color first time it appears on Library/Browse. Any new colors caused by loading new
      * cover when open a manga detail or change cover will be updated separately on [MangaScreenModel.setPaletteColor].
@@ -83,68 +83,65 @@ object MangaCoverMetadata {
     ) {
         if (!mangaCover.isMangaFavorite) {
             mangaCover.remove()
-            if (mangaCover.vibrantCoverColor != null) return
         }
 
-        if (mangaCover.isMangaFavorite && onlyDominantColor && mangaCover.dominantCoverColors != null) return
+        // Ratio isn't used yet, so it's not worth decoding even the bounds when no color is needed
+        if (!needsColorUpdate(mangaCover, onlyDominantColor, force)) return
 
-        val options = BitmapFactory.Options()
+        val options = BitmapFactory.Options().apply { inSampleSize = SUB_SAMPLE }
 
-        val updateColors =
-            (mangaCover.isMangaFavorite && mangaCover.dominantCoverColors == null) ||
-                (!onlyDominantColor && mangaCover.vibrantCoverColor == null) ||
-                force
-
-        if (updateColors) {
-            /*
-             * + Manga is Favorite & doesn't have dominant color
-             *   For non-favorite, it doesn't care if dominant is there or not, if it has vibrant color then it will
-             *   already be returned from beginning.
-             * + [onlyDominantColor] = false
-             *   - Manga doesn't have vibrant color
-             */
-            options.inSampleSize = SUB_SAMPLE
-        } else {
-            /*
-             * + [onlyDominantColor] = true
-             *   - Manga is Favorite & already have dominant color
-             * + [onlyDominantColor] = false
-             *   - Manga is Favorite & already have dominant color & vibrant color
-             *   - Manga is not Favorite & already have vibrant color (already skip at beginning)
-             */
-            // Just trying to update ratio without actual reading bitmap (bitmap will be null)
-            options.inJustDecodeBounds = true
-            // Don't even need to update ratio because we don't use it yet.
-            return
-        }
-
-        val file = ogFile
-            ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
-            ?: coverCache.getCoverFile(mangaCover.url)
-
-        val bitmap = when {
-            bufferedSource != null -> BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options)
-            // if the file exists and the there was still an error then the file is corrupted
-            file?.exists() == true -> BitmapFactory.decodeFile(file.path, options)
-            else -> {
-                return
+        val bitmap = if (bufferedSource != null) {
+            bufferedSource.inputStream().use { inputStream ->
+                BitmapFactory.decodeStream(
+                    inputStream,
+                    null,
+                    options,
+                )
             }
+        } else {
+            val file = ogFile
+                ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
+                ?: coverCache.getCoverFile(mangaCover.url)
+            if (file == null || !file.exists()) return
+            // if the file exists and there was still an error then the file is corrupted
+            BitmapFactory.decodeFile(file.path, options)
         }
 
-        if (bitmap != null) {
-            Palette.from(bitmap).generate {
-                if (it == null) return@generate
+        bitmap?.let {
+            Palette.from(it).generate { palette ->
+                if (palette == null) return@generate
                 if (mangaCover.isMangaFavorite) {
-                    it.dominantSwatch?.let { swatch ->
+                    palette.dominantSwatch?.let { swatch ->
                         mangaCover.dominantCoverColors = swatch.rgb to swatch.titleTextColor
                     }
                 }
-                val color = it.getBestColor() ?: return@generate
-                mangaCover.vibrantCoverColor = color
+                val vibrantCoverColor = palette.getBestColor() ?: return@generate
+                mangaCover.vibrantCoverColor = vibrantCoverColor
             }
         }
         if (mangaCover.isMangaFavorite && options.outWidth != -1 && options.outHeight != -1) {
             mangaCover.ratio = options.outWidth / options.outHeight.toFloat()
+        }
+    }
+
+    /**
+     * Whether [setRatioAndColors] would actually decode the cover's bitmap to extract colors:
+     *  - Non-favorite manga: if it has no [MangaCover.vibrantCoverColor] yet, and that is wanted (not
+     *  [onlyDominantColor]) or [force]d.
+     *  - Favorite manga with [onlyDominantColor]: if it has no [MangaCover.dominantCoverColors] yet (ignores [force]).
+     *  - Other favorite manga: if it misses either color, or if [force]d.
+     *
+     * Callers can use this to avoid opening or buffering a source which would never be read.
+     */
+    fun needsColorUpdate(
+        mangaCover: MangaCover,
+        onlyDominantColor: Boolean = true,
+        force: Boolean = false,
+    ): Boolean {
+        return when {
+            !mangaCover.isMangaFavorite -> mangaCover.vibrantCoverColor == null && (!onlyDominantColor || force)
+            onlyDominantColor -> mangaCover.dominantCoverColors == null
+            else -> mangaCover.dominantCoverColors == null || mangaCover.vibrantCoverColor == null || force
         }
     }
 

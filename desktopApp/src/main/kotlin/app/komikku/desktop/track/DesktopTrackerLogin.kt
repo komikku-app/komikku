@@ -2,6 +2,7 @@ package app.komikku.desktop.track
 
 import app.komikku.shared.track.OAuthRedirect
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
@@ -18,6 +19,8 @@ import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
 import kotlinx.coroutines.CancellationException
 import tachiyomi.domain.source.service.SourceManager
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * KMK: how each tracker logs in on desktop (Android: `SettingsTrackingScreen` + `TrackLoginActivity`).
@@ -45,12 +48,21 @@ sealed interface TrackerLoginMethod {
 object DesktopTrackerLogin {
 
     fun method(tracker: Tracker): TrackerLoginMethod = when (tracker) {
-        is MyAnimeList -> TrackerLoginMethod.OAuthPaste({ MyAnimeListApi.authUrl().toString() }, "myanimelist-auth", "code")
+        // Each authorization URL stores a new PKCE verifier for the code exchange in the tracker's login
+        is MyAnimeList -> TrackerLoginMethod.OAuthPaste(
+            { MyAnimeListApi.authUrl(Injekt.get<TrackPreferences>(), tracker).toString() },
+            "myanimelist-auth",
+            "code",
+        )
         is Anilist -> TrackerLoginMethod.OAuthPaste({ AnilistApi.authUrl().toString() }, "anilist-auth", "access_token")
         is Shikimori -> TrackerLoginMethod.OAuthPaste({ ShikimoriApi.authUrl().toString() }, "shikimori-auth", "code")
         is Bangumi -> TrackerLoginMethod.OAuthPaste({ BangumiApi.authUrl().toString() }, "bangumi-auth", "code")
         // Android: Settings → MangaDex → login (MangaDexLoginActivity), through the enabled MangaDex source (P4)
-        is MdList -> TrackerLoginMethod.OAuthPaste({ MdConstants.Login.authUrl(MdUtil.getPkceChallengeCode()) }, "mangadex-auth", "code")
+        is MdList -> TrackerLoginMethod.OAuthPaste(
+            { MdConstants.Login.authUrl(MdUtil.newLoginCodeVerifier(Injekt.get<TrackPreferences>(), tracker)) },
+            "mangadex-auth",
+            "code",
+        )
         is EnhancedTracker -> TrackerLoginMethod.Enhanced
         else -> TrackerLoginMethod.Credentials
     }

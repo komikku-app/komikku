@@ -189,7 +189,7 @@ fun InjektRegistrar.registerLibraryInteractors() { // Category
 
     // History
     addFactory { GetHistory(get()) }
-    addFactory { GetNextChapters(get(), get(), get(), get()) }
+    addFactory { GetNextChapters(get(), get(), get(), get(), get()) }
     addFactory { GetTotalReadDuration(get()) }
     addFactory { RemoveHistory(get()) }
     addFactory { UpsertHistory(get()) }

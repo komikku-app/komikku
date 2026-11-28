@@ -103,7 +103,8 @@ class DesktopCloudflareInterceptorTest {
         val session = backend.sessions.single()
         session.url shouldBe server.url("/popular")
         session.userAgent shouldBe DEFAULT_UA
-        session.headers["Referer"] shouldBe "https://example.org/"
+        // Header names in lower case, like Android's WebView headers (master's Headers.toWebViewHeaders)
+        session.headers["referer"] shouldBe "https://example.org/"
         session.headers.keys.none { it.equals("User-Agent", ignoreCase = true) } shouldBe true
         session.timeout shouldBe 5.seconds
         session.interactive shouldBe false
@@ -224,10 +225,14 @@ class DesktopCloudflareInterceptorTest {
 
     @Test
     fun `a 403 that is no challenge is returned untouched`() {
-        // Cloudflare, but no challenge markers (a geo block), and a challenge page from another server.
+        // Like Android (master's cf-mitigated check): Cloudflare without `cf-mitigated: challenge` (a geo block, or a
+        // page that only looks like a challenge), and `cf-mitigated: challenge` from another server.
         server.enqueue(MockResponse.Builder().code(403).addHeader("Server", "cloudflare").body("<html>Access denied</html>").build())
-        server.enqueue(MockResponse.Builder().code(403).addHeader("Server", "nginx").body(CHALLENGE_BODY).build())
-        server.enqueue(MockResponse.Builder().code(429).addHeader("Server", "cloudflare").body(CHALLENGE_BODY).build())
+        server.enqueue(MockResponse.Builder().code(403).addHeader("Server", "cloudflare").body(CHALLENGE_BODY).build())
+        server.enqueue(
+            MockResponse.Builder().code(403).addHeader("Server", "nginx").addHeader("cf-mitigated", "challenge")
+                .body(CHALLENGE_BODY).build(),
+        )
 
         repeat(3) {
             client().newCall(GET(server.url("/").toString())).execute().use { response ->
@@ -413,6 +418,7 @@ class DesktopCloudflareInterceptorTest {
     private fun challenge() = MockResponse.Builder()
         .code(403)
         .addHeader("Server", "cloudflare")
+        .addHeader("cf-mitigated", "challenge")
         .body(CHALLENGE_BODY)
         .build()
 

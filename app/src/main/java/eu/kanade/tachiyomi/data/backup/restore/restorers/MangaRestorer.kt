@@ -93,6 +93,14 @@ class MangaRestorer(
                 restoreExistingManga(manga, dbManga)
             }
 
+            // KMK -->
+            // Applying the synced library state fires the favorite trigger, which stamps this device's time on it.
+            // Keep the synced time, so the next sync doesn't take this copy as the latest library change.
+            if (isSync) {
+                manga.favoriteModifiedAt?.let { mangasQueries.setFavoriteModifiedAt(it, restoredManga.id) }
+            }
+            // KMK <--
+
             restoreMangaDetails(
                 manga = restoredManga,
                 chapters = backupManga.chapters,
@@ -131,13 +139,21 @@ class MangaRestorer(
         return this.copy(
             favorite = this.favorite || newer.favorite,
             // SY -->
-            ogAuthor = newer.author,
-            ogArtist = newer.artist,
-            ogDescription = newer.description,
-            ogGenre = newer.genre,
-            ogThumbnailUrl = newer.thumbnailUrl,
-            ogStatus = newer.status,
+            ogTitle = newer.ogTitle,
+            ogAuthor = newer.ogAuthor,
+            ogArtist = newer.ogArtist,
+            ogDescription = newer.ogDescription,
+            ogGenre = newer.ogGenre,
+            ogThumbnailUrl = newer.ogThumbnailUrl,
+            ogStatus = newer.ogStatus,
             // SY <--
+            chapterFlags = newer.chapterFlags,
+            viewerFlags = newer.viewerFlags,
+            updateStrategy = newer.updateStrategy,
+            // KMK -->
+            notes = newer.notes,
+            memo = newer.memo,
+            // KMK <--
             initialized = this.initialized || newer.initialized,
             version = newer.version,
         )
@@ -196,7 +212,13 @@ class MangaRestorer(
 
                 when {
                     dbChapter == null -> chapter // New chapter
-                    chapter.forComparison() == dbChapter.forComparison() -> null // Same state; skip
+                    chapter.forComparison() == dbChapter.forComparison() -> {
+                        if (isSync && chapter.version != dbChapter.version) {
+                            chapter.copy(id = dbChapter.id)
+                        } else {
+                            null // Same state; skip
+                        }
+                    }
                     else -> updateChapterBasedOnSyncState(chapter, dbChapter) // Update existed chapter
                 }
             }
@@ -403,37 +425,40 @@ class MangaRestorer(
     }
 
     private suspend fun restoreHistory(manga: Manga, backupHistory: List<BackupHistory>) {
-        val toUpdate = backupHistory.mapNotNull { history ->
-            // KMK -->
-            val dbHistory = handler.awaitList { historyQueries.getHistoryByChapterUrl(manga.id, history.url) }
-                .firstOrNull()
-            // KMK <--
-            val item = history.getHistoryImpl()
-
-            if (dbHistory == null) {
+        val toUpdate = backupHistory
+            .groupBy { it.url }
+            .mapNotNull { (chapterUrl, copies) ->
+                val readAt = copies.maxOf { it.lastRead }
+                val readDuration = copies.sumOf { it.readDuration }
                 // KMK -->
-                val chapter = handler.awaitList { chaptersQueries.getChapterByUrlAndMangaId(history.url, manga.id) }
+                val dbHistory = handler.awaitList { historyQueries.getHistoryByChapterUrl(manga.id, chapterUrl) }
                     .firstOrNull()
                 // KMK <--
-                return@mapNotNull if (chapter == null) {
-                    // Chapter doesn't exist; skip
-                    null
-                } else {
-                    // New history entry
-                    item.copy(chapterId = chapter._id)
-                }
-            }
+                val item = copies.first().getHistoryImpl()
 
-            // Update history entry
-            item.copy(
-                id = dbHistory._id,
-                chapterId = dbHistory.chapter_id,
-                readAt = max(item.readAt?.time ?: 0L, dbHistory.last_read?.time ?: 0L)
-                    .takeIf { it > 0L }
-                    ?.let { Date(it) },
-                readDuration = max(item.readDuration, dbHistory.time_read) - dbHistory.time_read,
-            )
-        }
+                if (dbHistory == null) {
+                    // KMK -->
+                    val chapter = handler.awaitList { chaptersQueries.getChapterByUrlAndMangaId(chapterUrl, manga.id) }
+                        .firstOrNull()
+                        // KMK <--
+                        // Chapter doesn't exist; skip
+                        ?: return@mapNotNull null
+                    // New history entry
+                    return@mapNotNull item.copy(
+                        chapterId = chapter._id,
+                        readAt = Date(readAt),
+                        readDuration = readDuration,
+                    )
+                }
+
+                // Update history entry
+                item.copy(
+                    id = dbHistory._id,
+                    chapterId = dbHistory.chapter_id,
+                    readAt = Date(max(readAt, dbHistory.last_read?.time ?: 0L)),
+                    readDuration = max(readDuration, dbHistory.time_read) - dbHistory.time_read,
+                )
+            }
 
         if (toUpdate.isNotEmpty()) {
             handler.await(true) {

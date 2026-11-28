@@ -15,6 +15,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.more.settings.screen.SettingsAppearanceScreen
 import eu.kanade.presentation.more.settings.screen.SettingsDataScreen
 import eu.kanade.presentation.more.settings.screen.SettingsMainScreen
+import eu.kanade.presentation.more.settings.screen.SettingsMangadexScreen
 import eu.kanade.presentation.more.settings.screen.SettingsTrackingScreen
 import eu.kanade.presentation.more.settings.screen.about.AboutScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
@@ -38,6 +39,9 @@ class SettingsScreen(
                     Destination.About.id -> AboutScreen()
                     Destination.DataAndStorage.id -> SettingsDataScreen
                     Destination.Tracking.id -> SettingsTrackingScreen
+                    // KMK -->
+                    Destination.Mangadex.id -> SettingsMangadexScreen
+                    // KMK <--
                     else -> SettingsMainScreen
                 },
                 onBackPressed = null,
@@ -59,6 +63,9 @@ class SettingsScreen(
                     Destination.About.id -> AboutScreen()
                     Destination.DataAndStorage.id -> SettingsDataScreen
                     Destination.Tracking.id -> SettingsTrackingScreen
+                    // KMK -->
+                    Destination.Mangadex.id -> SettingsMangadexScreen
+                    // KMK <--
                     else -> SettingsAppearanceScreen
                 },
                 onBackPressed = null,
@@ -83,5 +90,9 @@ class SettingsScreen(
         data object About : Destination(0)
         data object DataAndStorage : Destination(1)
         data object Tracking : Destination(2)
+        // KMK -->
+        // Komikku destinations start at 100 to stay clear of ids upstream adds.
+        data object Mangadex : Destination(100)
+        // KMK <--
     }
 }

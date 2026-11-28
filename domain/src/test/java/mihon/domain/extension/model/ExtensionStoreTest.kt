@@ -87,6 +87,37 @@ class ExtensionStoreTest {
         disabled.remapIndexUrls(emptyMap()) shouldBe disabled
     }
 
+    // KMK -->
+    @Test
+    fun `GitHub owner is parsed from GitHub-hosted index URLs`() {
+        store(YUZONO_URL, YUZONO_KEY).githubOwner shouldBe "yuzono"
+        store(KEIYOUSHI_LEGACY_URL, KEIYOUSHI_KEY).githubOwner shouldBe "keiyoushi"
+        store(KEIYOUSHI_V2_URL, KEIYOUSHI_KEY).githubOwner shouldBe "keiyoushi"
+        store("https://github.com/some-org/repo/blob/main/index.min.json", "k").githubOwner shouldBe "some-org"
+        store("https://Komikku-App.github.io/extensions/index.min.json", "k").githubOwner shouldBe "Komikku-App"
+        store("https://komikku-app.github.io", "k").githubOwner shouldBe "komikku-app"
+    }
+
+    @Test
+    fun `GitHub owner is null for other hosts and malformed URLs`() {
+        store("https://example.com/yuzono/manga-repo/repo", "k").githubOwner shouldBe null
+        store("https://raw.githubusercontent.com.evil.com/yuzono/repo/x", "k").githubOwner shouldBe null
+        store("https://evil.com/https://raw.githubusercontent.com/yuzono/repo/x", "k").githubOwner shouldBe null
+        store("http://raw.githubusercontent.com/yuzono/manga-repo/repo", "k").githubOwner shouldBe null
+        store("https://raw.githubusercontent.com/yuzono", "k").githubOwner shouldBe null
+        store("https://raw.githubusercontent.com/bad.name/repo/x", "k").githubOwner shouldBe null
+        store("https://github.com/keiyoushi/extensions", "k").githubOwner shouldBe null
+        store("https://a.b.github.io/x", "k").githubOwner shouldBe null
+        store("NO_URL", NO_SIGNING_KEY).githubOwner shouldBe null
+    }
+
+    @Test
+    fun `GitHub avatar URL points to the owner's avatar`() {
+        store(YUZONO_URL, YUZONO_KEY).githubAvatarUrl shouldBe "https://github.com/yuzono.png?size=144"
+        store("https://example.com/index.min.json", "k").githubAvatarUrl shouldBe null
+    }
+    // KMK <--
+
     private fun store(
         indexUrl: String,
         signingKey: String,

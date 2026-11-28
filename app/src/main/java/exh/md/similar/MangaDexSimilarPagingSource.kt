@@ -77,8 +77,12 @@ internal class MangaDexSimilarPagingSource(
     // KMK <--
 
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        val mangasPage = coroutineScope {
-            try {
+        // KMK -->
+        // The catch must wrap coroutineScope, not sit inside it: a failed async child fails the whole scope,
+        // which then rethrows the exception after any catch inside it has run.
+        val mangasPage = try {
+            coroutineScope {
+                // KMK <--
                 val similarPageDef = async {
                     // KMK -->
                     similarHandler.getSimilar(manga.toSManga())
@@ -97,11 +101,13 @@ internal class MangaDexSimilarPagingSource(
                     false,
                     relatedPage.mangasMetadata + similarPage.mangasMetadata,
                 )
-            } catch (e: HttpException) {
-                when (e.code) {
-                    404 -> throw NoResultsException()
-                    else -> throw e
-                }
+                // KMK -->
+            }
+        } catch (e: HttpException) {
+            // KMK <--
+            when (e.code) {
+                404 -> throw NoResultsException()
+                else -> throw e
             }
         }
 

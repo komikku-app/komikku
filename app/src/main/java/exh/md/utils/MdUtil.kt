@@ -8,6 +8,7 @@ import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.network.POST
+import eu.kanade.tachiyomi.network.interceptor.MangaDexUserAgentInterceptor
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.PkceUtil
@@ -168,30 +169,60 @@ class MdUtil {
             }
         }
 
-        private var codeVerifier: String? = null
+        // KMK -->
+        // Was only used for the refresh request's code_verifier, which is no longer sent.
+        // private var codeVerifier: String? = null
+        // KMK <--
 
         fun refreshTokenRequest(oauth: MALOAuth): Request {
             val formBody = FormBody.Builder()
                 .add("client_id", MdConstants.Login.clientId)
                 .add("grant_type", MdConstants.Login.refreshToken)
                 .add("refresh_token", oauth.refreshToken)
-                .add("code_verifier", getPkceChallengeCode())
-                .add("redirect_uri", MdConstants.Login.redirectUri)
+                // KMK -->
+                // Unused by a refresh: PKCE is for the code grant (RFC 7636), RFC 6749 §6 has no redirect_uri.
+                // .add("code_verifier", getPkceChallengeCode())
+                // .add("redirect_uri", MdConstants.Login.redirectUri)
+                // KMK <--
                 .build()
 
-            // Add the Authorization header manually as this particular
-            // request is called by the interceptor itself so it doesn't reach
-            // the part where the token is added automatically.
+            // KMK -->
+            // Keycloak's refresh grant never reads the bearer token, which is the expired access token anyway.
+            // // Add the Authorization header manually as this particular
+            // // request is called by the interceptor itself so it doesn't reach
+            // // the part where the token is added automatically.
+            // .add("Authorization", "Bearer ${oauth.accessToken}")
+            // KMK <--
             val headers = Headers.Builder()
-                .add("Authorization", "Bearer ${oauth.accessToken}")
+                // KMK -->
+                // Sent from inside the auth interceptor, past MangaDexUserAgentInterceptor, so set the same
+                // non-browser User-Agent here instead of falling back to OkHttp's default.
+                .add("User-Agent", MangaDexUserAgentInterceptor.defaultUserAgent())
+                // KMK <--
                 .build()
 
             return POST(MdApi.baseAuthUrl + MdApi.token, body = formBody, headers = headers)
         }
 
-        fun getPkceChallengeCode(): String {
-            return codeVerifier ?: PkceUtil.generateCodeVerifier().also { codeVerifier = it }
+        // KMK -->
+        // Was only used for the refresh request's code_verifier, which is no longer sent; logins use
+        // [newLoginCodeVerifier].
+        // fun getPkceChallengeCode(): String {
+        //     return codeVerifier ?: PkceUtil.generateCodeVerifier().also { codeVerifier = it }
+        // }
+        // KMK <--
+
+        // KMK -->
+        /**
+         * Creates the PKCE code verifier of a new login, to build its authorization URL with, and stores it for
+         * the code exchange in [exh.md.network.MangaDexLoginHelper.login], replacing the one of any earlier
+         * login. Each login gets its own verifier.
+         */
+        fun newLoginCodeVerifier(preferences: TrackPreferences, mdList: MdList): String {
+            return PkceUtil.generateCodeVerifier()
+                .also { preferences.trackPkceCodeVerifier(mdList).set(it) }
         }
+        // KMK <--
 
         fun getEnabledMangaDex(
             sourcePreferences: SourcePreferences = Injekt.get(),

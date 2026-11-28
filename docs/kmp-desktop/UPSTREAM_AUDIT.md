@@ -1,4 +1,4 @@
-Status: Upstream integrator — done: A1 audit, conflict prediction, DECISION 004 check of #2023, the two `master` checks, A3 proposal — left: A4 (the merge itself, waits for Atlas's answer to the A3 question), the patch files for the two `master` bugs and for `MdList` (need a checkout of `master`)
+Status: Upstream integrator — done: A1 audit, conflict prediction, DECISION 004 check of #2023, the two `master` checks, A3 proposal, the three Android fix patches, A4 (first merge of `master`, section 7) — left: the next merge after #2023 (section 7.3)
 
 # Upstream audit: the files `master` owns and the coming merge
 
@@ -392,3 +392,91 @@ hand anyway; a desktop-only copy needs the same port without the conflict and le
 - Not verified by a build: that the 14 other changed borrowed files compile for the desktop, and that `master`'s new
   `core/common` test compiles in our `jvmSharedTest`. The merge's gates will show it.
 - Whether the ungrouped page's sort under a category filter (4.2, last paragraph) is a second bug was not checked.
+
+## 7. A4 — the first merge of `master` (2026-11-28)
+
+`origin/master` `15610e67e4` merged into `multiplatform` `209b80d910` on the branch `merge/master-a4` (merge commit
+`1e930163bc`), under [ANSWER 009](ATLAS_INSTRUCTIONS.md). The conflicts and their resolutions are in PROGRESS.md
+("Merge of `master` A4"). The five predicted conflicts were the only ones.
+
+### 7.1 Desktop copies of `master` code
+
+Each copy carries a header naming the `master` file it follows and the `master` commit it was last synced to. At each
+merge of `master`, re-sync every copy whose `master` file changed:
+`git diff <synced>..origin/master -- <master file>`, port what applies, and move the commit in the header and here.
+
+| Desktop copy | Follows (`master` path) | Synced to |
+|--------------|-------------------------|-----------|
+| `app-shared/src/desktopMain/kotlin/eu/kanade/tachiyomi/ui/library/LibraryActions.kt` | `app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModel.kt` (selection, range selection, batch actions) | `15610e67e4` |
+| `app-shared/src/desktopMain/kotlin/eu/kanade/tachiyomi/ui/library/LibraryFilterSort.kt` | `app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModel.kt` (filters, grouping, sort, text search) | `15610e67e4` |
+| `app-shared/src/desktopMain/kotlin/eu/kanade/tachiyomi/ui/browse/source/browse/SourceFilterItems.kt` | `app/src/main/java/eu/kanade/tachiyomi/ui/browse/source/browse/SourceFilterDialog.kt` (`FilterItem`, tri-state conversions) | `15610e67e4` |
+| `core/common/src/desktopMain/kotlin/eu/kanade/tachiyomi/network/interceptor/CloudflareChallenge.kt` | `core/common/src/main/kotlin/eu/kanade/tachiyomi/network/interceptor/CloudflareInterceptor.kt` (`shouldIntercept`, `SERVER_CHECK`, `COOKIE_NAMES`) and `core/common/src/main/kotlin/eu/kanade/tachiyomi/util/system/WebViewUtil.kt` (`Headers.toWebViewHeaders`, `isRequestHeaderSafe`) | `15610e67e4` |
+
+Tests that pin the parity, written from `master`'s code: `desktopApp` `LibraryActionsTest` (range selection),
+`SourceFilterItemUiTest` (filter rows, `master`'s invalid-filter fix), `core:common` `CloudflareChallengeTest`
+(`cf-mitigated` detection, browser headers).
+
+Desktop counterparts (same name and members, desktop behaviour, no `master` logic to re-sync): the new
+`app-shared/src/desktopMain/kotlin/exh/md/network/MangaDexSessionNotifier.kt` (logs instead of a notification) joins
+the existing ones listed in `app-shared/borrowed-app-sources.gradle.kts`.
+
+### 7.2 Hooks and build files: the allowed differences
+
+The rule since ANSWER 009: a file `master` owns is byte-identical to `master`'s unless it is on this list. A hook is
+a declaration-level line, never behaviour (ANSWER 014).
+
+- **Borrowing hooks (`actual`)**, so shared code can use a platform class:
+  - `core/archive/src/androidMain/kotlin/mihon/core/archive/ArchiveReader.kt`: `actual` on the class and on its six
+    members the shared `expect class` declares (one modifier per declaration line, inside KMK markers).
+  - `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/network/interceptor/CloudflareInterceptor.kt`:
+    `actual class CloudflareInterceptor actual constructor(` instead of `class CloudflareInterceptor(`, inside KMK
+    markers (kept by ANSWER 014, see below).
+- **Borrowed-source enablement hooks** (5.2): `DownloadCache`, `ReleaseServiceImpl`, `CbzCrypto`, `StorageManager`,
+  `SourcePreferences`, `SetReadStatus`, `SearchScreenModel`, `CustomColorScheme`; and `MigrateMangaDialog` (public,
+  `onFailure`).
+- **Build files** (1.3): `settings.gradle.kts`, `buildSrc` (3), `app/build.gradle.kts`, `app/proguard-rules.pro`, the
+  shared modules' `build.gradle.kts` (11), `gradle/*.versions.toml` (3).
+- **Moved files** (16 byte-identical moves to `androidMain` / `core/preference`, carried by rename detection).
+- **Small rest:** `i18n-kmk` base `strings.xml` (our block at the end), `AGENTS.md`, `.gitattributes`.
+
+**`CloudflareInterceptor.kt` is not byte-identical, by one line.** `NetworkHelper.kt` (shared code, byte-identical to
+`master`) constructs it, so on this branch it is an `expect class` in `core/common/src/jvmSharedMain`, and Kotlin
+requires the Android class to say `actual class CloudflareInterceptor actual constructor(` (inside KMK markers,
+the same hook the file had before). The only byte-identical alternative is to move `NetworkHelper.kt` to
+`androidMain` too and keep a desktop copy of it (about 200 lines). That copy would have to be re-synced by hand and
+would silently miss what `master` adds to the clients (this merge added `MangaDexUserAgentInterceptor` there), so the
+hook was kept, and Atlas confirmed it (ANSWER 014): if a merge of `master` ever conflicts on that line, reconsider
+then.
+
+### 7.3 What could move back next time
+
+76 files `master` owns still differ from `master` (79 before the merge): 58 edited in place and 18 moved, 16 of them
+byte-identical. Beyond the list in 7.2:
+
+- **When #2023 is merged** (section 2.3 and 3, M4–M5): `GetSourcesWithFavoriteCount`, `MigrateSourceScreen`,
+  `BulkFavoriteScreenModel` (fix part; visibility stays until M8), `FeedScreenModel`, `MigrateSourceScreenModel`,
+  `SourceFeedScreenModel`, `MangaScreenModel`, `MigrateMangaUseCase`, `MigrationListScreen`, `MigrationListScreenModel`,
+  `domain` `Source.kt`, `data` `CustomMangaRepositoryImpl`, and `MdList.kt` (our "do not cache a missing MangaDex"
+  change, now patch 3 in #2023). Also `FeedScreen` and `SourceFeedDialogs` (M4), whose shared parts become desktop
+  copies like the four of this merge.
+- **Moved code without a conflict yet:** `SecureActivityDelegate` (M6, `AppLockRules.kt`), `SettingsSearchScreen` and
+  `PreferenceScreen` (`SettingsSearch.kt`), `MigrationConfigScreen`. Same treatment as above when they first conflict,
+  or earlier.
+- **JavaScript sources on Android** (7 `app` files and the QuickJS build lines, M9): wait for the maintainer.
+- **Desktop-only clean-up the merge made possible:** `DesktopTrackerLogin.logout` clears the MDList interceptor's
+  credentials itself; `master`'s `MdList.logout` now does it (`desktopApp` file, harmless, not changed).
+
+### 7.4 Parity checks left by this merge
+
+- The desktop has no "MangaDex session expired" notification (`master`'s notifier): the counterpart logs, and
+  Settings > Tracking shows MDList logged out.
+- `master`'s Cloudflare work beyond detection: one solve per host and the memory of a failed solve have desktop
+  equivalents of their own (`CloudflareHostState`). Two parts do not (REVIEW_A4.md 2.1 / 2.2, follow-ups after the
+  landing): the desktop hands a challenged non-GET request's own URL to the browser instead of the site's root
+  (`master`'s `14c94f5cec`), so a challenged POST waits for the 30 s timeout and fails; and it does not give up when
+  the challenge turns interactive (`b672f8028e`), so it holds the host until the same timeout.
+- The library's "reset info" confirmation (`084750b89b`) has no desktop counterpart because the desktop library has no
+  batch "reset info".
+- Section 2.2 item 11 still applies, except for the WebView header rules (ported in `CloudflareChallenge`) and range
+  selection (ported in `LibraryActions`): history resume rules, the WebView renderer fixes, the cover fetcher and the
+  reader's split pages reach Android only.

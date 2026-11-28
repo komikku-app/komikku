@@ -62,9 +62,12 @@ import kotlin.random.Random
 import tachiyomi.domain.source.model.Source as DomainSource
 
 /*
- * KMK: the library's filter, grouping, sort and text-search logic, moved out of `LibraryScreenModel` so the
- * desktop app runs the same code (borrowed as `desktopCopy`, see app-shared/borrowed-app-sources.gradle.kts and
- * docs/kmp-desktop/PROGRESS.md). `LibraryScreenModel` calls these functions with its own dependencies.
+ * KMK: desktop-only copy. Follows `master`'s app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModel.kt,
+ * last synced to `master` 15610e67e4 (docs/kmp-desktop/UPSTREAM_AUDIT.md lists the desktop copies to re-sync at each
+ * merge of `master`).
+ *
+ * The library's filter, grouping, sort and text-search logic, taken out of `LibraryScreenModel` for the desktop
+ * library (app/komikku/desktop/ui/tabs/LibraryScreenModel.kt). Android runs `master`'s `LibraryScreenModel` unchanged.
  *
  * Markers: this file is KMK-owned, but the moved function bodies keep the `// SY` / `// KMK` markers they had in
  * `LibraryScreenModel` (and the SY block around the text search), so their provenance stays visible and upstream

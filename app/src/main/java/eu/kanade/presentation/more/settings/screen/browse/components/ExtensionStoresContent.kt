@@ -24,19 +24,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.tachiyomi.R
 import kotlinx.collections.immutable.persistentListOf
+import mihon.domain.extension.model.ANIKKU_SIGNATURE
 import mihon.domain.extension.model.ExtensionStore
 import mihon.domain.extension.model.KOMIKKU_SIGNATURE
 import mihon.domain.extension.model.REPO_SIGNATURE
+import mihon.domain.extension.model.githubAvatarUrl
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -107,11 +112,9 @@ private fun ExtensionStoresListItem(
             modifier = Modifier
                 .padding(start = MaterialTheme.padding.medium),
         ) {
-            val resId = repoResId(store.signingKey)
-            Image(
-                painter = painterResource(id = resId),
-                contentDescription = null,
-                alpha = if (isDisabled) 0.4f else 1f,
+            ExtensionStoreIcon(
+                store = store,
+                isDisabled = isDisabled,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(MaterialTheme.shapes.extraSmall)
@@ -189,10 +192,48 @@ private fun ExtensionStoresListItem(
 }
 
 // KMK -->
+/**
+ * Bundled icon for stores signed by a known key, otherwise the GitHub owner's avatar for GitHub-hosted stores,
+ * otherwise the generic extension icon.
+ */
+@Composable
+private fun ExtensionStoreIcon(
+    store: ExtensionStore,
+    isDisabled: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val alpha = if (isDisabled) 0.4f else 1f
+    val knownResId = repoResId(store.signingKey)
+    val avatarUrl = if (knownResId == null) store.githubAvatarUrl else null
+
+    if (avatarUrl != null) {
+        val fallback = painterResource(id = R.mipmap.extension)
+        val placeholderColor = MaterialTheme.colorScheme.surfaceVariant
+        val placeholder = remember(placeholderColor) { ColorPainter(placeholderColor) }
+        AsyncImage(
+            model = avatarUrl,
+            contentDescription = null,
+            alpha = alpha,
+            placeholder = placeholder,
+            error = fallback,
+            fallback = fallback,
+            modifier = modifier,
+        )
+    } else {
+        Image(
+            painter = painterResource(id = knownResId ?: R.mipmap.extension),
+            contentDescription = null,
+            alpha = alpha,
+            modifier = modifier,
+        )
+    }
+}
+
+/** Bundled icon of a store signed by a known key, or null for other stores. */
 fun repoResId(signKey: String) = when (signKey) {
-    KOMIKKU_SIGNATURE -> R.mipmap.komikku
+    KOMIKKU_SIGNATURE, ANIKKU_SIGNATURE -> R.mipmap.komikku
     REPO_SIGNATURE -> R.mipmap.repo
-    else -> R.mipmap.extension
+    else -> null
 }
 
 @PreviewLightDark
@@ -202,6 +243,15 @@ fun ExtensionReposContentPreview() {
         ExtensionStore("https://komikku", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, null),
         ExtensionStore("https://repo", "Repo", "", REPO_SIGNATURE, ExtensionStore.Contact("", ""), false, null),
         ExtensionStore("https://other", "Other", "", "key2", ExtensionStore.Contact("", ""), true, null),
+        ExtensionStore(
+            "https://raw.githubusercontent.com/yuzono/manga-repo/repo",
+            "Yuzono",
+            "",
+            "key3",
+            ExtensionStore.Contact("", ""),
+            false,
+            null,
+        ),
     )
     TachiyomiPreviewTheme {
         Surface {

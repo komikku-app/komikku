@@ -28,17 +28,20 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /*
- * KMK: the library's selection and batch-action logic, moved out of `LibraryScreenModel` so the desktop app runs the
- * same code (borrowed as `desktopCopy`, see app-shared/borrowed-app-sources.gradle.kts and docs/kmp-desktop/PROGRESS.md,
- * P2). `LibraryScreenModel` calls these with its own state and coroutine scope.
+ * KMK: desktop-only copy. Follows `master`'s app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModel.kt,
+ * last synced to `master` 15610e67e4 (docs/kmp-desktop/UPSTREAM_AUDIT.md lists the desktop copies to re-sync at each
+ * merge of `master`).
  *
- * Markers: this file is Komikku-owned and has no `// SY` / `// KMK` markers. Its bodies were moved from
+ * The library's selection and batch-action logic, taken out of `LibraryScreenModel` for the desktop library
+ * (app/komikku/desktop/ui/tabs/LibraryScreenModel.kt), which calls these with its own state and coroutine scope.
+ * Android runs `master`'s `LibraryScreenModel` unchanged.
+ *
+ * Markers: this file is Komikku-owned and has no `// SY` / `// KMK` markers. Its bodies come from
  * `LibraryScreenModel` (`toggleSelection`, `toggleRangeSelection`, `selectAll`, `invertSelection`, `getCommonCategories`,
  * `getMixCategories`, `openChangeCategoryDialog`, `downloadNextChapters`, `downloadBookmarkedChapters`, `markReadSelection`,
  * `removeMangas`, `setMangaCategories`); of those, these parts come from TachiyomiSY (they were `// SY` blocks there):
  * the merged-entry (`MERGED_SOURCE_ID`) branches of the two download functions and `ogTitle` in their "already downloaded"
- * checks. The guard for a range without an anchor on the page in `toggleLibraryRangeSelection` is new (Komikku). Upstream
- * Mihon / SY changes to these functions must be applied here.
+ * checks. Upstream Mihon / SY changes to these functions must be applied here.
  */
 
 /** Formerly the body of `LibraryScreenModel.toggleSelection`. */
@@ -47,25 +50,33 @@ fun Set</* Manga */ Long>.toggleLibrarySelection(mangaId: Long): Set<Long> = mut
 }
 
 /**
- * Formerly the body of `LibraryScreenModel.toggleRangeSelection`: selects all manga between and including [mangaId] and
- * the last selected manga when the last selection was made in the same category ([isSameCategory]); [categoryItems]
- * are the ids of that category's items in display order.
+ * `LibraryScreenModel.LastSelection`: the entry last clicked into the selection and the category it was clicked in, the
+ * anchor of the next range selection. Set by a click that selects ([lastLibrarySelectionAfterToggle]) and by a range
+ * click (to the clicked entry); cleared by clearing, selecting all and inverting the selection.
+ */
+data class LibraryLastSelection(val categoryId: Long, val mangaId: Long)
+
+/** The anchor after a click on [mangaId] in [categoryId] made [newSelection]: none when the click deselected it. */
+fun lastLibrarySelectionAfterToggle(categoryId: Long, mangaId: Long, newSelection: Set<Long>): LibraryLastSelection? =
+    LibraryLastSelection(categoryId, mangaId).takeIf { mangaId in newSelection }
+
+/**
+ * The body of `LibraryScreenModel.toggleRangeSelection`: selects all manga between and including [mangaId] and the
+ * anchor [lastSelection] when the anchor was clicked in the same category ([categoryId]) and is still selected;
+ * otherwise only [mangaId]. [categoryItems] are the ids of that category's items in display order. The new anchor is
+ * `LibraryLastSelection(categoryId, mangaId)`.
  */
 fun Set</* Manga */ Long>.toggleLibraryRangeSelection(
+    categoryId: Long,
     mangaId: Long,
     categoryItems: List<Long>,
-    isSameCategory: Boolean,
+    lastSelection: LibraryLastSelection?,
 ): Set<Long> = mutate { list ->
-    val lastSelected = list.lastOrNull()
-    if (!isSameCategory) {
-        list.add(mangaId)
-        return@mutate
-    }
-
-    val lastMangaIndex = categoryItems.indexOf(lastSelected)
+    val lastMangaIndex = lastSelection
+        ?.takeIf { it.categoryId == categoryId && it.mangaId in list }
+        ?.let { categoryItems.indexOf(it.mangaId) }
+        ?: -1
     val curMangaIndex = categoryItems.indexOf(mangaId)
-    // The last selected manga (or the clicked one) is not in this category, e.g. after the category's last selection
-    // was deselected again: there is no range, select only the clicked manga (was an index-out-of-bounds crash).
     if (lastMangaIndex == -1 || curMangaIndex == -1) {
         list.add(mangaId)
         return@mutate
@@ -73,11 +84,9 @@ fun Set</* Manga */ Long>.toggleLibraryRangeSelection(
 
     val selectionRange = when {
         lastMangaIndex < curMangaIndex -> lastMangaIndex..curMangaIndex
-        curMangaIndex < lastMangaIndex -> curMangaIndex..lastMangaIndex
-        // We shouldn't reach this point
-        else -> return@mutate
+        else -> curMangaIndex..lastMangaIndex
     }
-    selectionRange.mapNotNull { categoryItems[it] }.let(list::addAll)
+    list.addAll(categoryItems.subList(selectionRange.first, selectionRange.last + 1))
 }
 
 /** Formerly the body of `LibraryScreenModel.selectAll`. */
