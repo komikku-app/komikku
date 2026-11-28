@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api repos/komikku-app/komikku/issues/2022/comments:*)"
+    ]
+  }
+}
