@@ -4,7 +4,9 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import io.kotest.matchers.shouldBe
 import io.mockk.Called
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
@@ -46,12 +48,14 @@ class MigrateMangaUseCaseTest {
 
     @Test
     fun `migrating an entry onto itself changes nothing`() = runBlocking {
-        migrateManga(
+        val migrated = migrateManga(
             current = manga,
             target = manga.copy(),
             replace = true,
             presetFlags = MigrationFlag.entries.toSet(),
         )
+
+        migrated shouldBe false
 
         verify {
             sourcePreferences wasNot Called
@@ -60,6 +64,19 @@ class MigrateMangaUseCaseTest {
             updateManga wasNot Called
             coverCache wasNot Called
             updateMangaFromRemote wasNot Called
+        }
+    }
+
+    @Test
+    fun `a migration to a source that is not installed reports that nothing was migrated`() = runBlocking {
+        every { sourceManager.get(any()) } returns null
+        val target = manga.copy(id = 3L, source = 4L)
+
+        migrateManga(current = manga, target = target, replace = true) shouldBe false
+
+        verify {
+            downloadManager wasNot Called
+            updateManga wasNot Called
         }
     }
 }

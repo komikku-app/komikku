@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import exh.log.xLogE
 import kotlinx.coroutines.CancellationException
 import mihon.domain.migration.models.MigrationFlag
 import mihon.domain.source.interactor.UpdateMangaFromRemote
@@ -46,6 +47,12 @@ class MigrateMangaUseCase(
 ) {
     private val enhancedServices by lazy { trackerManager.trackers.filterIsInstance<EnhancedTracker>() }
 
+    // KMK -->
+    /**
+     * @return whether [current] was migrated to [target]: `false` when they are the same entry, when the target's
+     * source is missing or when a step failed (logged).
+     */
+    // KMK <--
     suspend operator fun invoke(
         current: Manga,
         target: Manga,
@@ -56,12 +63,12 @@ class MigrateMangaUseCase(
         // SY -->
         throttleFunc: suspend () -> Unit = {},
         // SY <--
-    ) {
+    ) /* KMK --> */: Boolean /* KMK <-- */ {
         // KMK -->
         // Nothing to migrate onto itself: going on would only delete the entry's downloads
-        if (current.id == target.id) return
+        if (current.id == target.id) return false
         // KMK <--
-        val targetSource = sourceManager.get(target.source) ?: return
+        val targetSource = sourceManager.get(target.source) ?: return /* KMK --> */ false /* KMK <-- */
         val currentSource = sourceManager.get(current.source)
         val flags = /* KMK --> */ presetFlags ?: /* KMK <-- */ sourcePreferences.migrationFlags().get()
 
@@ -194,10 +201,17 @@ class MigrateMangaUseCase(
             )
 
             updateManga.awaitAll(listOfNotNull(currentMangaUpdate, targetMangaUpdate))
+            // KMK -->
+            return true
+            // KMK <--
         } catch (e: Throwable) {
             if (e is CancellationException) {
                 throw e
             }
+            // KMK -->
+            xLogE("Failed to migrate ${current.id} to ${target.id}", e)
+            return false
+            // KMK <--
         }
     }
 }

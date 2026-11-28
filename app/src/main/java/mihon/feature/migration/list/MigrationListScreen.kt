@@ -23,7 +23,9 @@ import mihon.feature.migration.list.components.MigrationExitDialog
 import mihon.feature.migration.list.components.MigrationMangaDialog
 import mihon.feature.migration.list.components.MigrationProgressDialog
 import mihon.feature.migration.list.models.MigratingManga
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 
 /**
  * Screen showing a list of pair of current-target manga entries being migrated.
@@ -82,7 +84,9 @@ class MigrationListScreen(
                    with the newly migrated manga to reflect the changes properly.
                    Otherwise, just pop normally. */
                 if (mangaIds.size == 1 && navigator.items.any { it is MangaScreen }) {
-                    val mangaId = (state.items.firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Success)?.manga?.id
+                    // After "Migrate now" / "Copy now" the entry is no longer in the list: use the last migration's target
+                    val mangaId = screenModel.lastMigratedTargetId
+                        ?: (state.items.firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Success)?.manga?.id
                     if (mangaId != null) {
                         val newStack = navigator.items.filter {
                             it !is MangaScreen &&
@@ -104,6 +108,13 @@ class MigrationListScreen(
                 }
             }
         }
+        // KMK -->
+        LaunchedEffect(screenModel) {
+            screenModel.migrationFailedEvent.collect { manga ->
+                context.toast(context.stringResource(KMR.strings.migration_failed, manga.title), Toast.LENGTH_LONG)
+            }
+        }
+        // KMK <--
         MigrationListScreenContent(
             items = state.items,
             migrationComplete = state.migrationComplete,
