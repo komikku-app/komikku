@@ -26,9 +26,9 @@ import java.util.concurrent.TimeoutException
  * - macOS: `osascript` ([MacOsNotifier.command]); passes when it exits with 0. It does so also when notifications are
  *   not allowed for Script Editor, which then shows nothing.
  * - Windows: the tray's balloon ([DesktopTray]). AWT shows one only through an icon in the tray, and the self-test has
- *   none, so a temporary icon is added, kept for [HOLD_MILLIS] (the toast goes with its icon) and removed; passes when
- *   the icon was added and `TrayIcon.displayMessage` returned normally. Windows does not report whether the toast was
- *   shown.
+ *   none, so it goes through the app's temporary icon (the tray setting off), kept for [HOLD_MILLIS] (the toast goes
+ *   with its icon) and removed; passes when the icon was added and `TrayIcon.displayMessage` returned normally.
+ *   Windows does not report whether the toast was shown.
  *
  * "Accepted" means handed to the system's notification service; whether it appeared is for `dbus-monitor` or the eye.
  */
@@ -115,7 +115,10 @@ class NotificationSelfTest(
 
         val NOTIFICATION = DesktopNotification(DesktopNotification.Channel.AppUpdate, TITLE, TEXT)
 
-        /** Shows [notification] through a temporary tray icon kept for [holdMillis], then removed. */
+        /**
+         * Shows [notification] the way the app does with the tray icon off: through [DesktopTray]'s temporary icon
+         * (Windows), kept for [holdMillis] (shorter than [DesktopTray.TEMPORARY_ICON_MILLIS]), then removed.
+         */
         internal fun trayMessage(
             notification: DesktopNotification,
             holdMillis: Long = HOLD_MILLIS,
@@ -123,13 +126,13 @@ class NotificationSelfTest(
             supported: () -> Boolean = { !GraphicsEnvironment.isHeadless() && SystemTray.isSupported() },
         ): TrayResult {
             if (!supported()) return TrayResult(false, false, false)
-            if (!tray.install(TITLE, "Exit", onOpen = {}, onExit = {})) return TrayResult(true, false, false)
             try {
                 val shown = tray.show(notification)
+                val iconAdded = tray.hasTemporaryIcon
                 if (shown) Thread.sleep(holdMillis)
-                return TrayResult(true, true, shown)
+                return TrayResult(true, iconAdded, shown)
             } finally {
-                tray.remove()
+                tray.quit()
             }
         }
     }
