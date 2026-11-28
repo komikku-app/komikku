@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.ui.library.LibraryBatchActions
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import eu.kanade.tachiyomi.ui.library.LibraryItemPreferences
+import eu.kanade.tachiyomi.ui.library.LibraryLastSelection
 import eu.kanade.tachiyomi.ui.library.applyLibraryFilters
 import eu.kanade.tachiyomi.ui.library.applyLibrarySort
 import eu.kanade.tachiyomi.ui.library.filterLibraryByQuery
@@ -19,6 +20,7 @@ import eu.kanade.tachiyomi.ui.library.groupByDefaultCategory
 import eu.kanade.tachiyomi.ui.library.groupLibraryItems
 import eu.kanade.tachiyomi.ui.library.hasActiveLibraryFilters
 import eu.kanade.tachiyomi.ui.library.invertLibrarySelection
+import eu.kanade.tachiyomi.ui.library.lastLibrarySelectionAfterToggle
 import eu.kanade.tachiyomi.ui.library.libraryItemPreferencesFlow
 import eu.kanade.tachiyomi.ui.library.libraryTrackingFiltersFlow
 import eu.kanade.tachiyomi.ui.library.selectAllLibraryItems
@@ -80,7 +82,7 @@ import uy.kohesive.injekt.api.get
  * Grouping (P2): `LibraryPreferences.groupLibraryBy()` with Android's shared grouping ([groupByDefaultCategory],
  * [groupLibraryItems]: by category, source, status, tracking status, ungrouped; an active category filter with
  * included categories shows the result ungrouped, like Android). Selection and batch actions (P2): Android's selection
- * logic and action bodies from the shared `LibraryActions.kt` ([LibraryBatchActions]).
+ * logic and action bodies from the desktop copy `LibraryActions.kt` ([LibraryBatchActions]).
  *
  * Not on desktop: the MangaDex DMCA easter-egg query, the SY / KMK selection actions without desktop plumbing
  * (migrate, merge, recommendations, clean titles, MangaDex follow, reset info).
@@ -106,8 +108,8 @@ class LibraryScreenModel(
     private val getNextChapters: GetNextChapters = Injekt.get(),
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
-    /** Android's `lastSelectionCategory`: the page of the last (range) selection, for Shift-click ranges. */
-    private var lastSelectionCategory: Long? = null
+    /** Android's `lastSelection`: the anchor of Shift-click ranges. */
+    private var lastSelection: LibraryLastSelection? = null
 
     init {
         screenModelScope.launch {
@@ -253,17 +255,17 @@ class LibraryScreenModel(
     suspend fun getNextUnreadChapter(manga: Manga): Chapter? =
         withIOContext { getNextChapters.await(manga.id, onlyUnread = true).firstOrNull() }
 
-    // Selection (Android's LibraryScreenModel, logic shared through LibraryActions.kt)
+    // Selection (Android's LibraryScreenModel, logic in the desktop copy LibraryActions.kt)
 
     fun clearSelection() {
-        lastSelectionCategory = null
+        lastSelection = null
         mutableState.update { it.copy(selection = emptySet()) }
     }
 
     fun toggleSelection(category: Category, mangaId: Long) {
         mutableState.update { state ->
             val newSelection = state.selection.toggleLibrarySelection(mangaId)
-            lastSelectionCategory = category.id.takeIf { newSelection.isNotEmpty() }
+            lastSelection = lastLibrarySelectionAfterToggle(category.id, mangaId, newSelection)
             state.copy(selection = newSelection)
         }
     }
@@ -272,30 +274,31 @@ class LibraryScreenModel(
     fun toggleRangeSelection(category: Category, mangaId: Long) {
         mutableState.update { state ->
             val newSelection = state.selection.toggleLibraryRangeSelection(
+                categoryId = category.id,
                 mangaId = mangaId,
                 categoryItems = state.itemIdsOf(category.id),
-                isSameCategory = lastSelectionCategory == category.id,
+                lastSelection = lastSelection,
             )
-            lastSelectionCategory = category.id
+            lastSelection = LibraryLastSelection(category.id, mangaId)
             state.copy(selection = newSelection)
         }
     }
 
     fun selectAll() {
-        lastSelectionCategory = null
+        lastSelection = null
         mutableState.update { state ->
             state.copy(selection = state.selection.selectAllLibraryItems(state.itemIdsOf(state.selectedPage?.category?.id)))
         }
     }
 
     fun invertSelection() {
-        lastSelectionCategory = null
+        lastSelection = null
         mutableState.update { state ->
             state.copy(selection = state.selection.invertLibrarySelection(state.itemIdsOf(state.selectedPage?.category?.id)))
         }
     }
 
-    // Batch actions (Android's LibraryScreenModel, bodies shared through LibraryActions.kt)
+    // Batch actions (Android's LibraryScreenModel, bodies in the desktop copy LibraryActions.kt)
 
     fun markReadSelection(read: Boolean) {
         val selection = state.value.selectedManga
