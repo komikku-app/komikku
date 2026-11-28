@@ -66,6 +66,10 @@ class MigrateSourceScreenModel(
                 .catch {
                     logcat(LogPriority.ERROR, it)
                     _channel.send(Event.FailedFetchingSourcesWithCount)
+                    // KMK -->
+                    // The read has ended: show the (empty) list instead of loading forever
+                    mutableState.update { state -> state.copy(isLoading = false) }
+                    // KMK <--
                 }
                 .collectLatest { sources ->
                     mutableState.update {
