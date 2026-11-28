@@ -332,3 +332,40 @@ until the first run.
   which is a design question for Atlas (and a change in app code: not part of the first smoke test).
 - *Cost to other work:* the workflow file is shared with the release pipeline; a failing smoke job must not block the
   release job (keep `release` depending only on `package`) until the test has proven stable.
+
+## 5. Linux notifications in the smoke test (for the Test and release engineer)
+
+Written by the Windows and Linux engineer after ANSWER 005 item 3. **[known]** from the code (`LinuxNotifier.kt`,
+`DesktopSystemNotifier` in `MacOsNotifier.kt`); everything about the runner is **[guess]** until the first run.
+
+**What the app does on Linux:** with "Show system notifications" on, every notification goes to
+`notify-send --app-name=Komikku -- <title> <body>` when `notify-send` is on the `PATH`, otherwise (or when it fails) to
+`gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method
+org.freedesktop.Notifications.Notify "Komikku" "uint32 0" "" <title> <body> "@as []" "@a{sv} {}" "int32 -1"`
+(GVariant text); when both fail or time out (10 s), the tray balloon, then nothing. The body is markup-escaped (`&` →
+`&amp;`). Windows keeps the tray balloon: **with the tray icon setting off, Windows shows no notification** (to record).
+
+**Setup, inside the Xvfb + openbox step of section 4:**
+
+1. `sudo apt-get install -y dunst libnotify-bin libglib2.0-bin dbus-x11` (dunst: a small notification daemon that
+   draws on the X display; `libglib2.0-bin` brings `gdbus`).
+2. Run the whole smoke script under one session bus, so the app, the daemon and the monitor share it:
+   `dbus-run-session -- bash smoke.sh`. Inside: `dunst &`, then
+   `dbus-monitor --session "type='method_call',interface='org.freedesktop.Notifications',member='Notify'" > notify-monitor.log &`.
+3. Runner sanity check, before the app: `notify-send -- "-smoke" 'a & b'` must appear in `notify-monitor.log`; if not,
+   the environment is broken, not the app (record and skip the notification checks).
+4. **Trigger:** the app must post one. Either the UI smoke step `14-new-chapter` (UI_SMOKE_DESIGN.md: the fixture
+   "Smoke Fixture & Co" gains a chapter, the library update posts "New chapters found"), or, sooner, a `--self-test`
+   check that posts one notification through `DesktopSystemNotifier` (open question for Forge / Atlas).
+
+**Check in `notify-monitor.log`** (strings only: notify-send adds its own hints, so the arrays differ):
+
+- **Run A, notify-send present:** a `member=Notify` call with `string "Komikku"`, `string "New chapters found"` and a
+  body `string "Smoke Fixture &amp; Co"`; a non-ASCII fixture title arrives intact; a backslash in a text arrives once.
+- **Run B, gdbus only** (`sudo mv /usr/bin/notify-send /usr/bin/notify-send.off`): the same strings (this proves the
+  GVariant encoding on a real `gdbus`, which the unit tests can only mirror).
+- **Run C, no daemon** (dunst not started): no exception in `komikku.log`, warnings `Linux notification: notify-send
+  exited with …` and `gdbus exited with …`, the app keeps running and exits cleanly.
+- **Run D, setting off** (`desktop_system_notifications` false in the preset): no `Notify` call at all.
+- Screenshot of the root window after the notification (`import -window root`): dunst's popup, uploaded, not asserted.
+  Upload `notify-monitor.log` with the other logs.
