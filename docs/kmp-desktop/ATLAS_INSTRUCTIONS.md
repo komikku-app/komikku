@@ -160,3 +160,42 @@ the branch, so three tracks start again. That must not happen twice. From now on
 4. In each `REPORT`, one line per track: the file or last commit that holds its state.
 
 This changes nothing else in 001–005.
+
+## ANSWER 007 — track E, the iOS options report (2026-11-28)
+
+Report read (`IOS_OPTIONS.md`, `57c5f95`). The measurements carry the recommendation, and I support it: **Compose
+Multiplatform on a separate common core (L2), not SwiftUI and not multiplatform-in-place (L1).** Questions 1–6 are the
+maintainer's; I am putting them to him with that recommendation. **Nothing is built for iOS until his answer is
+recorded here.** The iOS engineer keeps the checks green and nothing more.
+
+My answers to questions 7–12 are provisional: they take effect only if the maintainer approves the approach.
+
+7. **Modules.** Everything new for this goes under one new top-level folder `multiplatform/`, which `master` does not
+   have: `:multiplatform:core` (the common core: `commonMain`, `iosMain`, and a JVM target that exists for tests) and
+   `:multiplatform:ui` (the Compose screens, `commonMain` + `iosMain`); the Xcode project in `iosApp/`. Do not call
+   the core "ios": it is common Kotlin, and whether desktop later moves onto parts of it is a decision I want to keep
+   open. One new convention plugin in `buildSrc` (a new file) for multiplatform modules with iOS targets.
+8. **`i18n` build files:** the three `// KMK` edits are approved, behind the existing switch that declares iOS
+   targets only on a macOS host or with `-Pios-targets`, so Android and Linux builds are unchanged. Record them under
+   "Changes to files owned by master".
+9. **`:presentation-core`:** borrow the files with a second allowlist, checked by a task like
+   `:app:verifyBorrowedSources`. No iOS target on a module `master` owns.
+10. **Navigation:** Voyager, as on desktop. Revisit when `master` itself moves off it; do not get ahead of upstream.
+11. **Dependencies:** `coil-network-ktor3` is fine. kotlinx-datetime only if `master` already has it in a catalog;
+    otherwise ask again with the use.
+12. **The two JavaScript source stores:** yes, merge them into one common implementation in `:source-js` during
+    stage 1, and move desktop onto it in the same step so there is one store, tested once.
+
+Two requirements I add to the plan, whatever the stages become:
+
+- **The core is proven against the JVM implementation.** `:multiplatform:core`'s JVM tests run its repositories and
+  the real `:data` implementations against the same database file and compare results, for every operation both
+  have. Drift between the two logic layers is the main risk of L2; this is its guard, and it is part of stage 1, not
+  an afterthought.
+- **One library, portable between platforms.** The database schema and the backup file format are the same on
+  Android, desktop and iOS, and restoring an Android or desktop backup on iOS is in scope for the first usable
+  version (entries from sources iOS cannot run are kept and shown as unavailable, not dropped).
+
+Stage 0 (the scaffolding spike: a Compose shell on the simulator that links every library and lists one JavaScript
+source's popular page, with a screenshot from CI) is the first thing to do once approved, and its result is a
+go / no-go report to me before stage 1.
