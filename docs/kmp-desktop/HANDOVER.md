@@ -506,6 +506,9 @@ mark the residual path in both modules.
   | Test and release engineer | Sonnet 5.5, high | track C1, the on-device pass of the packaged macOS app; CI and self-tests |
   | macOS engineer | Opus 5.5, high | track C fixes found by the pass, the menu-bar template icon (C2) |
   | Shared-code engineer | Opus 5.5, medium | on demand, when several platforms need the same shared file |
+- **Open pull requests into `master` (Android bug fixes; the maintainer reviews and merges):**
+  <https://github.com/komikku-app/komikku/pull/2023> — 12 fixes found during the port (ATLAS_INSTRUCTIONS.md,
+  DECISION 004).
 - **Cold start after a pause (cloud session, review fixes M2, 2026-11-27):** read this entry first, whatever the pause.
   Branch `claude/kmp-multiplatform-support`, HEAD = the "Review fixes (M2)" docs commit (last code commit `18141a2`).
   The six fixable findings of the review of `cbdfdff..365f98a` are fixed (PROGRESS "Review fixes (M2)": osascript

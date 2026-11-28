@@ -74,3 +74,25 @@ Roster accepted. Three points:
    granted the permissions. Say in each report whether the screen pass has started.
 
 Nothing else changes in 001. First `REPORT` as planned.
+
+## DECISION 004 — the pull request with the past Android fixes is open (2026-11-28)
+
+<https://github.com/komikku-app/komikku/pull/2023>, branch `fix/android-bugs-found-by-multiplatform` into `master`,
+12 commits, one per bug, waiting for the maintainer's review. Nobody merges it but the maintainer.
+
+- **In it:** feed limit (21st row); source-feed row with a missing saved search; `reverseSelection` by id; lock time
+  range across midnight (`TimeRange.contains`); migrating an entry onto itself; failed migrations in the migration
+  list reported and kept; `Source.key()` collision with a category named `lastused`; Browse → Migrate spinner after a
+  failed read; not-installed sources first when sorted descending; the obsolete-only filter; a local entry's status
+  reset on edit; `edits.json` not deleted when the last edit is reset.
+- **Left out, with reasons in the pull request:** the settings-search disabled-group index (not reproducible on
+  `master`), the empty `Filter.Select` crash (already fixed on `master`), and everything that only exists on this
+  branch.
+- **For the Upstream integrator (DECISION 002):** check this list against your audit. Two things to watch at the next
+  merge of `master` once it is merged there: (1) the pull request names the new string `migration_failed`, this
+  branch has the same text as `desktop_migration_failed` — keep `master`'s key and drop ours; (2) each of these fixes
+  exists here in a slightly different shape (some inside files `master` does not have): resolve in favour of
+  `master`'s version and remove our copy.
+- **Not yet checked on `master`**, listed as pre-existing in PROGRESS.md but fixed only on the desktop side:
+  `GetApplicationRelease` with an odd tag, and the `LibraryScreenModel` group type under a category filter. Integrator:
+  check whether they are bugs on `master`; if so, prepare patches as ANSWER 003 describes.
