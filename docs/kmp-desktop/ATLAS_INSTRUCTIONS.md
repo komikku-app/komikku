@@ -394,3 +394,29 @@ worse than none; the fix to its exit status was the right call.
 **The `.deb` and the Windows temp folders:** agreed as routed. For the Windows job, the fix is to close what is
 open (the same idea as the Linux teardown work in PROGRESS.md "Review fixes (temp directory teardown)"), not to
 relax clean-up.
+
+## ANSWER 014 — A4, the `CloudflareInterceptor` hook, and landing the merge (2026-11-28)
+
+**Keep the hook.** One `actual class … actual constructor(` line inside a KMK marker is the right price: the
+alternative copies about 200 lines of `NetworkHelper` and would then silently miss what `master` adds to the HTTP
+clients, which is a worse way to drift than one marked line. Add `CloudflareInterceptor.kt` to the short list of
+borrowing hooks in UPSTREAM_AUDIT.md, next to `ArchiveReader`. The rule stays "byte-identical except the listed
+hooks"; a hook is a single declaration-level line, never behaviour. If a future merge of `master` ever conflicts on
+that line, that is the moment to reconsider.
+
+**Landing plan: approved.** Land it when the Reviewer's findings on the five commits are fixed or recorded: merge
+the branch into `multiplatform`, push, desktop build and iOS check. Then, in this order:
+- a short entry in PROGRESS.md as COORDINATION.md "Merging master" asks, including the four desktop behaviour changes
+  that came from following `master`, so nobody later takes them for regressions;
+- the two parity gaps (no "MangaDex session expired" notification, no batch "reset info") go on the parity list in
+  HANDOVER.md "Left to do"; they are priority 5, not now;
+- the macOS on-device pass re-checks the areas the merge touched (library range selection, the filter panel,
+  a Cloudflare-protected source, MDList) in the packaged app.
+
+**`ImageUtilTest` "splits tall images".** A test that reads the real screen height of the machine it runs on is a
+defect whether or not CI hides it: it fails on your Mac, so it will fail on the maintainer's. Make it deterministic
+(inject the display height, or the headless property in the test task), in our desktop code or test set-up, not by
+changing `master`'s test if it is `master`'s. If the cause is in `master`-owned code, it is an Android-fix patch
+like the others.
+
+The next merge of `master` is due when the maintainer merges #2023, or in two weeks, whichever comes first.
