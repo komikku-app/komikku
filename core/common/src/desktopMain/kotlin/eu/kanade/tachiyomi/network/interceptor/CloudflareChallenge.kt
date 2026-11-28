@@ -6,7 +6,7 @@ import java.util.Locale
 
 /*
  * KMK: desktop-only copy. Follows `master`'s core/common/src/main/kotlin/eu/kanade/tachiyomi/network/interceptor/
- * CloudflareInterceptor.kt (`shouldIntercept`, `SERVER_CHECK`, `COOKIE_NAMES`) and
+ * CloudflareInterceptor.kt (`shouldIntercept`, `SERVER_CHECK`, `COOKIE_NAMES`, the `interactiveBegin` listener) and
  * core/common/src/main/kotlin/eu/kanade/tachiyomi/util/system/WebViewUtil.kt (`Headers.toWebViewHeaders`,
  * `isRequestHeaderSafe`), last synced to `master` 15610e67e4 (docs/kmp-desktop/UPSTREAM_AUDIT.md lists the desktop
  * copies to re-sync at each merge of `master`).
@@ -34,6 +34,14 @@ object CloudflareChallenge {
     fun isChallenge(response: Response): Boolean {
         return response.header("cf-mitigated") == "challenge" && response.header("Server") in SERVER_CHECK
     }
+
+    /**
+     * Whether a message the challenge page posted (its `postMessage` data's `source` and `event`) says the challenge
+     * turned interactive, one only a person can pass: Android's WebView then gives up at once (`master`'s
+     * `b672f8028e`), and so does a [app.komikku.network.browser.BrowserSession] with `endOnInteractiveChallenge`.
+     */
+    fun isInteractiveBegin(source: String?, event: String?): Boolean =
+        source == "cloudflare-challenge" && event == "interactiveBegin"
 
     /**
      * The request headers a browser may be given for a page load: the first value per name (names compared

@@ -41,6 +41,7 @@ import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -200,6 +201,33 @@ class DesktopCloudflareInterceptorTest {
         server.requestCount shouldBe 1
         // What the browser got is kept, like Android's shared WebView cookie store.
         jar.get(server.url("/")).map { it.name } shouldBe listOf("other")
+    }
+
+    @Test
+    fun `a challenge that turns interactive ends the session at once and fails the request`() {
+        // master's b672f8028e: a hidden browser cannot pass an interactive challenge, so it gives up at once instead of
+        // holding the host until the timeout. The fake blocks for the whole timeout unless the session ends early.
+        protectedSite()
+        backend.interactiveChallenge = true
+        backend.browse = { session ->
+            Thread.sleep(session.timeout.inWholeMilliseconds)
+            session.cookies
+        }
+
+        val started = System.nanoTime()
+        val error = assertThrows<CloudflareBypassException> { client().newCall(GET(server.url("/").toString())).execute() }
+        val elapsed = (System.nanoTime() - started).nanoseconds
+
+        error.reason shouldBe CloudflareBypassException.Reason.INTERACTIVE
+        error.message.orEmpty() shouldContain "Open in WebView"
+        (elapsed < 2.seconds) shouldBe true
+        backend.sessions.single().endOnInteractiveChallenge shouldBe true
+        server.requestCount shouldBe 1
+
+        // Remembered like any failed solve: the host's next request fails at once, without another browser run.
+        assertThrows<CloudflareBypassException> { client().newCall(GET(server.url("/next").toString())).execute() }
+            .reason shouldBe CloudflareBypassException.Reason.INTERACTIVE
+        backend.sessions shouldHaveSize 1
     }
 
     @Test

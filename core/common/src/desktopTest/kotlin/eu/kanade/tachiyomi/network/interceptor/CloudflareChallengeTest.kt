@@ -63,4 +63,13 @@ class CloudflareChallengeTest {
 
         CloudflareChallenge.browserHeaders(headers) shouldBe mapOf("referer" to "https://example.com/a")
     }
+
+    @Test
+    fun `only the challenge's interactiveBegin message says it turned interactive`() {
+        // master's listener: data?.source === "cloudflare-challenge" && data?.event === "interactiveBegin"
+        CloudflareChallenge.isInteractiveBegin("cloudflare-challenge", "interactiveBegin") shouldBe true
+        CloudflareChallenge.isInteractiveBegin("cloudflare-challenge", "interactiveEnd") shouldBe false
+        CloudflareChallenge.isInteractiveBegin("other", "interactiveBegin") shouldBe false
+        CloudflareChallenge.isInteractiveBegin(null, null) shouldBe false
+    }
 }

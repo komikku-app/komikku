@@ -304,6 +304,8 @@ class DesktopWebViewTest {
         opened.shouldBeEmpty()
         val session = backend.sessions.single()
         session.interactive shouldBe true
+        // The user passes an interactive challenge here: unlike the Cloudflare interceptor's hidden session.
+        session.endOnInteractiveChallenge shouldBe false
         session.until shouldBe BrowserCondition.UntilClosed
         session.userAgent shouldBe SOURCE_UA
         session.headers shouldBe mapOf("referer" to "https://example.org/")

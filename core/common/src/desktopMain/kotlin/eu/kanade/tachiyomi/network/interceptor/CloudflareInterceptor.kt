@@ -34,7 +34,9 @@ import kotlin.time.Duration.Companion.seconds
  * Android, the old `cf_clearance` is removed, a browser loads the page with the request's headers and User-Agent until
  * a new `cf_clearance` is set (30 s by default), the browser's cookies go into the shared cookie jar and the request is
  * sent once more; that response is returned whatever it is. A request of another method than GET is solved on the
- * site's root page ([browserUrl], `master`'s `14c94f5cec`), since a browser loads pages with GET only.
+ * site's root page ([browserUrl], `master`'s `14c94f5cec`), since a browser loads pages with GET only. A challenge that
+ * turns interactive (one only a person can pass) ends the session at once and fails the request, as Android's WebView
+ * gives up (`master`'s `b672f8028e`; [BrowserSession.endOnInteractiveChallenge], for the backends that can see it).
  *
  * Desktop differences:
  * - Without a usable backend (the desktop default, [BrowserBackends]) the request fails with a
@@ -172,6 +174,7 @@ actual class CloudflareInterceptor(
                     until = BrowserCondition.cookieSet(url, CloudflareChallenge.CLEARANCE_COOKIE, staleClearance),
                     timeout = timeout,
                     isCancelled = isCancelled,
+                    endOnInteractiveChallenge = true,
                 ),
             )
         } catch (e: Exception) {
@@ -191,10 +194,10 @@ actual class CloudflareInterceptor(
             logcat(LogPriority.WARN) { "Cloudflare challenge for $host not solved by ${backend.name}: ${result.outcome}" }
             throw failure(
                 host,
-                if (result.outcome == BrowserSessionResult.Outcome.TIMED_OUT) {
-                    CloudflareBypassException.Reason.TIMED_OUT
-                } else {
-                    CloudflareBypassException.Reason.NOT_SOLVED
+                when (result.outcome) {
+                    BrowserSessionResult.Outcome.TIMED_OUT -> CloudflareBypassException.Reason.TIMED_OUT
+                    BrowserSessionResult.Outcome.INTERACTIVE_CHALLENGE -> CloudflareBypassException.Reason.INTERACTIVE
+                    else -> CloudflareBypassException.Reason.NOT_SOLVED
                 },
             )
         }
@@ -281,6 +284,9 @@ class CloudflareBypassException(
 
         /** The browser did not get a clearance cookie in time. */
         TIMED_OUT,
+
+        /** The challenge turned interactive: only a person can pass it ("Open in WebView"). */
+        INTERACTIVE,
 
         /** The browser could not be started or failed. */
         BROWSER_FAILED,

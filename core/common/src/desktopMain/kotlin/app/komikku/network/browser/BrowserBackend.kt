@@ -57,6 +57,14 @@ data class BrowserSession(
      * review). A backend that cannot be interrupted (an HTTP call to a solver) checks it and stops early.
      */
     val isCancelled: () -> Boolean = { false },
+    /**
+     * End the session at once, with [BrowserSessionResult.Outcome.INTERACTIVE_CHALLENGE], when a page posts the message
+     * of a Cloudflare challenge that turned interactive (`CloudflareChallenge.isInteractiveBegin`): a hidden browser
+     * cannot pass it, and waiting for [timeout] would hold the host's other requests. Set by the Cloudflare
+     * interceptor, like Android's WebView (`master`'s `b672f8028e`); a backend that cannot see the page's messages (an
+     * external solver) ignores it.
+     */
+    val endOnInteractiveChallenge: Boolean = false,
 )
 
 /** The browser's state after a page load or a cookie change, which a [BrowserCondition] is tested against. */
@@ -107,6 +115,9 @@ data class BrowserSessionResult(
 
         /** The user closed the interactive browser first. */
         CLOSED,
+
+        /** A Cloudflare challenge turned interactive in a session with [BrowserSession.endOnInteractiveChallenge]. */
+        INTERACTIVE_CHALLENGE,
     }
 }
 
