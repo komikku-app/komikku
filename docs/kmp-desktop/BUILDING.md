@@ -336,7 +336,10 @@ Override with the `komikku.dataDir` system property (portable installs, separate
 `JAVA_TOOL_OPTIONS=-Dkomikku.dataDir=/path/to/data ./gradlew :desktopApp:run` or the same environment
 variable for an installed launcher. Contents: `databases/tachiyomi.db` (library), `preferences/*.json`,
 `extensions/` (installed APKs and converted jars), `storage/` (default downloads / local source folder,
-changeable in Settings), `cache/` (covers, chapter pages), `files/`, `keys/` (CBZ encryption key).
+changeable in Settings), `cache/` (covers, chapter pages), `files/`, `keys/` (CBZ encryption key),
+`instance.lock` (empty; the running app holds an exclusive lock on it so that a second start on the same data folder
+shows the first one's window instead of opening the database twice) and `instance.port` (written by that running app:
+the loopback port and token a second start uses to ask it to show its window; removed when it quits).
 
 ## Extension link check
 
