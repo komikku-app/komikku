@@ -1,0 +1,65 @@
+package mihon.domain.migration.usecases
+
+import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.download.DownloadManager
+import io.mockk.Called
+import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.runBlocking
+import mihon.domain.migration.models.MigrationFlag
+import mihon.domain.source.interactor.UpdateMangaFromRemote
+import org.junit.jupiter.api.Test
+import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.service.SourceManager
+
+class MigrateMangaUseCaseTest {
+
+    // Strict mocks: any call fails the test
+    private val sourcePreferences = mockk<SourcePreferences>()
+    private val sourceManager = mockk<SourceManager>()
+    private val downloadManager = mockk<DownloadManager>()
+    private val updateManga = mockk<UpdateManga>()
+    private val coverCache = mockk<CoverCache>()
+    private val updateMangaFromRemote = mockk<UpdateMangaFromRemote>()
+
+    private val migrateManga = MigrateMangaUseCase(
+        sourcePreferences = sourcePreferences,
+        trackerManager = mockk(),
+        sourceManager = sourceManager,
+        downloadManager = downloadManager,
+        updateManga = updateManga,
+        getChaptersByMangaId = mockk(),
+        updateChapter = mockk(),
+        getCategories = mockk(),
+        setMangaCategories = mockk(),
+        getTracks = mockk(),
+        insertTrack = mockk(),
+        coverCache = coverCache,
+        updateMangaFromRemote = updateMangaFromRemote,
+        getHistory = mockk(),
+        upsertHistory = mockk(),
+    )
+
+    private val manga = Manga.create().copy(id = 1L, source = 2L, url = "/manga/1", ogTitle = "Title")
+
+    @Test
+    fun `migrating an entry onto itself changes nothing`() = runBlocking {
+        migrateManga(
+            current = manga,
+            target = manga.copy(),
+            replace = true,
+            presetFlags = MigrationFlag.entries.toSet(),
+        )
+
+        verify {
+            sourcePreferences wasNot Called
+            sourceManager wasNot Called
+            downloadManager wasNot Called
+            updateManga wasNot Called
+            coverCache wasNot Called
+            updateMangaFromRemote wasNot Called
+        }
+    }
+}

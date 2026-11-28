@@ -57,6 +57,10 @@ class MigrateMangaUseCase(
         throttleFunc: suspend () -> Unit = {},
         // SY <--
     ) {
+        // KMK -->
+        // Nothing to migrate onto itself: going on would only delete the entry's downloads
+        if (current.id == target.id) return
+        // KMK <--
         val targetSource = sourceManager.get(target.source) ?: return
         val currentSource = sourceManager.get(current.source)
         val flags = /* KMK --> */ presetFlags ?: /* KMK <-- */ sourcePreferences.migrationFlags().get()
