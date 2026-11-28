@@ -1,7 +1,7 @@
 # Review of step D1 (instance lock, Linux notifications, new desktop CI jobs)
 
-Status: Reviewer — done: steps 1, 2 and 3 reviewed up to `f28941bc1f` — left: re-check the fixes and the first run
-of the new CI jobs (46117892032) when the owners report
+Status: Reviewer — done: steps 1, 2 and 3 reviewed up to `f28941bc1f`, first run of the new jobs (46117892032) read
+— left: the `windows-test` result of that run (still running), re-check the fixes when the owners report
 
 ## Summary
 
@@ -9,10 +9,16 @@ of the new CI jobs (46117892032) when the owners report
 |------|-------|------|--------|-----|
 | 1. One instance per data folder | Shared-code engineer | 0 | 1 | 3 |
 | 2. Linux notifications without a tray | Windows and Linux engineer | 0 | 0 | 3 |
-| 3. New desktop CI jobs | Test and release engineer | 0 | 1 | 4 |
+| 3. New desktop CI jobs | Test and release engineer | 0 | 0 | 4 |
+| Found by the first run of the new jobs (outside the range) | see each | 0 | 2 | 0 |
 
-Medium: 1.1 (a start during the running instance's shutdown exits and nothing runs), 3.1 (any error line, such as a
-failed update check on the runner, fails the smoke test).
+Medium:
+- 1.1 (Shared-code engineer): a start during the running instance's shutdown is told "shown" and exits, then the old
+  process exits too, so nothing runs.
+- R.1 (Windows and Linux engineer): the automatic backup fails on Windows ("Couldn't create a backup file"), found by
+  the Windows smoke test.
+- R.2 (Forge to assign, the reader's test owner): `ReaderWidePagesUiTest` timed out in the blocking Linux `package`
+  job, so that run has no Linux packages and the Linux smoke test could not run.
 
 Code review, high effort, 2026-11-28. Reviewer role; the owning roles fix. Reviewed against the committed state of
 `origin/multiplatform` at `f28941bc1f` (the commits of `03b9ab6..f28941bc1f`); file and line numbers are at that
@@ -217,7 +223,7 @@ Smoke-test the installed desktop app on Linux and Windows (with `.github/scripts
 reviewed: `.github/workflows/build_desktop.yml` as of `71eea8c29d` (the last commit touching it on
 `origin/multiplatform` at `f28941bc1f`); the containment change for REVIEW_M3.md finding 1 (High) was not committed
 yet, so that finding is still open in this state and is not repeated here. The scripts were reviewed by reading
-only; the first run with these jobs (46117892032) was still packaging when this was written.
+first, then checked against the first run with these jobs (46117892032, results in R.1, R.2 and below).
 
 **Specification check (ANSWER 005 item 1, plan section 4):** non-blocking `:desktopApp:test` on `windows-2022`: met
 (job-level `continue-on-error: true`, so a red job leaves the run green). Smoke test on `ubuntu-24.04` and
@@ -227,23 +233,22 @@ folder instead of the default one is a deliberate and better deviation). `releas
 job references `secrets.*`; `permissions: contents: read`; the smoke checkout is sparse with
 `persist-credentials: false`).
 
-### 3.1 Medium: any error line in the app log fails the smoke test, including a failed update check on the runner
+### 3.1 Low: the strict log scan is right, but a network failure of the update check would also fail it
 
 - **File, line:** `.github/scripts/desktop_smoke_linux.sh` lines 485–495; `.github/scripts/desktop_smoke_windows.ps1`
   lines 621–633; the app side: `desktopApp/src/main/kotlin/app/komikku/desktop/updater/DesktopAppUpdateChecker.kt`
   line 121 (`xLogE("Unable to check for an app update", e)`, with the stack trace).
-- **Problem:** the CI packages are built with `-Penable-updater`, so the first start checks GitHub for an update.
-  Unauthenticated GitHub API calls from shared hosted-runner addresses hit the rate limit or a network hiccup often
-  enough; the checker then logs an error with a stack trace, and the script's "Log: no error or stack trace" check
-  fails the job. Section 4 of the plan says "network failure must not fail the job" and asserts only uncaught
-  exceptions; the script is stricter than the approved design. The job is non-blocking, so nothing ships wrong, but
-  red runs that are not the app's fault break the "green on ten consecutive runs" gate of ANSWER 005 item 1 and
-  teach people to ignore the job.
-- **Proposed fix:** keep the strict scan as a report (INFO with the count and `log-problems.txt`), and fail only on
-  what section 4 asserts (uncaught exceptions, `FATAL`), or keep failing on errors but with a short, commented
-  allow-list (the update check's network failure, the tray-unsupported lines if they are errors). Alternatively turn
-  the start-up update check off in the fresh data folder before the start (a preset preference file), which also
-  keeps the smoke test off the network; then record that the update check is not covered.
+- **Problem:** the scripts fail on any error-level or stack-trace line, stricter than section 4 (which asserts only
+  uncaught exceptions and says "network failure must not fail the job"). The strictness paid off at once: in run
+  46117892032 it is the only failed check on Windows, and it caught a real app bug (R.1). But the CI packages are
+  built with `-Penable-updater`, so a start can check GitHub for an update (`checkOnStart` in `Main.kt`, then the
+  scheduler's catch-up); an unauthenticated GitHub API call from a shared hosted-runner address that hits the rate
+  limit or a network error logs an error with a stack trace and fails the job for a reason that is not the app's.
+  Such runs break the "green on ten consecutive runs" gate of ANSWER 005 item 1.
+- **Proposed fix:** keep the strict scan, with a short commented allow-list for known environment errors (the update
+  check's network failure), or turn the start-up update check off in the fresh data folder before the start (a
+  preset preference file), which also keeps the smoke test off the network, and record that the update check is not
+  covered. Update plan section 4 to say errors fail the job.
 - **Owner:** Test and release engineer. **Design-level:** no.
 
 ### 3.2 Low: the second-instance step of section 4 is now possible but still recorded as "not tried yet"
@@ -268,7 +273,10 @@ job references `secrets.*`; `permissions: contents: read`; the smoke checkout is
   0.1 % (one thousandth: about 1000 pixels on a 1280×800 window, a caret or a focus ring), and the "back to the
   library" comparison is INFO only. The comment explains why (an empty screen differs from another one in little
   more than its title), which is a fair reason, but a smoke test whose input checks pass on a focus change gives
-  little evidence that the shortcuts navigated. Section 4 still lists the old values.
+  little evidence that the shortcuts navigated. Section 4 still lists the old values. Run 46117892032 on Windows
+  shows both sides: 259 colours, tab changes of 0.45 %, 0.45 %, 0.75 %, 1.42 % and 1.15 % (the design's 2 % would have
+  failed all five), and the library after Ctrl+1 differs from the first screenshot by only 0.15 % against 1.15 % from
+  the More screen, so a relative check separates them well.
 - **Proposed fix:** assert "library after Ctrl+1 is closer to the first screenshot than to the More screenshot"
   (relative, robust against empty screens) instead of the INFO line, keep the low absolute threshold, and update plan
   section 4 to the values used, so the reader of a green run knows what it proved.
@@ -285,18 +293,14 @@ job references `secrets.*`; `permissions: contents: read`; the smoke checkout is
   among them.
 - **Owner:** Test and release engineer. **Design-level:** no.
 
-### 3.5 Low: unverified dependency on ImageMagick on `windows-2022`
-
-- **File, line:** `.github/scripts/desktop_smoke_windows.ps1` lines 250–256, 403–408.
-- **Problem:** without `magick` on the `PATH` the script fails the "ImageMagick" check and every "changes the window"
-  check (-1), so the job is red on every run for a reason unrelated to the app. I could not confirm from here that
-  the `windows-2022` image ships ImageMagick; the Linux script installs its tools explicitly, the Windows one does not.
-- **Proposed fix:** check the first run's log; if it is missing, install it in the job (`choco install imagemagick
-  --no-progress -y`, pinned) or compare the two PNGs in .NET (`System.Drawing` is already loaded) and drop the
-  dependency.
-- **Owner:** Test and release engineer. **Design-level:** no.
-
 ### Step 3: checked and found fine
+
+- First run (46117892032, Windows smoke): every check passed except the log scan (R.1). The window appeared in 4 s
+  with the default renderer, keyboard focus held, the shortcuts changed the window, the close gave exit code 0 within
+  1 s, uninstall removed the launcher, the default data folder was not created. The `windows-2022` image
+  (20261123) has ImageMagick 7.1.2 on the `PATH`, so the Windows script's reliance on `magick` holds (it records the
+  version, so an image change shows). The jpackage launcher started the JVM in a child process (launcher pid 7656,
+  window pid 7408), which the script detected and followed, so the exit code it checked is the JVM's.
 
 - Non-blocking for real: job-level `continue-on-error: true` on `windows-test` and on the `smoke` matrix; no other
   job `needs` either of them; `release` keeps `needs: [plan, package]` with its comment saying why.
@@ -326,3 +330,38 @@ job references `secrets.*`; `permissions: contents: read`; the smoke checkout is
   `WM_CLOSE` posted, not sent). The `.msi` is `perUserInstall = true`, which matches `/qn` without elevation and the
   per-user Start-menu path checked.
 - BUILDING.md bullet: accurate for the committed workflow.
+
+## Found by the first run of the new jobs (outside the reviewed range)
+
+Run 46117892032 (`1ea2cd728e`, the build Forge started for this step), read with `gh` while `windows-test` was still
+running. Package: macOS (both), Windows passed, Linux failed; smoke: Windows failed on one check, Linux could not run.
+
+### R.1 Medium: the automatic backup fails on Windows
+
+- **File, line:** `desktopApp/src/main/kotlin/app/komikku/desktop/backup/DesktopBackupService.kt` lines 52–54
+  (`storageManager.getAutomaticBackupsDirectory()?.uri?.path?.let(::File) ?: throw IllegalStateException(...)`).
+- **Evidence:** Windows smoke, `log-problems.txt` of the artifact `desktop-smoke-windows-X64-1ea2cd7…`: `E/DeferredCoroutine:
+  java.lang.IllegalStateException: Couldn't create a backup file at DesktopBackupService.createAutomatic
+  (DesktopBackupService.kt:54)`, called from `DesktopBackupJobs.kt:40/100` (the scheduler's catch-up on the first
+  start of a fresh data folder). So on Windows the automatic backups directory resolves to nothing and no automatic
+  backup is ever written, silently for the user (a log line only). Linux and macOS do not show it in their runs so
+  far.
+- **Proposed fix:** find why `getAutomaticBackupsDirectory()` is `null` on Windows; my guess, unverified, is the
+  `file:` URI / path round trip of the storage folder (`Uri.parse(...).path` of a `C:\…` path or `file:///C:/…` URI,
+  here and in `DataStorageScreen.kt` lines 113–116 and `DesktopBackupService.defaultBackupFile`). Add a unit test with a
+  Windows-style storage folder (it runs in `windows-test`).
+- **Owner:** Windows and Linux engineer. **Design-level:** no.
+
+### R.2 Medium: a reader UI test timed out in the blocking Linux `package` job
+
+- **File, line:** `desktopApp/src/test/kotlin/app/komikku/desktop/reader/ReaderWidePagesUiTest.kt` line 200
+  (`rotate wide pages to fit turns the wide page upright`).
+- **Evidence:** Package (ubuntu-24.04), step "Test desktop app": `ComposeTimeoutException`, "433 tests completed, 1
+  failed", so the job failed, the run has no Linux packages, and the Linux smoke test failed at "Download packages".
+  The previous run on the branch (46099469363) passed with the same test and no reader code changed in this range,
+  so it is a flaky test, possibly made likelier by the new tests that start child JVMs in the same Gradle test run
+  (more load on a 4-core runner). The other new tests (single instance, Linux notifier) passed on Linux.
+- **Proposed fix:** per TEAM_RULES (never loosen, investigate a flaky test): reproduce with the test alone and under
+  load, look at which wait timed out, and fix the wait or the code; record it. Until then the Linux `package` job,
+  which `release` depends on, can fail on it.
+- **Owner:** Forge to assign (the desktop reader's owner). **Design-level:** no.
