@@ -66,12 +66,13 @@ sealed interface PageImageState {
 /**
  * Starts loading [page] through its chapter's page loader while composed (the loader's `loadPage`
  * suspends until cancelled, like on Android), and decodes it once ready at [maxWidth] (bucketed so
- * small window resizes reuse the cache).
+ * small window resizes reuse the cache). A page that failed with an [UnsupportedPage] is not loaded again: the
+ * loader retries a failed page each time it is shown, which would fail again every time.
  */
 @Composable
 fun rememberPageImage(page: ReaderPage, maxWidth: Int): PageImageState {
     LaunchedEffect(page) {
-        page.chapter.pageLoader?.loadPage(page)
+        if (!isUnsupported(page)) page.chapter.pageLoader?.loadPage(page)
     }
     val status by page.statusFlow.collectAsState()
     val bucket = decodeBucket(maxWidth)
@@ -98,6 +99,10 @@ fun rememberPageImage(page: ReaderPage, maxWidth: Int): PageImageState {
     }
     return decoded
 }
+
+/** Whether [page] failed with something desktop does not support ([UnsupportedPage]), which a retry cannot fix. */
+internal fun isUnsupported(page: ReaderPage): Boolean =
+    (page.status as? Page.State.Error)?.let { UnsupportedPage.of(it.error) } != null
 
 /** The decode width for a slot [maxWidth] pixels wide, in steps of 256 so that small window resizes reuse the cache. */
 fun decodeBucket(maxWidth: Int): Int = ((maxWidth.coerceAtLeast(1) + 255) / 256) * 256
@@ -191,12 +196,22 @@ fun PagePlaceholder(page: ReaderPage, state: PageImageState, onRetry: () -> Unit
         when (state) {
             is PageImageState.Failed -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.Outlined.BrokenImage, contentDescription = null, modifier = Modifier.size(48.dp))
-                val message = when (val error = state.error) {
-                    is UnsupportedPageFormatException -> stringResource(KMR.strings.desktop_unsupported_image_format, error.format)
-                    else -> stringResource(MR.strings.decode_image_error) + (error.message?.let { "\n$it" } ?: "")
+                val unsupported = remember(state.error) { UnsupportedPage.of(state.error) }
+                val message = when {
+                    state.error is UnsupportedPageFormatException ->
+                        stringResource(KMR.strings.desktop_unsupported_image_format, state.error.format)
+                    unsupported is UnsupportedPage.TextDrawing -> stringResource(KMR.strings.desktop_page_drawn_as_text)
+                    unsupported is UnsupportedPage.Missing -> stringResource(KMR.strings.desktop_page_needs_unsupported, unsupported.needs)
+                    else -> stringResource(MR.strings.decode_image_error) + (state.error.message?.let { "\n$it" } ?: "")
                 }
-                Text(message, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
-                if (state.error !is UnsupportedPageFormatException) {
+                Text(
+                    message,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(16.dp).testTag(if (unsupported != null) "page-unsupported" else "page-error"),
+                )
+                // Retrying cannot help a page desktop cannot show
+                if (state.error !is UnsupportedPageFormatException && unsupported == null) {
                     OutlinedButton(onClick = onRetry, modifier = Modifier.testTag("page-retry")) {
                         Text(stringResource(MR.strings.action_retry))
                     }
