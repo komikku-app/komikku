@@ -1,4 +1,4 @@
-Status: Test and release engineer — done: run 46120905511 read, R.2 fixed (15/15) and sent to master as a patch (ANSWER 015), ANSWER 013 signing and pinning, Linux notification smoke, compat tests on Windows, Windows test teardown fixes, ChapterCache reflection in one helper behind a test, MangayomiSourceStoreTest flake fixed (20/20), Linux smoke without the menu folder workaround, macOS smoke design note — left: the next CI run (Windows tests, Linux notification and menu entry rows), the product bugs listed below (other owners)
+Status: Test and release engineer — done: run 46120905511 read, R.2 fixed (15/15) and sent to master as a patch (ANSWER 015), ANSWER 013 signing and pinning, Linux notification smoke, compat tests on Windows, Windows test teardown fixes, ChapterCache reflection in one helper behind a test, MangayomiSourceStoreTest flake fixed (20/20), Linux smoke without the menu folder workaround, macOS smoke design note, Windows notification smoke row, RPM install/upgrade/erase step — left: the next CI run (Windows tests, Linux notification and menu entry rows, the new Windows notification and RPM rows), the product bugs listed below (other owners)
 
 # Desktop CI: test and release notes
 
@@ -107,6 +107,26 @@ designs not built yet. Forge folds what matters into PROGRESS.md / HANDOVER.md.
   body from both. Each run on its own `dbus-run-session` with `dbus-monitor`; one difference from the plan's function:
   it also takes the screenshot inside the session, because dunst ends with that bus. Checked locally only with stubs
   (control flow and the monitor-log parsing); the first real run is the next CI run.
+- `beb64681cb`: the Windows smoke job runs the installed launcher's `--self-test=<report> --self-test-notify` after
+  the window and log checks, on a data folder of its own (`komikku-smoke-notify-data` under `RUNNER_TEMP`). On Windows
+  that is the tray balloon through the app's temporary tray icon (held 8 s, then removed). Row "Notification through the
+  temporary tray icon": PASS on exit code 0 and the report's `OK   system notification: tray message shown through a
+  temporary tray icon …` line (the detail repeats it); FAIL with the exit code and the report line otherwise (`FAIL
+  system notification: no system tray …` / `the temporary tray icon could not be added` / `TrayIcon.displayMessage
+  failed` / `timed out`), or after 120 s. Windows does not report whether the toast appeared: `screenshots/notify-<n>.png`
+  (every 3 s while it runs) are the evidence. An INFO row lists any other self-test check that failed (they also make
+  the exit code non-zero). Replaces the "not observed yet" row. Not run locally (no PowerShell here).
+- `b41da27746`: new step "RPM install, upgrade and erase (Linux)" in the smoke job (`desktop_smoke_rpm.sh`, after the
+  .deb smoke test, also when it failed; job timeout 30 → 45 min). In `fedora:45` pinned by digest: the RPM's
+  requirements installed with dnf, then **every menu folder removed** (`/usr/{,local/}share/{applications,
+  desktop-directories}`, the INFO row lists which existed), then rows: "Install (rpm -i)" exit 0 and no `scriptlet
+  failed`, the post scriptlet's `komikku: …` message as INFO (expected: "menu entry copied to /usr/share/applications"),
+  "Launcher installed", "Menu entry installed without menu folders" (where it is); "Upgrade to the same package (rpm -U
+  --replacepkgs)" and "Menu entry kept…" (the old preun runs with `$1 = 1` after the new post); "Upgrade to a higher
+  release (rpm -U)" with the package rebuilt by `rpmrebuild --release=999` and "Menu entry kept…" (INFO "not run" if
+  the rebuild itself fails); "Erase (rpm -e)" exit 0, "Package gone", "Launcher removed", "Menu entry removed". Its own
+  table in the job summary and `rpm/` in the smoke artifact. Not run locally (no docker here); `rpmrebuild` 2.21's
+  options checked in its source.
 - `8d5972ae2f`: the `windows-test` job runs `:desktopApp:test :desktop:android-compat:test --continue` and uploads both
   modules' reports.
 
