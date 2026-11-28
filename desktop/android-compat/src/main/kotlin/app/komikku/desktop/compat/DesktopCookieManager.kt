@@ -18,7 +18,9 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.FileSystemException
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
@@ -31,14 +33,21 @@ import java.util.concurrent.TimeUnit
  * Persistent cookies are written to [file] (JSON) shortly after each change, on [flush] and at JVM
  * shutdown; session cookies live in memory only. `null` [file] keeps everything in memory.
  */
-class DesktopCookieManager(
+class DesktopCookieManager internal constructor(
     private val file: File?,
-    private val clock: () -> Long = System::currentTimeMillis,
+    private val clock: () -> Long,
+    /** Puts a written temporary file in place of [file]; injected for tests (a file another process holds). */
+    private val replaceFile: (from: Path, to: Path) -> Unit,
 ) : CookieManager() {
+
+    constructor(file: File?, clock: () -> Long = System::currentTimeMillis) : this(file, clock, ::moveIntoPlace)
 
     private data class Key(val name: String, val domain: String, val path: String)
 
     private val lock = Any()
+
+    /** Held for a whole [flush], snapshot included: writes never interleave and the last one has the latest state. */
+    private val writeLock = Any()
     private val cookies = LinkedHashMap<Key, Cookie>()
 
     /** Keys of cookies a user pasted ([setPastedCookies]), which a cookie the site sets later replaces. */
@@ -228,17 +237,19 @@ class DesktopCookieManager(
     /** Writes the persistent cookies to disk now. */
     override fun flush() {
         val target = file ?: return
-        val snapshot = synchronized(lock) {
-            pendingWrite?.cancel(false)
-            pendingWrite = null
-            removeExpired()
-            pasted.retainAll(cookies.keys)
-            cookies.values.filter { it.persistent }.map { it to (it.key() in pasted) }
-        }
-        try {
-            write(target, snapshot)
-        } catch (e: Exception) {
-            DesktopLog.log(DesktopLog.ERROR, "CookieManager", "Could not write ${target.path}", e)
+        synchronized(writeLock) {
+            val snapshot = synchronized(lock) {
+                pendingWrite?.cancel(false)
+                pendingWrite = null
+                removeExpired()
+                pasted.retainAll(cookies.keys)
+                cookies.values.filter { it.persistent }.map { it to (it.key() in pasted) }
+            }
+            try {
+                write(target, snapshot)
+            } catch (e: Exception) {
+                DesktopLog.log(DesktopLog.ERROR, "CookieManager", "Could not write ${target.path}, kept the old file", e)
+            }
         }
     }
 
@@ -278,16 +289,27 @@ class DesktopCookieManager(
             put(KEY_VERSION, 1)
             put(KEY_COOKIES, buildJsonArray { snapshot.forEach { (cookie, isPasted) -> add(cookie.toJson(isPasted)) } })
         }
-        target.absoluteFile.parentFile?.mkdirs()
-        val tmp = File(target.absoluteFile.parentFile, "${target.name}.tmp")
-        FileOutputStream(tmp).use { out ->
-            out.write(json.encodeToString(JsonObject.serializer(), root).toByteArray(Charsets.UTF_8))
-            out.fd.sync()
-        }
+        val folder = target.absoluteFile.parentFile
+        folder.mkdirs()
+        val tmp = Files.createTempFile(folder.toPath(), "${target.name}.", ".tmp")
         try {
-            Files.move(tmp.toPath(), target.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-        } catch (_: AtomicMoveNotSupportedException) {
-            Files.move(tmp.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            FileOutputStream(tmp.toFile()).use { out ->
+                out.write(json.encodeToString(JsonObject.serializer(), root).toByteArray(Charsets.UTF_8))
+                out.fd.sync()
+            }
+            // Windows refuses to replace a file another process has open (a virus scanner, a backup tool) for a moment
+            var attempt = 0
+            while (true) {
+                try {
+                    replaceFile(tmp, target.toPath())
+                    break
+                } catch (e: FileSystemException) {
+                    if (++attempt >= MOVE_ATTEMPTS) throw e
+                    Thread.sleep(MOVE_RETRY_MS * attempt)
+                }
+            }
+        } finally {
+            Files.deleteIfExists(tmp)
         }
     }
 
@@ -328,11 +350,21 @@ class DesktopCookieManager(
         const val KEY_VERSION = "version"
         const val KEY_COOKIES = "cookies"
         const val WRITE_DELAY_MS = 1_000L
+        const val MOVE_ATTEMPTS = 5
+        const val MOVE_RETRY_MS = 50L
 
         val json = Json { prettyPrint = true }
 
         val writer = Executors.newSingleThreadScheduledExecutor { runnable ->
             Thread(runnable, "android-compat-cookie-writer").apply { isDaemon = true }
+        }
+
+        fun moveIntoPlace(from: Path, to: Path) {
+            try {
+                Files.move(from, to, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+            } catch (_: AtomicMoveNotSupportedException) {
+                Files.move(from, to, StandardCopyOption.REPLACE_EXISTING)
+            }
         }
     }
 }
