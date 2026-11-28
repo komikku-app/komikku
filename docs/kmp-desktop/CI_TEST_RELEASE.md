@@ -1,4 +1,4 @@
-Status: Test and release engineer — done: run 46120905511 read, R.2 fixed (15/15) and sent to master as a patch (ANSWER 015), ANSWER 013 signing and pinning, Linux notification smoke, compat tests on Windows, Windows test teardown fixes, ChapterCache reflection in one helper behind a test, MangayomiSourceStoreTest flake fixed (20/20), Linux smoke without the menu folder workaround, macOS smoke design note, Windows notification smoke row, RPM install/upgrade/erase step — left: the next CI run (Windows tests, Linux notification and menu entry rows, the new Windows notification and RPM rows), the product bugs listed below (other owners)
+Status: Test and release engineer — done: run 46120905511 read, R.2 fixed (15/15) and sent to master as a patch (ANSWER 015), ANSWER 013 signing and pinning, Linux notification smoke, compat tests on Windows, Windows test teardown fixes, ChapterCache reflection in one helper behind a test, MangayomiSourceStoreTest flake fixed (20/20), Linux smoke without the menu folder workaround, macOS smoke design note, Windows notification smoke row, RPM install/upgrade/erase step, UI smoke in the smoke job (passed locally on macOS) — left: the next CI run (Windows tests, Linux notification and menu entry rows, the new Windows notification and RPM rows, the first UI smoke run on the three packaged apps), the product bugs listed below (other owners)
 
 # Desktop CI: test and release notes
 
@@ -127,6 +127,24 @@ designs not built yet. Forge folds what matters into PROGRESS.md / HANDOVER.md.
   the rebuild itself fails); "Erase (rpm -e)" exit 0, "Package gone", "Launcher removed", "Menu entry removed". Its own
   table in the job summary and `rpm/` in the smoke artifact. Not run locally (no docker here); `rpmrebuild` 2.21's
   options checked in its source.
+- `7764a4d3d4` + `79eda2e4be`: the Shared-code engineer's `--ui-smoke` mode (`845a951ea8`, `e2c51de197`) in the smoke
+  job, after the other smoke steps and also when they failed. Linux: the .deb installed again (the smoke script
+  uninstalled it), `JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=$RUNNER_TEMP xvfb-run -a -s "-screen 0 1920x1080x24" <launcher>
+  --ui-smoke=smoke-output/ui-smoke/report`. Windows: the .msi unpacked as an administrative image (as `extension-check`
+  does), `Komikku.exe` through `Start-Process -PassThru` with `WaitForExit`, `java.io.tmpdir` = `RUNNER_TEMP` (TEMP is
+  an 8.3 short path there), the screen raised to 1920x1080 when smaller than the mode's 1280x800 window. macOS: a new
+  `macos-15` matrix entry that runs only this (the .app copied from the .dmg as `extension-check` does; no install smoke
+  on macOS yet). Killed after 480 s (the mode's watchdog is 300 s). Rows in a table of their own ("Desktop UI smoke
+  (<OS>, --ui-smoke)"): "Exit code" (PASS on 0; FAIL names 1 step/network/shutdown, 2 refused, 3 watchdog, other =
+  launcher or JVM failure, or killed), "Report result" (PASS on `UI-SMOKE PASSED`, else the last line), "Steps" (PASS
+  "all 13 passed"; FAIL with up to three failing steps as `<name>: <detail> (until: <condition>)` and the report's
+  failure line), "Network attempts" (PASS on 0, FAIL with the count and up to three URIs), INFO "Environment" (render
+  api, window, scale), "Report folder" (screenshot count, log and accessibility file), "Refusal" when there was one;
+  Windows also INFO "Screen". The report folder is in the smoke artifact under `ui-smoke/report/`. Job timeout 45 → 60
+  min. **Checked locally on macOS** (Apple silicon, the app image from `:desktopApp:createDistributable` at
+  `9b5c9d811c`, through `desktop_ui_smoke.sh`): exit 0, all 13 steps passed, 0 network attempts, 13 PNGs + log +
+  accessibility file, 12 s. Both scripts also run against a stub launcher for the passed, failed, refused, missing and
+  hanging cases (the .ps1 with PowerShell 7.7 on macOS, its Windows-only screen part stubbed), with the same rows.
 - `8d5972ae2f`: the `windows-test` job runs `:desktopApp:test :desktop:android-compat:test --continue` and uploads both
   modules' reports.
 
