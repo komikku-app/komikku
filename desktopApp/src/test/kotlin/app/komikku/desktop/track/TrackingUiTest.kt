@@ -18,6 +18,7 @@ import app.komikku.desktop.reader.FakeHttpSource
 import app.komikku.desktop.reader.TestLibrary
 import app.komikku.desktop.ui.browse.FixedSourceManager
 import app.komikku.desktop.ui.reader.ReaderLauncher
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
@@ -81,6 +82,14 @@ class TrackingUiTest {
         val mal = Injekt.get<TrackerManager>().myAnimeList
         onNodeWithTag("tracker-login-${mal.id}").performClick()
         waitForTag("tracker-oauth")
+        // REVIEW_A4.md 3.4: opening the login page again keeps this login's PKCE verifier, so a redirect pasted from the
+        // first page still works
+        val verifier = Injekt.get<TrackPreferences>().trackPkceCodeVerifier(mal)
+        val pending = verifier.get()
+        pending.isNotEmpty() shouldBe true
+        onNodeWithTag("tracker-open-login").performClick()
+        waitForIdle()
+        verifier.get() shouldBe pending
         onNodeWithTag("tracker-redirect").performTextInput("komikku://anilist-auth#access_token=x")
         onNodeWithTag("tracker-login-confirm").performClick()
         waitForText("This is not a login result for")
