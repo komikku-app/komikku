@@ -1,6 +1,11 @@
 # iOS check (CI)
 
-Status: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
+Status: iOS engineer — done: the REVIEW_IOS.md fixes are committed (deallocation asserted, late navigation answered
+"cancel", the WebKit step fails on the app's exit status and counts each class's tests) — left: a green run with
+them (the check is **red** since run 46120277810; 46120905490 failed because `simctl spawn` has no WebKit), then
+removing the temporary retention probe.
+
+History: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
 simulator, including deep recursion on the 4 MiB JS stack; 122 with I5a (run 45545772720, commit `eca24347e1`,
 section below); 132 with the I5a review fixes (cookies, non-HTTP URLs, `HEAD` bodies, redirect resolution; run
 45567078024, commit `0501bf16e7`); 145 with I5b, the store of installed sources (run 45570113228, commit `32c89164ae`, section below); 150 with the I5b review fixes (run 45574226158, commit `97ea1bb4fd`); 171 with I5c, the `WKWebView`
@@ -488,13 +493,23 @@ Two obstacles, both found on CI:
 So the job runs the WebKit tests a second time inside an app: the step "WebKit tests in a simulator app" of
 `build_ios_check.yml` wraps the linked test executable (`test.kexe`) in `SourceJsTests.app` (a minimal
 `Info.plist`, ad-hoc signed), boots the newest iPhone simulator, installs it and runs the executable of the
-installed bundle with `simctl spawn`, passing `--ktest_filter` for the WebKit test classes (the step's `CLASSES`) and
-`KMK_WEBKIT_REQUIRED=1`. Run from an installed app bundle (still without `UIApplicationMain`, so offscreen), WebKit
-works. `simctl spawn` returns the test binary's exit status; `simctl launch --console-pty`, used before, returns 0
-even after `exit(3)` or an abort (checked on an iOS 27.2 simulator), and lost the output of a short-lived app. The
-step fails on a non-zero exit status, and unless each class in `CLASSES` has as many `[       OK ]` lines as `@Test`
-functions in its source file, the runner's `[  PASSED  ] <n> tests` equals their sum, and no `[  FAILED  ]` or
-`SKIPPED:` line appears. A new test raises the count by itself; a class that is renamed or moved fails the step
+installed app with `simctl launch`, passing `--ktest_filter` for the WebKit test classes (the step's `CLASSES`) and
+`KMK_WEBKIT_REQUIRED=1`. Launched as an app (still without `UIApplicationMain`, so offscreen), WebKit works. Run
+any other way it does not: run 46120905490 ran the installed bundle's executable with `simctl spawn` and every
+WebKit test failed with `WebKit does not run in this process` (iOS 18.6 simulator). `simctl launch` returns 0 even
+after `exit(3)` or an abort, so the step takes the app's process id from its output, waits until that process is
+gone, and reads its wait status from the simulator's log (`runningboardd`: `termination reported by launchd (<wait
+status>, …)`; 0 for a clean exit, 768 for `exit(3)`, 6 for `SIGABRT`, checked on an iOS 27.2 simulator). The test
+output goes to files (`--stdout` / `--stderr`), not a console pty. The step fails on a non-zero or missing wait
+status, and unless each class in `CLASSES` has as many `[       OK ]` lines as `@Test` functions in its source
+file, the runner's `[  PASSED  ] <n> tests` equals their sum, and no `[  FAILED  ]` or `SKIPPED:` line appears.
+
+Did WebKit run in CI before the exit status was checked? Yes. The old step (`simctl launch --console-pty`,
+exit status ignored) still failed on a `[  FAILED  ]` or `SKIPPED:` line and on fewer than 25 passed tests, and
+`KMK_WEBKIT_REQUIRED=1` turns "no WebKit" into a failure of every WebKit test. Runs 45627948544 and 46099469392
+printed `[  PASSED  ] 25 tests.` with neither line, and tests that only pass when a page runs its scripts (a value
+reported from the page's own 300 ms timer, a report from an iframe) took a second or more each. What the exit
+status adds is a crash after the last test passed; a crash before that already cut the count short. A new test raises the count by itself; a class that is renamed or moved fails the step
 until `CLASSES` names it. The simulator is the newest iPhone by runtime version, compared as numbers (`iOS-18-10`
 after `iOS-18-2`).
 
@@ -505,7 +520,7 @@ where it fails. The tests that need no page (URL refusal, timeout, the message l
 
 ### Tests (`iosTest`, simulator only)
 
-- `WKWebViewHostWebViewTest` (17): a real `WKWebView` against `LoopbackHttpServer` on `127.0.0.1`: the scripts run
+- `WKWebViewHostWebViewTest` (18): a real `WKWebView` against `LoopbackHttpServer` on `127.0.0.1`: the scripts run
   in order after the load and see the page and the `flutterInAppWebViewPlatformReady` event, the reported value is
   returned, a header reaches the server, a URL with a space and a non-ASCII letter is percent-encoded; a page that
   reports from its own timer (300 ms, offscreen); a report from an iframe; scripts run on a 404 page; a non-string
@@ -513,8 +528,9 @@ where it fails. The tests that need no page (URL refusal, timeout, the message l
   logged; a timeout returns `""` after about 1 s (under 3 s, the copy back comes after); a refused connection returns `""` at once and logs the failure;
   `file:`, `data:`, `javascript:`, `about:`, `ftp:`, relative, empty and host-less URLs refused before a web view
   exists; cancellation returns at once, leaves no web view, and the page's 100 ms `fetch` ticker stops; after a call
-  the web view has no navigation delegate, no superview, no user scripts and no longer shows the page (whether it is
-  deallocated is printed, with two controls, not asserted); cookies copied in from and back to
+  the web view has no navigation delegate, no superview, no user scripts and no longer shows the page, and the web
+  views of three calls (a page report, a script report, a timeout) are freed within 8 s, as is a never-loaded control;
+  a navigation still waiting for its cookie copy when the call ends is answered "cancel"; cookies copied in from and back to
   the shared storage (one sent with the page request, one set by the page, one deleted by it); a redirect from
   `127.0.0.1` to `localhost` carries `localhost`'s stored cookie and not `127.0.0.1`'s; a cookie that expires during
   the call and one the page deletes after the app stored a new value are both kept with the app's value; cookie keys
@@ -530,8 +546,17 @@ where it fails. The tests that need no page (URL refusal, timeout, the message l
 
 - Real sites, TLS, Cloudflare-style challenges: only the loopback server (no network). Redirects to another host
   only as `127.0.0.1` → `localhost`; cookies for subresources on other hosts are not copied in (above).
-- The web view's deallocation: the teardown state is checked, the release of the `WKWebView` object is only reported
-  (`WEBVIEW_DEALLOCATED=…` in the step's log), and it says `false`: still not freed 8 s after the call with
+- The web view's deallocation (REVIEW_IOS.md, medium) is asserted since `aceb0ddb0a`; **not yet confirmed in CI**
+  (the first run with the assertion, 46120905490, had no WebKit, see above). Until then the old test only printed
+  `WEBVIEW_DEALLOCATED=false`. Suspected cause, a measurement artifact rather than a leak: the old loop read
+  `weak.value` in its own frame, between `GC.collect()` calls. Each read of a Kotlin/Native `WeakReference` to an
+  Objective-C object makes a new Kotlin wrapper that retains the object until the wrapper is collected, and a
+  wrapper the frame still holds (a stack slot) keeps the view alive for as long as the loop runs. The controls were
+  only read once, after the loop, so they were freed. The same teardown in Swift frees a loaded `WKWebView` at once
+  (a stand-in app on a local iOS 27.2 simulator), so WebKit itself does not keep it. The new test reads each weak
+  reference in a function of its own on the main thread and fails if a view is still there after 8 s; the temporary
+  `WKWebViewRetentionProbeTest` prints the old reading next to the new one for the same view. The rest of this
+  paragraph is the earlier investigation. Old reading: still not freed 8 s after the call with
   `GC.collect()` every 200 ms (runs 45620605008, 45627948544; the test holds it only through a Kotlin/Native
   `WeakReference`). What was ruled out: an autorelease pool per main run loop pass in `mainRunLoopTest` (as UIKit's
   run loop has; the test process never runs `UIApplicationMain`) and around creation and teardown changed nothing
