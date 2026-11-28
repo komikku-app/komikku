@@ -4671,3 +4671,16 @@ Android dependency next to `preferencektx` (UPSTREAM_AUDIT.md 5.2).
 **Not done here, on purpose:** the JavaScript-source and QuickJS code on Android (ANSWER 009 point 4, waiting for the
 maintainer) and the point 5 items stay as they were; the Android fix patches stay in `android-fixes/` (ANSWER 012);
 `build_pull_request.yml` stays `master`'s.
+
+## Commit message corrections
+
+Pushed commits are not rewritten, so wrong messages are corrected here.
+
+- `e5fa409ee9` carries the message of `607f429f43` (the RPM offer), but its change is the test
+  `test(kmp): Show a resource URL an extension opens does not hold its jar` (REVIEW_GRAPHICS 6.2,
+  `ExtensionClassLoaderTest`), committed locally as `fde50f8f96` and replaced while its message was fixed.
+- `607f429f43` (RPM offer): its message says the unsigned commands are `dnf install --nogpgcheck` or
+  `rpm -i --nosignature`, and that `Release` keeps the release's asset names. The commit shows
+  `sudo dnf install ./<rpm>` (dnf installs a local unsigned package as it is) or `sudo rpm -i --nosignature ./<rpm>`,
+  and leaves `Release` and `ReleaseServiceImpl` as `master` has them: the asset names are recorded by the desktop's
+  download link selection in `DesktopReleaseAssets`.
