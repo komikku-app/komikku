@@ -4,7 +4,8 @@
 # .deb smoke test) on the `package` job's artifact. Nothing graphical is started. The menu folders are removed before
 # the install, as on a system without a desktop: the install must still exit with 0 and leave the menu entry, an upgrade
 # (the same package again, then a rebuilt one with a higher release) must keep it, and the erase must exit with 0 and
-# take it away.
+# take it away. The package is unsigned, which Fedora's rpm refuses: rpm installs it with --nosignature, and what rpm
+# and dnf say without it is recorded (INFO, not a failure: whether to sign it is open).
 #
 #   desktop_smoke_rpm.sh <packages dir> <output dir>
 #
@@ -136,8 +137,14 @@ box rm -rf "${menu_folders[@]}"
 
 # --- Install --------------------------------------------------------------------------------------------------------
 
+# Without --nosignature (a test transaction, nothing is installed)
+box rpm -i --test "/packages/$rpm_file" > "$out/logs/rpm-install-signature.log" 2>&1
+code=$?
+refusal=$(grep -m 1 -i -E 'signature|verify|NOKEY' "$out/logs/rpm-install-signature.log" | sed 's/^[[:space:]]*//')
+info "Package signature" "package is unsigned; Fedora's rpm refuses it without --nosignature (rpm -i --test: exit code $code${refusal:+, $refusal}; logs/rpm-install-signature.log)"
+
 # Nothing else can be checked without it
-rpm_step rpm-install.log "Install (rpm -i)" -ivh "/packages/$rpm_file" || exit 1
+rpm_step rpm-install.log "Install (rpm -i --nosignature)" -ivh --nosignature "/packages/$rpm_file" || exit 1
 if box test -x /opt/komikku/bin/Komikku; then
   pass "Launcher installed" "/opt/komikku/bin/Komikku"
 else
@@ -153,7 +160,8 @@ fi
 # --- Upgrade --------------------------------------------------------------------------------------------------------
 
 # The same package again: the new post runs ($1 = 2), then the old preun ($1 = 1), which must leave the entry
-rpm_step rpm-reinstall.log "Upgrade to the same package (rpm -U --replacepkgs)" -Uvh --replacepkgs "/packages/$rpm_file"
+rpm_step rpm-reinstall.log "Upgrade to the same package (rpm -U --replacepkgs --nosignature)" -Uvh --replacepkgs \
+  --nosignature "/packages/$rpm_file"
 entries=$(menu_entries)
 if [ -n "$entries" ]; then
   pass "Menu entry kept by the upgrade to the same package" "$entries"
@@ -169,7 +177,7 @@ if box dnf -y install rpmrebuild > "$out/logs/dnf-rpmrebuild.log" 2>&1 &&
 fi
 if [ -n "${rebuilt:-}" ]; then
   info "Rebuilt package" "$(box rpm -qp --qf '%{NAME} %{VERSION}-%{RELEASE}' "$rebuilt" 2> /dev/null)"
-  rpm_step rpm-upgrade.log "Upgrade to a higher release (rpm -U)" -Uvh "$rebuilt"
+  rpm_step rpm-upgrade.log "Upgrade to a higher release (rpm -U --nosignature)" -Uvh --nosignature "$rebuilt"
   info "Installed after the upgrade" "$(box rpm -q "$name" 2>&1)"
   entries=$(menu_entries)
   if [ -n "$entries" ]; then
@@ -199,4 +207,19 @@ if [ -z "$entries" ]; then
   pass "Menu entry removed" "no $entry_name left"
 else
   fail "Menu entry removed" "still there: $entries"
+fi
+
+# --- dnf ------------------------------------------------------------------------------------------------------------
+
+# What a user's `dnf install ./<rpm>` says about the unsigned package (recorded, not checked); removed again if it
+# installed it
+box dnf -y install "/packages/$rpm_file" > "$out/logs/dnf-install.log" 2>&1
+code=$?
+said=$(grep -i -E 'signature|gpg|verify|not signed|error|problem' "$out/logs/dnf-install.log" | head -n 2 |
+  sed 's/^[[:space:]]*//' | paste -s -d ';' -)
+if [ "$code" = 0 ]; then
+  info "dnf install ./$rpm_file" "exit code 0: dnf installed the unsigned package${said:+ ($said)} (logs/dnf-install.log)"
+  box rpm -e "$name" > "$out/logs/dnf-install-erase.log" 2>&1
+else
+  info "dnf install ./$rpm_file" "exit code $code: ${said:-$(tail -n 1 "$out/logs/dnf-install.log")} (logs/dnf-install.log)"
 fi

@@ -154,6 +154,13 @@ workflow runs only its `pr-check` job (`:desktopApp:compileKotlin`, `:desktopApp
 **Testing on a Mac** (getting the CI `.dmg` or building it, opening the unsigned app, data and logs, a first test
 pass, what to send back): [`TESTING_MAC.md`](TESTING_MAC.md).
 
+**Installing on Linux:** `.deb`: `sudo apt install ./Komikku-<v>-linux-x64.deb`. The `.rpm` is **unsigned**, and
+Fedora's rpm (Fedora 45 in the smoke job) refuses it ("package komikku-<v>-1.x86_64 does not verify: no signature"):
+install it with `sudo dnf install --nogpgcheck ./Komikku-<v>-linux-x64.rpm` (resolves the dependencies), or
+`sudo rpm -i --nosignature ./Komikku-<v>-linux-x64.rpm` (upgrade: `sudo rpm -U --nosignature …`). Whether the RPM gets
+signed is open (no signing is configured, see "Signing"). The `.tar.gz` needs no installation: unpack it and start
+`Komikku/bin/Komikku`.
+
 ## Release pipeline
 
 `build_desktop.yml` (P9, [`PROGRESS.md`](PROGRESS.md#p9--desktop-release-pipeline-and-signing-hooks)) — first run
@@ -237,7 +244,9 @@ the trigger and the marker file when the port reaches master.
 ## Signing
 
 Off unless set: a build without these settings is exactly the unsigned one (macOS: Gatekeeper warns, open with
-right-click → Open; Windows: SmartScreen warns). Nothing secret is in the repository.
+right-click → Open; Windows: SmartScreen warns). The Linux `.deb` and `.rpm` are never signed (no setting for
+it); Fedora's rpm refuses the unsigned `.rpm` without `--nosignature` / `--nogpgcheck` ("Installing on Linux" under
+"Package"). Nothing secret is in the repository.
 
 **macOS** (Compose plugin `macOS { signing { … }; notarization { … } }`, configured in `desktopApp/build.gradle.kts`
 from these Gradle properties or environment variables; blank = not set):
