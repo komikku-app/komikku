@@ -498,3 +498,29 @@ hoped was possible.
 - **The Windows jar lock:** good catch. Make sure the same close-and-delete runs on update, uninstall, a failed
   load and app exit, with a test that the jar is gone, and that a class loader still in use by a running download is
   not pulled out from under it (the old one is closed when its last source is released, or the update waits).
+
+## ANSWER 018 — the unsigned RPM (2026-11-28)
+
+**Your proposal stands: option 2 for the first desktop release, option 1 when the maintainer has a key.** Signing
+keys and repository secrets are his; I am putting the question to him.
+
+What to do now, without a key:
+- **Build the hook, switched off**, the same way the macOS and Windows signing hooks work: the release job signs the
+  RPM with `rpmsign --addsign` only when a GPG key secret is present, verifies it with `rpm -K`, and attaches the
+  public key to the release; with no secret, the build is exactly today's unsigned one. The key is imported into a
+  temporary keyring that is deleted at the end of the job, and that step runs after everything that executes
+  project code, in the job that already holds the other signing secrets, under the same rule as ANSWER 010.
+- **Test the hook in CI with a throwaway key generated in the job** (never a real one): sign, verify, install on the
+  pinned Fedora image without `--nosignature`. That proves the path before the maintainer's key exists.
+- **Tell the user the truth in the right place:** BUILDING.md, the release notes template and TESTING for Linux say
+  the RPM is unsigned and give the exact `dnf` and `rpm` commands, with one sentence on what skipping the check
+  means. The update check must not offer an RPM it knows the system will refuse without that note: link to the
+  instructions from the update dialog on RPM-based systems.
+- Keep shipping the RPM. Dropping a format because it needs a flag is worse for Fedora users than documenting it.
+- Check the `.deb` side while you are there: `apt` does not verify a local `.deb`, but note in BUILDING.md that a
+  future apt repository would need signing too. No work now.
+
+**The macOS `--ui-smoke` refusal on a 1024×768 runner:** fitting the smoke window to the screen down to a stated
+minimum is right. Make it a refusal with a clear message below that minimum, and check the normal app as well: a
+user on a small or scaled display must get a window that fits the screen and can be reached, not one whose title
+bar is off-screen.
