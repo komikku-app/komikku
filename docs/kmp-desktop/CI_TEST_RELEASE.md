@@ -248,6 +248,27 @@ Progress goes to `breadth/progress.log` in the artifact.
   when that folder exists) and gone after the removal. Checked with `bash -n` only; the next CI run is the first real
   one.
 
+## ANSWER 018 (the unsigned RPM)
+
+- `a3a589a034`: the signing hook, off without the secret `RPM_SIGNING_KEY` (optional `RPM_SIGNING_KEY_PASSPHRASE`).
+  The Linux `package` job's step `Sign RPM` runs `.github/scripts/desktop_rpm_sign.sh` after the packaged self-test:
+  keyring in `$RUNNER_TEMP/komikku-rpm-gnupg` (deleted by the script and again by an `always()` step), `rpmsign
+  --addsign`, then `rpm -K` against a temporary rpm database holding only that key. The public key becomes the asset
+  `Komikku-<v>-linux-x64-rpm-signing-key.asc` (in the checksum file); without the secret the assets are unchanged.
+  Local test with Homebrew's rpm 6.1: keys with and without a passphrase sign and verify, a wrong passphrase fails,
+  the keyring is gone afterwards; a tampered copy, an unsigned package and a signed one without its key all fail
+  `rpm -K`. The runner has rpm 4.18.2, whose sign command has `%{?_gpg_sign_cmd_extra_args}` (checked in its macros).
+- `721511a248`: the CI proof in the `smoke` job (non-blocking), after the unsigned path: rows "Signed with a throwaway
+  key (desktop_rpm_sign.sh)", "Throwaway public key imported (rpm --import)", "Signed package verifies in Fedora
+  (rpm -K)", "Tampered copy fails rpm -K", "Install the signed package (rpm -i, without --nosignature)", "Menu entry
+  installed by the signed package", "Erase the signed package (rpm -e)". The key is generated on the runner with a
+  random passphrase; the public key is kept as `logs/throwaway-public-key.asc`. Not yet run on a runner (no docker
+  here; the section ran against a mocked container).
+- Docs: BUILDING.md "Signing" (secrets table, the Linux paragraph, the `.deb` / future apt repository note), "What CI
+  downloads and runs" (`rpmsign`, `gpg`), "Installing on Linux"; the release notes template
+  `.github/scripts/desktop_release_notes.md` (the draft's notes, unsigned or signed RPM paragraph chosen by the key
+  asset; pasted by hand into an existing release); new `TESTING_LINUX.md` (there was no Linux testing doc).
+
 ## macOS smoke job (design only, not built)
 
 What the Linux / Windows smoke covers, for `Komikku-<v>-macos-arm64.dmg` on `macos-15` (arm64), non-blocking like them:

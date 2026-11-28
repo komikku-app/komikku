@@ -157,9 +157,13 @@ pass, what to send back): [`TESTING_MAC.md`](TESTING_MAC.md).
 **Installing on Linux:** `.deb`: `sudo apt install ./Komikku-<v>-linux-x64.deb`. The `.rpm` is **unsigned**, and
 Fedora's rpm (Fedora 45 in the smoke job) refuses it ("package komikku-<v>-1.x86_64 does not verify: no signature"):
 install it with `sudo dnf install --nogpgcheck ./Komikku-<v>-linux-x64.rpm` (resolves the dependencies), or
-`sudo rpm -i --nosignature ./Komikku-<v>-linux-x64.rpm` (upgrade: `sudo rpm -U --nosignature …`). Whether the RPM gets
-signed is open (no signing is configured, see "Signing"). The `.tar.gz` needs no installation: unpack it and start
-`Komikku/bin/Komikku`.
+`sudo rpm -i --nosignature ./Komikku-<v>-linux-x64.rpm` (upgrade: `sudo rpm -U --nosignature …`). Skipping the check
+means nothing proves that the package was built by Komikku and not changed since, so compare its SHA-256 with the
+release's checksum file first. The signing hook is built but off until the maintainer's key is set ("Signing", Linux);
+a signed RPM installs after `sudo rpm --import Komikku-<v>-linux-x64-rpm-signing-key.asc` without either flag. The
+`.deb` needs nothing: `apt` does not check signatures of a local `.deb` file. The `.tar.gz` needs no installation:
+unpack it and start `Komikku/bin/Komikku`. The same text for users: the release notes template
+(`.github/scripts/desktop_release_notes.md`) and [`TESTING_LINUX.md`](TESTING_LINUX.md).
 
 ## Release pipeline
 
@@ -211,7 +215,8 @@ the trigger and the marker file when the port reaches master.
   | Windows x64 | `Komikku-<v>-windows-x64.msi`, `Komikku-<v>-windows-x64.exe` |
   | macOS arm64 / x64 | `Komikku-<v>-macos-arm64.dmg` / `Komikku-<v>-macos-x64.dmg` |
 
-  plus `Komikku-<v>-<os>-<arch>-SHA256SUMS.txt` per job; the release gets one `Komikku-<v>-desktop-SHA256SUMS.txt`
+  plus `Komikku-<v>-linux-x64-rpm-signing-key.asc` when the RPM is signed ("Signing", Linux; never without the
+  secret), plus `Komikku-<v>-<os>-<arch>-SHA256SUMS.txt` per job; the release gets one `Komikku-<v>-desktop-SHA256SUMS.txt`
   (`sha256sum -c` format; every line `<hash>  <name>`, also where Git Bash writes `<hash> *<name>`, sorted by name). `DesktopAppUpdateCheckerTest` ("the release pipeline's asset names …") checks that the update
   check picks exactly these per OS and architecture next to the Android APKs. The Windows / macOS app-image folders
   are no longer uploaded (the installers contain them).
@@ -226,7 +231,10 @@ the trigger and the marker file when the port reaches master.
   The upload is `.github/scripts/desktop_release_upload.sh` (with `gh`). The release is looked up in the API's list of
   releases (drafts included); a failing request fails the job and never counts as "no release", and more than one
   release with the tag fails too. `existing`: the release must exist (draft or published). `draft`: the draft with that
-  tag gets the files; only if the tag has no release at all is one created **as a draft** (a published release fails).
+  tag gets the files; only if the tag has no release at all is one created **as a draft** (a published release fails),
+  with the notes of `.github/scripts/desktop_release_notes.md` (the version filled in; its RPM paragraph says
+  "unsigned" with the `dnf` / `rpm` commands, or "signed" when the assets have the signing key). The notes of an
+  existing release are never touched: paste that text into them by hand.
   A draft gets every file (same-named desktop files replaced). A published release only gets the files it is missing;
   a file it already has is compared by SHA-256 (the asset's `digest`, or the downloaded file when the API gives none):
   identical files are skipped, a different one fails the job before anything is uploaded. The checksum file goes last.
@@ -244,9 +252,9 @@ the trigger and the marker file when the port reaches master.
 ## Signing
 
 Off unless set: a build without these settings is exactly the unsigned one (macOS: Gatekeeper warns, open with
-right-click → Open; Windows: SmartScreen warns). The Linux `.deb` and `.rpm` are never signed (no setting for
-it); Fedora's rpm refuses the unsigned `.rpm` without `--nosignature` / `--nogpgcheck` ("Installing on Linux" under
-"Package"). Nothing secret is in the repository.
+right-click → Open; Windows: SmartScreen warns; Linux: the `.rpm` is unsigned, which Fedora's rpm refuses without
+`--nosignature` / `--nogpgcheck`, see "Installing on Linux" under "Package"). The `.deb` is never signed (below). Nothing
+secret is in the repository.
 
 **macOS** (Compose plugin `macOS { signing { … }; notarization { … } }`, configured in `desktopApp/build.gradle.kts`
 from these Gradle properties or environment variables; blank = not set):
@@ -277,6 +285,8 @@ its secrets are all set):
 | `MACOS_NOTARIZATION_TEAM_ID` | the team ID | developer.apple.com → Account → Membership details |
 | `WINDOWS_CERTIFICATE_PFX_BASE64` | an exportable code-signing certificate with its private key, `.pfx`, base64 | from a code-signing CA (OV / EV); `base64 -w0 cert.pfx` |
 | `WINDOWS_CERTIFICATE_PASSWORD` | the `.pfx` password | chosen at export |
+| `RPM_SIGNING_KEY` | the OpenPGP secret key that signs the `.rpm`, ASCII-armoured (one primary key; a signing subkey is used if it has one) | `gpg --quick-gen-key "Komikku <…>" rsa4096 sign 3y` (or an existing key), `gpg --armor --export-secret-keys <fingerprint>`; keep a backup outside GitHub: the secret cannot be read back |
+| `RPM_SIGNING_KEY_PASSPHRASE` | its passphrase (optional: unset for a key without one) | chosen when the key was made |
 
 Optional repository variables: `WINDOWS_TIMESTAMP_URL` (RFC 3161 timestamp server, default
 `http://timestamp.digicert.com`), `DESKTOP_RELEASE_MODE` (see "Release pipeline").
@@ -311,6 +321,26 @@ the key; no `.pkg` is built.
    `source=Notarized Developer ID` after notarization, and `xcrun stapler validate` passes (the workflow runs it).
 4. Then remove "untested" here.
 
+**Linux (RPM, ATLAS_INSTRUCTIONS.md ANSWER 018):** with `RPM_SIGNING_KEY` set, the `package` job's step `Sign RPM`
+runs `.github/scripts/desktop_rpm_sign.sh` after the packaged app's self-test (the last step that runs project code)
+and before the checksums are taken. It imports the key into a keyring of its own (`$RUNNER_TEMP/komikku-rpm-gnupg`,
+owner-only, deleted when the script ends, also on failure, and again by the `always()` step `Remove RPM signing
+keyring`), signs the RPM in place with `rpmsign --addsign` (SHA-256; the passphrase through gpg's loopback pinentry from
+a file in that keyring folder, never on a command line), then checks it with `rpm -K` against a temporary rpm database
+holding only that public key ("digests signatures OK" or the job fails). The public key becomes the asset
+`Komikku-<v>-linux-x64-rpm-signing-key.asc` (in the checksum file). Without the secret the step is skipped and the
+assets are the unsigned build's, byte for byte. **Proven in CI with a throwaway key:** the `smoke` job (non-blocking,
+`desktop_smoke_rpm.sh`) generates a key on the runner (never a real one, no secret), signs a copy of the run's RPM with
+the same script, imports the public key in the pinned Fedora container, checks `rpm -K`, installs and erases it without
+`--nosignature`, and checks that a tampered copy fails `rpm -K`; each is its own row in the job summary. Untested with
+the maintainer's key: the first signed release should show "digests signatures OK" in `Sign RPM` and
+`rpm -K Komikku-<v>-linux-x64.rpm` on a Fedora machine after `rpm --import` of the attached key.
+
+**The `.deb` and a future apt repository:** `apt install ./file.deb` does not check signatures (apt checks repository
+metadata, not single packages), so the `.deb` stays unsigned with no warning. A future apt repository (a `sources.list`
+entry for automatic updates) would need its `Release` file signed with a key the users import; not planned, no work
+now.
+
 ## What CI downloads and runs
 
 What the desktop jobs in `build_desktop.yml` fetch from outside the repository, and how each is pinned:
@@ -324,7 +354,8 @@ What the desktop jobs in `build_desktop.yml` fetch from outside the repository, 
 | Gradle distribution | every Gradle job | version in `gradle/wrapper/gradle-wrapper.properties` (9.3.1) | **not verified**: the file has no `distributionSha256Sum` (it is the Android build's file; adding it is a change for master) |
 | Maven dependencies and Gradle plugins | every Gradle job | versions in the version catalogs (`gradle/*.versions.toml`) | **not verified**: no `gradle/verification-metadata.xml` (shared with the Android build) |
 | WiX 3.11.2 (`wix311-binaries.zip`) | `package` on Windows | version and URL in the step `Download WiX (pinned)` | SHA-256 `2c1888d5…9e2e` in that step; a mismatch fails the job before anything is unpacked; the Compose plugin gets the folder through `WIX_PATH` and downloads nothing |
-| `rpm` | `package` on Linux | `apt-get` from Ubuntu's archive, unversioned | the archive's signatures (apt) |
+| `rpm` (`rpmbuild`; `rpmsign`, `rpmkeys` for the signing hook) | `package` on Linux; `smoke` on Linux (the throwaway-key signing) | `apt-get` from Ubuntu's archive, unversioned | the archive's signatures (apt) |
+| `gpg` (signs for `rpmsign`) | `package` on Linux (only with `RPM_SIGNING_KEY`), `smoke` on Linux | the runner image's | the runner image |
 | Smoke test tools (Xvfb, openbox, xdotool, …) | `smoke` on Linux | `apt-get`, unversioned | the archive's signatures (apt) |
 | Fedora container image (`fedora:45`) | `smoke` on Linux (RPM test, `desktop_smoke_rpm.sh`) | image digest in that script | the digest itself (docker) |
 | The RPM's dependencies and `rpmrebuild` | `smoke` on Linux, inside that container | `dnf` from Fedora's repositories, unversioned | the repositories' signatures (dnf) |

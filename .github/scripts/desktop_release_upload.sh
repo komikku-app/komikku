@@ -15,6 +15,9 @@
 #   `digest`, or the downloaded file when there is none): identical = skipped (resuming a partly failed upload, e.g.
 #   "Re-run failed jobs", which reuses the run's artifacts), different = the script fails before uploading anything.
 # - The checksum file goes last, so a release that has it has every installer.
+# - A draft it creates gets the notes of desktop_release_notes.md ({{VERSION}} filled in; the RPM paragraph for a
+#   signed RPM when the assets have its signing key, else the one for the unsigned RPM). The notes of a release that
+#   exists are never touched: paste that text into them by hand.
 set -euo pipefail
 
 if [ "$#" -ne 1 ]; then
@@ -64,8 +67,13 @@ elif [ "$count" -eq 0 ]; then
   if [ "$RELEASE_MODE" != draft ]; then
     fail "No release $RELEASE_TAG; create it first or run with release_mode draft"
   fi
-  gh release create "$RELEASE_TAG" --draft --verify-tag --title "Komikku $RELEASE_TAG" \
-    --notes "Desktop installers for Komikku $RELEASE_TAG (draft created by the desktop builder)."
+  rpm_notes=unsigned
+  if compgen -G "$dir/*-rpm-signing-key.asc" > /dev/null; then rpm_notes=signed; fi
+  notes=$(mktemp)
+  awk -v keep="$rpm_notes" '/^<!-- rpm:[a-z]+ -->$/ { block = substr($2, 5); next } block == "" || block == "end" || block == keep' \
+    "$(dirname "$0")/desktop_release_notes.md" | sed "s/{{VERSION}}/$version/g" > "$notes"
+  gh release create "$RELEASE_TAG" --draft --verify-tag --title "Komikku $RELEASE_TAG" --notes-file "$notes"
+  rm -f "$notes"
   draft=true
 else
   release_id=$(printf '%s\n' "$matches" | cut -f 1)
