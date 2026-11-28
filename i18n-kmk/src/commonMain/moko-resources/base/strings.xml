@@ -371,4 +371,5 @@
     <string name="desktop_notification_open">Click to open Komikku</string>
     <string name="desktop_migration_failed">Could not migrate %1$s</string>
     <string name="desktop_migration_no_sources">None of the sources chosen for migration is installed. Choose the sources to search again.</string>
+    <string name="desktop_single_instance_busy">Another Komikku is using this data folder and did not respond:\n%1$s\n\nClose it, or start Komikku with a different data folder.</string>
 </resources>
