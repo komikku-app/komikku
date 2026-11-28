@@ -4602,3 +4602,64 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    left: the first real run, certificates, the preview channel's releases, no Markdown in the notes, no "What's new" /
    "What's coming".
 
+
+## Merge of `master` A4 (2026-11-28)
+
+First merge of `master` (ATLAS_INSTRUCTIONS.md ANSWER 009): `origin/master` `15610e67e4` (98 commits since the merge
+base `290267dd4c`) into `multiplatform` `209b80d910`, merge commit `1e930163bc` on `merge/master-a4`, followed by
+`611bb99ef2`, `ed23d6fa1f`, `1e3ee2a04e` and this docs commit. The desktop copies it created and the files that can
+move back next time are listed in UPSTREAM_AUDIT.md section 7.
+
+**Conflicts (5, as predicted in UPSTREAM_AUDIT.md 2.1):**
+
+| File | Resolution |
+|------|------------|
+| `LibraryScreenModel.kt` | `master`'s file, byte-identical. Our `LibraryActions.kt` and `LibraryFilterSort.kt` became desktop copies in `app-shared/src/desktopMain` (no longer compiled for Android), with `master`'s range rule (`481bfeb75a`) ported (`611bb99ef2`). |
+| `SourceFilterDialog.kt` | `master`'s file, byte-identical (Android gets `master`'s invalid-filter fix `a222d3a220`). Our `SourceFilterItems.kt` became a desktop copy whose body is `master`'s `FilterItem` (`ed23d6fa1f`). |
+| `WebViewInterceptor.kt` (moved to `core/common` `androidMain`) | `master`'s file, byte-identical. |
+| `CloudflareInterceptor.kt` (moved to `core/common` `androidMain`) | `master`'s file plus the one-line `actual` hook of the shared `expect class` that `NetworkHelper` constructs (UPSTREAM_AUDIT.md 7.2, question to Atlas). Our `CloudflareChallenge.kt` became a desktop copy with `master`'s `cf-mitigated` detection and browser-header rules (`1e3ee2a04e`). |
+| `core/common/build.gradle.kts` | `master`'s new `androidx.webkit` goes to `androidMain.dependencies` (an Android AAR), next to `preferencektx`. |
+
+**Clean merges that needed desktop changes (in the merge commit, to keep it compiling):**
+- `MdList` (a `desktopCopy`) now owns `master`'s Android `MangaDexSessionNotifier`: desktop counterpart in
+  `app-shared/src/desktopMain`, same members, logs instead of notifying.
+- `GetNextChapters` takes a `GetChapter` now: the desktop DI (`domain` `LibraryInteractors.kt`) passes it.
+- MyAnimeList and MangaDex logins create and store a PKCE verifier per login (`master`'s `authUrl(trackPreferences,
+  tracker)` / `MdUtil.newLoginCodeVerifier`): `DesktopTrackerLogin` builds its authorization URLs the same way;
+  `TrackingTest` checks that the MAL URL carries the stored verifier.
+
+**Shared-with-Android decisions reversed** (ANSWER 009): P2's library selection and filter logic, P13's filter rows and
+P7's Cloudflare detection are no longer shared with Android; Android runs `master`'s code, the desktop runs copies that
+follow it, and tests written from `master`'s code pin the behaviour both must share.
+
+**Desktop behaviour changes from following `master`:**
+- Shift-click ranges start at the entry last clicked into the selection (in the same category, still selected),
+  not at the last entry of the selection set; select all, invert and clear drop the anchor.
+- A filter select whose state is out of range shows no value (was: the first option); a select without values shows
+  an empty field (was: a heading); an unknown tri-state shows as ignored (was: a crash).
+- Cloudflare: only a Cloudflare response with `cf-mitigated: challenge` is a challenge (was: a 403 / 503 with the
+  challenge page markers); the headers given to a browser drop `Origin` and merge names case-insensitively, keyed in
+  lower case.
+
+**Tests:** new `CloudflareChallengeTest` (`core:common`, 4), `SourceFilterItemUiTest` (3); `LibraryActionsTest`
+rewritten from `master`'s rule (5). The desktop tests' fake Cloudflare challenges carry `cf-mitigated` now;
+`DesktopNetworkTest` clears the process-wide cookie store first (`DesktopWebViewTest` leaves cookies for localhost,
+which surfaced once its interactive-session test ran to the end).
+
+**Gates** (in the worktree, JDK 21, through the Gradle lock): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources` and `:app:compileDebugKotlin` pass. `:desktopApp:test` 448 passed. Every module's
+`desktopTest` passes (`domain` 102, `source-js` 154, `core:quickjs` 38, `core:preference` 22, `core:archive` 9,
+`data` 6 with the migration to `48.sqm`, `core-metadata` 2, `source-local` 2) except one test in `core:common` (15 of
+16): `ImageUtilTest` "splits tall images" expects a headless JVM (2 × 2160 px parts) and gets this Mac's screen height;
+neither `ImageUtil` nor the test changed in this merge, and CI runs it headless. `testReleaseUnitTest`: `app` 60 (with
+`master`'s new MDList, MangaDex login and MyAnimeList login tests), `domain` 102, `core:common` 3, `core:quickjs` 38,
+`source-js` 105, all passed.
+
+**Structure change that would have avoided the conflicts:** all four code conflicts came from moving Android code into
+files shared with the desktop; as desktop copies they cannot conflict again, and each later `master` change to them is
+a re-sync listed in UPSTREAM_AUDIT.md 7.1. `core/common/build.gradle.kts` will conflict again whenever `master` adds an
+Android dependency next to `preferencektx` (UPSTREAM_AUDIT.md 5.2).
+
+**Not done here, on purpose:** the JavaScript-source and QuickJS code on Android (ANSWER 009 point 4, waiting for the
+maintainer) and the point 5 items stay as they were; the Android fix patches stay in `android-fixes/` (ANSWER 012);
+`build_pull_request.yml` stays `master`'s.
