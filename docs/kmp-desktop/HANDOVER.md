@@ -487,9 +487,13 @@ mark the residual path in both modules.
      Windows, jpackage's empty `MimeType=` on Linux; fixed in `77901f0b62` / `3da39e0312`). In run 46149598387 the
      second jpackage run (with the patched `main.wxs`) still exited with 1 on Windows, its log not shown. Since the
      last commit before the pause, a failed second run keeps the installer without the handler and prints the end of
-     jpackage's log as a Gradle warning in "Package (windows-2022)": read it in the last desktop run, fix
-     `desktopApp/packaging/windows/url-protocol.gradle.kts`, and expect the Windows smoke row "komikku:// handler
-     registered" to fail until then. Then add the smoke row that starts `Komikku "komikku://myanimelist-auth?code=test"`
+     jpackage's log as a Gradle warning in "Package (windows-2022)". Run 46150990197 (`82fec15fcf`) is green apart
+     from that one expected Windows smoke row ("komikku:// handler registered"), and its warning gives the cause:
+     candle and light succeed, then jpackage stops with "The configured main jar does not exist
+     desktopApp-<hash>.jar in the input directory": the `--input` folder in Compose's argument file is gone by the
+     time `doLast` runs the second jpackage. Fix in `desktopApp/packaging/windows/url-protocol.gradle.kts`: copy the
+     input folder aside before Compose cleans it (or run the second jpackage before that clean-up) and point `--input`
+     at the copy. Then add the smoke row that starts `Komikku "komikku://myanimelist-auth?code=test"`
      against the running app (Windows and Linux engineer's follow-up).
   2. **Reviewer pass, not done yet:** the tracker login redirect (`0f237fab87`, `074a5ad7b3`, the scheme registration
      `73df1e5997`, `9b6d50ab64`, `df6d4c512e`, fixes `3da39e0312`, `77901f0b62`) and the `--ui-smoke` `08-details`
@@ -503,6 +507,9 @@ mark the residual path in both modules.
      `REVIEW_GRAPHICS.md`) and the new login. Needs the screen unlocked.
   5. Graphics review leftovers (optional): asking for a GC when native bitmap memory grows; the four Info items in
      `REVIEW_GRAPHICS.md`.
+  - **Flaky test to investigate:** `ReaderWidePagesUiTest` "rotate wide pages to fit turns the wide page upright"
+    timed out (`ComposeTimeoutException` at `ReaderWidePagesUiTest.kt:200`) on ubuntu-24.04 in run 46149598387 and
+    passed in the runs before and after; neither the test nor the reader changed in between.
   - Commit messages corrected after pushing: PROGRESS.md "Commit message corrections".
 
 - **2026-11-28: new set-up, read [`COORDINATION.md`](COORDINATION.md) first.** The branch is now `multiplatform`
