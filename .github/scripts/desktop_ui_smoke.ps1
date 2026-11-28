@@ -55,7 +55,8 @@ try {
         throw [System.OperationCanceledException]::new('not run')
     }
 
-    # The mode checks that its window is 1280 x 800, which a screen of 1024 x 768 (the runner's default) cannot hold
+    # The mode fits its window to screens down to 960 x 600; a larger screen than the runner's default 1024 x 768 keeps
+    # the run at the full 1280 x 800, so Windows screenshots compare with Linux ones
     Add-Type -AssemblyName System.Windows.Forms
     $screen = [System.Windows.Forms.SystemInformation]::VirtualScreen
     if ($screen.Width -lt 1280 -or $screen.Height -lt 800) {
