@@ -308,3 +308,40 @@ PROGRESS.md to what the measurement shows: "create their sources" is not "work".
 registered with one `// KMK` line in `settings.gradle.kts`; record that line under "Changes to files owned by
 master" and return `libs.versions.toml` to `master`'s content. Do it together with the merge of `master`, so the
 catalog is touched once.
+
+## ANSWER 011 — the `--ui-smoke` design and the notification questions (2026-11-28)
+
+**`--ui-smoke`: approved as designed** (`UI_SMOKE_DESIGN.md`, `caf3d34`), with these conditions:
+
+1. **The `NavigatorRegistry` costs nothing in a normal run.** It is `internal`, the CompositionLocal's default is a
+   no-op, and the real registry is installed only when the app was started in smoke mode; a normal start registers
+   nothing and exposes nothing. It can only push screens the UI itself can push. A test proves that a normal start
+   leaves it empty.
+2. **Deterministic frame:** fixed window size, the English locale, the default theme, and a fixed clock where a
+   screen shows dates, all set by smoke mode itself, so two runs on the same commit give the same pictures. No golden
+   images, but each screenshot is checked not to be blank (more than one colour, expected window size), and the
+   report names the step, the condition waited for and the time it took.
+3. **A failure is diagnosable from the artifact alone:** the report, every screenshot up to the failure, the app log
+   and the accessibility tree of the last frame are written before exit, on every exit code including the watchdog.
+4. **It never runs by accident:** the argument is the only switch (no environment variable, no preference), it is
+   refused together with any other mode argument, and the refusal for a non-temporary or non-empty data folder is
+   covered by a test for each case you listed.
+5. **The network trap is installed before anything else starts** (before DI), and its report lists every attempted
+   connection with the call site, so a screen that phones home at start is found, not just failed.
+6. It runs in CI with the packaged launcher on every desktop runner, macOS included, non-blocking under the same
+   ten-green-runs rule as the first smoke test, and locally on the Mac as part of the macOS engineer's pass.
+
+**Notifications:**
+
+- **(a) Approved: a system-notifier check now, but opt-in.** Not part of the plain `--self-test` (a user who runs
+  the self-test must not get a notification): a separate switch, `--self-test=notify` or equivalent, that posts one
+  fixed notification through the system notifier, time-limited, and reports whether the backend accepted it. CI uses
+  it in the Linux smoke job on a real session bus; add Windows and macOS when their smoke jobs exist. The UI smoke
+  step that goes through the real new-chapter path comes later, as you propose.
+- **(b) Not intended.** The rule is the same on every system: "Show system notifications" governs notifications, the
+  tray icon setting governs only the icon. If Windows cannot show a toast without a tray icon, the notifier adds a
+  temporary icon for the life of the message and removes it afterwards when the tray setting is off. Report what the
+  first smoke run shows, then build that; no further question needed unless Windows behaves differently from both
+  expectations.
+- **(c)** Correct the summary once (b) is settled, so the string changes once: it should then simply say the icon
+  gives quick access from the system tray or menu bar, with no claim about notifications.
