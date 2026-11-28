@@ -493,19 +493,22 @@ mark the residual path in both modules.
   `multiplatform-coordination`, never merged). Atlas's instructions and Forge's reports are its comments; the rules
   are in COORDINATION.md "How we talk". Atlas's entries are also kept, numbered, in
   [`ATLAS_INSTRUCTIONS.md`](ATLAS_INSTRUCTIONS.md) (the authoritative copy; start with INSTRUCTION 001).
-- **Forge's team roster (2026-11-28, INSTRUCTION 001).** One role per member; members do not post to the thread, push
-  or commit unless Forge says so, and Gradle builds run one at a time (a shared lock).
+- **Forge's team roster (2026-11-28, second Forge session; INSTRUCTION 001, ANSWER 005).** One role per member;
+  members do not post to the thread or push, commit only their own files, and run Gradle one build at a time through
+  a shared lock. Every member runs on Opus 5.5, high effort: it is the only model this session can give its
+  sub-agents. Members run only while they have work. The first session's team ended before its A1–A3, B and E
+  outputs reached the branch; those tracks were started again.
 
   | Role | Model, effort | Now on |
   |------|---------------|--------|
-  | Forge, Delivery Lead | Opus 5.5, high | planning, integration, the thread, commits and pushes |
-  | Upstream integrator | Sonnet 5.5, high | track A1 / A3 and the DECISION 002 check (`MASTER_AUDIT.md`); later A4, the merge |
+  | Forge, Delivery Lead | Opus 5.5, high | planning, integration, the thread, pushes, PROGRESS.md / HANDOVER.md |
+  | Upstream integrator | Opus 5.5, high | A1 / A3, the #2023 check and the two unchecked `master` items (`MASTER_AUDIT.md`); later A4, the merge |
   | Reviewer | Opus 5.5, high | track B (`M3_REVIEW_FINDINGS.md`, `IOS_REVIEW_FINDINGS.md`); then every later step |
-  | iOS engineer | Opus 5.5, high (report); Sonnet 5.5, high (checks) | track E options report (`IOS_APP_OPTIONS.md`); then keeps the iOS checks green |
-  | Windows and Linux engineer | Sonnet 5.5, high | track D plan (`WINDOWS_LINUX_TEST_PLAN.md`); split into two roles when testing starts |
-  | Test and release engineer | Sonnet 5.5, high | track C1, the on-device pass of the packaged macOS app; CI and self-tests |
-  | macOS engineer | Opus 5.5, high | track C fixes found by the pass, the menu-bar template icon (C2) |
-  | Shared-code engineer | Opus 5.5, medium | on demand, when several platforms need the same shared file |
+  | macOS engineer | Opus 5.5, high | C2 menu-bar template icon; C1 screen pass of the packaged app (`MAC_ON_DEVICE_PASS.md`) and its macOS fixes; the only role that drives the screen |
+  | Test and release engineer | Opus 5.5, high | D steps 1–2: `windows-2022` test job, packaged-app smoke test on `ubuntu-24.04` / `windows-2022`; owns `build_desktop.yml` |
+  | Shared-code engineer | Opus 5.5, high | one running instance per data folder (ANSWER 005 item 4) |
+  | Windows and Linux engineer | Opus 5.5, high | Linux notifications without a tray (ANSWER 005 item 3); the `--ui-smoke` design (`UI_SMOKE_DESIGN.md`, item 5) |
+  | iOS engineer | Opus 5.5, high | track E options report (`IOS_APP_OPTIONS.md`); then keeps the iOS checks green |
 - **Open pull requests into `master` (Android bug fixes; the maintainer reviews and merges):**
   <https://github.com/komikku-app/komikku/pull/2023> — 12 fixes found during the port (ATLAS_INSTRUCTIONS.md,
   DECISION 004).
