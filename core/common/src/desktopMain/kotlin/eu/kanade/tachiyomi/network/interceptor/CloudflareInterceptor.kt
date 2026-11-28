@@ -33,7 +33,8 @@ import kotlin.time.Duration.Companion.seconds
  * [CloudflareChallenge.isChallenge]) decides what a challenge is; then, like
  * Android, the old `cf_clearance` is removed, a browser loads the page with the request's headers and User-Agent until
  * a new `cf_clearance` is set (30 s by default), the browser's cookies go into the shared cookie jar and the request is
- * sent once more; that response is returned whatever it is.
+ * sent once more; that response is returned whatever it is. A request of another method than GET is solved on the
+ * site's root page ([browserUrl], `master`'s `14c94f5cec`), since a browser loads pages with GET only.
  *
  * Desktop differences:
  * - Without a usable backend (the desktop default, [BrowserBackends]) the request fails with a
@@ -122,6 +123,7 @@ actual class CloudflareInterceptor(
                         backend,
                         request,
                         challengedUrl,
+                        browserUrl(response.request),
                         sourceUserAgent,
                         hosts,
                         staleClearance = current ?: sentClearance,
@@ -141,13 +143,14 @@ actual class CloudflareInterceptor(
     }
 
     /**
-     * Runs the browser for the challenged [url]; returns [request] to send again (with the browser's User-Agent when it
-     * used another one), or throws a [CloudflareBypassException].
+     * Runs the browser on [browserUrl] until the challenged [url] has a new clearance; returns [request] to send again
+     * (with the browser's User-Agent when it used another one), or throws a [CloudflareBypassException].
      */
     private fun solve(
         backend: BrowserBackend,
         request: Request,
         url: HttpUrl,
+        browserUrl: HttpUrl,
         sourceUserAgent: String,
         hosts: CloudflareHostState,
         staleClearance: String?,
@@ -160,11 +163,11 @@ actual class CloudflareInterceptor(
         val result = try {
             backend.run(
                 BrowserSession(
-                    url = url,
+                    url = browserUrl,
                     headers = CloudflareChallenge.browserHeaders(request.headers)
                         .filterKeys { !it.equals("User-Agent", ignoreCase = true) },
                     userAgent = userAgent,
-                    cookies = cookieManager.browserCookies(url),
+                    cookies = cookieManager.browserCookies(browserUrl),
                     // A new clearance: not the one that was refused (Android's `it != oldCookie`).
                     until = BrowserCondition.cookieSet(url, CloudflareChallenge.CLEARANCE_COOKIE, staleClearance),
                     timeout = timeout,
@@ -210,6 +213,17 @@ actual class CloudflareInterceptor(
         } else {
             request
         }
+    }
+
+    /**
+     * The page the browser loads for the challenged [request]: its own address for a GET, else the site's root
+     * (`master`'s `14c94f5cec`: loading another method's address usually reaches an endpoint that answers GET without a
+     * challenge, and the clearance covers the whole site).
+     */
+    private fun browserUrl(request: Request): HttpUrl = if (request.method == "GET") {
+        request.url
+    } else {
+        request.url.newBuilder().encodedPath("/").query(null).fragment(null).build()
     }
 
     /** This request with the User-Agent of the clearance the jar holds for [url], when there is such an override. */

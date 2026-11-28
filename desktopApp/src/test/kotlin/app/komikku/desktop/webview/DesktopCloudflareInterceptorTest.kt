@@ -15,6 +15,7 @@ import app.komikku.network.browser.removeBrowserCookies
 import app.komikku.network.browser.storeBrowserCookies
 import eu.kanade.tachiyomi.network.AndroidCookieJar
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.interceptor.CloudflareBypassException
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
@@ -27,6 +28,7 @@ import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.RecordedRequest
 import okhttp3.Cookie
+import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterEach
@@ -115,6 +117,33 @@ class DesktopCloudflareInterceptorTest {
         retried.headers["Cookie"] shouldBe "cf_clearance=solved"
         retried.headers["User-Agent"] shouldBe DEFAULT_UA
         jar.get(server.url("/")).map { it.name to it.value } shouldBe listOf("cf_clearance" to "solved")
+    }
+
+    @Test
+    fun `a challenged request of another method is solved on the site's root, a GET on its own address`() {
+        // master's 14c94f5cec: a browser loads pages with GET only, so a challenged POST earns the site-wide clearance on
+        // the root page (no query, no fragment), and the POST itself is sent again with its body.
+        protectedSite()
+        backend.browse = { session -> session.cookies + FakeBrowserBackend.clearance(session) }
+
+        val post = POST(server.url("/api/search?page=2").toString(), body = FormBody.Builder().add("q", "one piece").build())
+        client().newCall(post).execute().use { response ->
+            response.code shouldBe 200
+            response.body.string() shouldBe "manga list"
+        }
+
+        backend.sessions.single().url shouldBe server.url("/")
+        server.takeRequest().method shouldBe "POST"
+        val retried = server.takeRequest()
+        retried.method shouldBe "POST"
+        retried.url shouldBe server.url("/api/search?page=2")
+        retried.body!!.utf8() shouldBe "q=one+piece"
+        retried.headers["Cookie"] shouldBe "cf_clearance=solved"
+
+        jar.removeAll()
+        backend.sessions.clear()
+        client().newCall(GET(server.url("/search?q=x").toString())).execute().use { it.code shouldBe 200 }
+        backend.sessions.single().url shouldBe server.url("/search?q=x")
     }
 
     @Test
