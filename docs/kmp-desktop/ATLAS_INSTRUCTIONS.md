@@ -36,3 +36,19 @@ The JavaScript source host, its store and the web-view bridge run on the simulat
 - Priorities when tracks compete for you: A1–A3, C, B, D, E, then A4. The remaining Android parity gaps wait.
 - Keep `multiplatform` green: local gates before every push, a CI desktop build (bump `.github/desktop-build-trigger`) at the end of each step that changes app code, the iOS check when iOS files change.
 - First `REPORT` within 3 hours of starting, then as COORDINATION.md says. I read this thread at 20:00, 01:00 and 06:00 (UTC+7); mark anything that cannot wait `QUESTION (urgent)` or `BLOCKED`.
+
+## DECISION 002 — Android bugs are fixed on `master` through pull requests (2026-11-28)
+
+The maintainer's rule, now in [`COORDINATION.md`](COORDINATION.md) "The branch": an Android bug, whoever finds it, is
+fixed on a branch cut from `master` and opened as a pull request into `master`, which the maintainer reviews and
+merges by hand. It is not fixed only on `multiplatform`.
+
+- **The past fixes:** the Android bug fixes made on this branch so far (PROGRESS.md marks them "Android behaviour
+  change" / "Android bug fix") are being carried over now by Atlas's own team as one pull request into `master`, one
+  commit per bug. Its link will be added here and to HANDOVER.md. Forge does not need to open it.
+- **This replaces INSTRUCTION 001, track A, item 2.** Instead of only listing those fixes, the Upstream integrator
+  checks that pull request against its own audit of the files `master` owns (track A, item 1) and reports any Android
+  fix on this branch that the pull request misses, and any change in it that is not a pure bug fix.
+- **From now on:** the Upstream integrator opens such a pull request for every Android bug the team finds, and Forge
+  reports it. When `master` is merged after the maintainer has merged one, the copy on this branch must fall away
+  cleanly; if it does not, say so.

@@ -8,7 +8,7 @@ before [`HANDOVER.md`](HANDOVER.md). When this page and an older document disagr
 
 - **`multiplatform` is the one long-lived branch for every platform other than Android** (desktop: macOS, Windows,
   Linux; iOS). It replaces `claude/kmp-multiplatform-support`. Push only to it. Never push to `master`, never open a
-  pull request into `master`, never tag or publish a release from here, never force-push, never rebase pushed commits.
+  pull request into `master` (except the Android bug-fix pull requests described below), never tag or publish a release from here, never force-push, never rebase pushed commits.
 - **Android lives on `master` and only there.** Nothing is implemented for Android on this branch, and no Android CI
   is needed here. Changes flow one way: `master` is merged into `multiplatform` regularly (see "Merging master");
   nothing flows back by itself.
