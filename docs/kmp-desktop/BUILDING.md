@@ -130,12 +130,20 @@ Configuration (`desktopApp/build.gradle.kts`, `nativeDistributions`):
 | Runtime | jlink image with the modules listed in `modules(...)` (jdeps + run-time additions, see the comment there); `includeAllModules = true` is the documented fallback if a packaged build misses a JDK module |
 | Icons | `desktopApp/icons/komikku.{png,ico,icns}`, generated from the Android launcher icon's vector layers by `python3 desktopApp/icons/generate_icons.py` (Pillow + numpy, offline); re-run it when the launcher icon changes |
 | Windows | menu group "Komikku", desktop shortcut, per-user install, directory chooser, fixed upgrade UUID (never change it: it lets newer MSIs replace older installs); `komikku://` links (tracker logins) registered by the installer, see below |
-| macOS | bundle ID `app.komikku`, category Entertainment |
+| macOS | bundle ID `app.komikku`, category Entertainment; `komikku://` and `tachiyomisy://` links (tracker logins) declared in `Info.plist`, see below |
 | Linux | package `komikku`, menu group / categories `Graphics;Viewer;`, shortcut |
 
-`komikku://` links (tracker logins redirect the browser to `komikku://<tracker>-auth?…`) start the installed app with
-the link as its argument:
-- **Windows `.msi` / `.exe`:** the installer writes `HKCU\Software\Classes\komikku` (`URL Protocol`,
+`komikku://` links (tracker logins redirect the browser to `komikku://<tracker>-auth?…`; MDList to
+`tachiyomisy://mangadex-auth?…`) reach the app, whose login dialog then finishes the login by itself
+(`OAuthRedirectInbox`). It takes a link only while the login dialog of that tracker, opened in this app, waits for it;
+any other link is ignored and logged, so a web page cannot log the app in with a code of its own. A start given a link
+while the app already runs on that data folder hands it to the running app (`DesktopSingleInstance`, `OPEN` request)
+and exits.
+- **macOS app / `.dmg`:** `Info.plist` declares both schemes (`CFBundleURLTypes`, from `nativeDistributions.macOS
+  .infoPlist` in `desktopApp/build.gradle.kts`); macOS registers them when the app is first opened from its place
+  and sends a link to the running app as an open-URL event (`Desktop.setOpenURIHandler`), starting it first if it is
+  not running. Safari asks once whether to open the link with Komikku.
+- **Windows `.msi` / `.exe`** (the installed app is started with the link as its argument): the installer writes `HKCU\Software\Classes\komikku` (`URL Protocol`,
   `shell\open\command` = `"<install dir>\Komikku.exe" "%1"`; HKLM if the install were ever per-machine). Windows
   Installer rewrites the path in an upgrade and removes the key on uninstall. jpackage accepts WiX additions only as
   a `main.wxs` in its resource folder, which Compose replaces with its own, so
@@ -147,7 +155,8 @@ the link as its argument:
   scripts run `update-desktop-database` when it is there (`desktop-file-utils`, on every desktop system), which is
   what browsers look the handler up in.
 - **Linux `.tar.gz`, and `gradle run`:** nothing is registered; tracker logins go through the paste dialog (copy
-  the `komikku://…` address the browser was sent to).
+  the `komikku://…` address the browser was sent to). The same for MDList's `tachiyomisy://` on Windows and Linux,
+  whose packages register `komikku` only.
 - CI: the smoke jobs check the registration after install and its removal after uninstall (`HKCU\…\komikku` on
   Windows, `xdg-mime query default x-scheme-handler/komikku` for the `.deb`, the entry's lines for the RPM).
 | ProGuard | the `release` build type's ProGuard step is disabled: extensions are loaded reflectively against host classes (source API, OkHttp, kotlinx, compat layer) that shrinking would remove or rename. Enabling it needs keep rules for that shared surface |
