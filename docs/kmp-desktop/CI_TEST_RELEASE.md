@@ -5,6 +5,21 @@ Status: Test and release engineer — done: run 46120905511 read, R.2 fixed (15/
 The Test and release engineer's working file (INSTRUCTION 006): results of the desktop CI runs, open CI findings and
 designs not built yet. Forge folds what matters into PROGRESS.md / HANDOVER.md.
 
+## Run 46132077598 (`a997a4421c`: the Windows test fixes, before `0517ff5675`)
+
+| Job | Result |
+|---|---|
+| Package (all four), real-extension self-test (all four) | passed |
+| Smoke, Linux | passed, every row, including the notification rows: C (no service: exit 1, as planned), the plain self-test posting no `Notify`, A (`notify-send`) and B (`gdbus`) with the expected app name, title and escaped body on the bus, and the same body from both. Still with the old menu-folder workaround (`d776182683` is not in it) |
+| Smoke, Windows | passed, every row |
+| Desktop tests (windows-2022, non-blocking) | failed: 484 tests, **4 failed** (48 in run 46120905511), 1 skipped; `:desktop:android-compat:test` 60 tests, 0 failed. The 4 are the two product bugs below and nothing else: `DesktopSingleInstanceTest` busy dialog path (`C:"Users"…`), `DesktopExtensionManagerTest` "loads the installed extensions" (3 jars, 1 expected) and the teardown of it and `ExtensionsUiTest` (only `extensions/jars/*.jar` locked). Once those are fixed the job can become blocking |
+
+- Menu folders on the Linux runner (`logs/menu-folders.log`): `/usr/local/share/applications` is in the image, and
+  `/usr/share/applications` existed before the install (created during the job, apparently by the test tools'
+  packages). So this runner never has "neither folder"; the original failure (run 46120905511) came from the missing
+  `desktop-directories` folder, which postinst now handles. The new rows check the entry wherever it went.
+- Both smoke logs still have 1 line (F1 not in this build); the "no error line" checks stay weak until it is.
+
 ## Run 46120905511 (`2ee84bfca1`, trigger run 14)
 
 | Job | Result |
