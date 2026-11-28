@@ -48,7 +48,8 @@ source settings screen shares with the extension.
 | `android.graphics.Paint` | real behaviour | 182 | Colour, alpha, flags (a new paint filters bitmaps, as on Android 9+), style, stroke width / cap / join / miter, colour filter. Text members (`setTextSize`, `measureText`, …) throw `UnsupportedOnDesktop`; `setTypeface` needs `Typeface`, which the layer does not have. |
 | `android.graphics.Rect` | real behaviour | 162 | Integer rectangle (fields, `set`, `width` / `height`, centres, `isEmpty`, `offset`, `contains`, `equals`). |
 | `android.graphics.drawable.Drawable` | type only | 35 | Type of the extension icon; no drawing. |
-| `android.icu.text.Collator` | real behaviour | 2 | On `java.text.Collator` (strength, decomposition, `compare`, `getInstance`); named in ANSWER 010. Count: extensions that referenced it before it existed. |
+| `android.icu.text.Collator` | real behaviour | 2 | On `java.text.Collator` (strength, decomposition, `compare`, `getInstance`, `freeze`); named in ANSWER 010. `getInstance` returns a `RuleBasedCollator`, as on Android. Count: extensions that referenced it before it existed. |
+| `android.icu.text.RuleBasedCollator` | real behaviour | 2 | On `java.text.RuleBasedCollator` plus ICU's numeric collation (digit runs by value, leading zeros ignored; ANSWER 016). `setCaseLevel(true)` throws `UnsupportedOnDesktop`. `projectsuki` also needs ICU's `StringSearch`, `BreakIterator` and `Normalizer2` (not in the layer). Count: as for `Collator`. |
 | `android.media.MediaScannerConnection` | no-op | 0 | No media index; the callback gets a `null` URI per path. |
 | `android.net.Uri` | real behaviour | 1701 | Parsing and building (hierarchical and opaque URIs). |
 | `android.os.Build` | type only | 106 | Constants: a generic device on SDK 34. |

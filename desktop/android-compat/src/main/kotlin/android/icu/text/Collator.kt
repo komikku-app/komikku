@@ -5,11 +5,14 @@ import java.util.Locale
 /**
  * android-compat: `android.icu.text.Collator` on the JDK's `java.text.Collator` (locale-sensitive string order, used by
  * extensions to sort titles or genres). ICU's strengths and decomposition modes are mapped onto the JDK's;
- * `QUATERNARY` orders like `TERTIARY`, as the JDK has no fourth level.
+ * `QUATERNARY` orders like `TERTIARY`, as the JDK has no fourth level. [getInstance] returns a [RuleBasedCollator], as
+ * on Android. A [frozen][freeze] collator refuses changes and can be shared between threads.
  */
-open class Collator private constructor(private var delegate: java.text.Collator) :
+open class Collator internal constructor(internal var delegate: java.text.Collator) :
     Comparator<Any?>,
     Cloneable {
+
+    private var frozen = false
 
     open fun compare(source: String?, target: String?): Int = delegate.compare(source.orEmpty(), target.orEmpty())
 
@@ -25,6 +28,7 @@ open class Collator private constructor(private var delegate: java.text.Collator
     }
 
     open fun setStrength(newStrength: Int) {
+        checkNotFrozen()
         delegate.strength = when (newStrength) {
             PRIMARY -> java.text.Collator.PRIMARY
             SECONDARY -> java.text.Collator.SECONDARY
@@ -38,6 +42,7 @@ open class Collator private constructor(private var delegate: java.text.Collator
         if (delegate.decomposition == java.text.Collator.NO_DECOMPOSITION) NO_DECOMPOSITION else CANONICAL_DECOMPOSITION
 
     open fun setDecomposition(decomposition: Int) {
+        checkNotFrozen()
         delegate.decomposition = when (decomposition) {
             NO_DECOMPOSITION -> java.text.Collator.NO_DECOMPOSITION
             CANONICAL_DECOMPOSITION -> java.text.Collator.CANONICAL_DECOMPOSITION
@@ -45,9 +50,22 @@ open class Collator private constructor(private var delegate: java.text.Collator
         }
     }
 
-    public override fun clone(): Any = Collator(delegate.clone() as java.text.Collator)
+    /** Makes this collator read-only (ICU's `Freezable`); returns it. */
+    open fun freeze(): Collator = apply { frozen = true }
 
-    override fun equals(other: Any?): Boolean = other is Collator && other.delegate == delegate
+    open fun isFrozen(): Boolean = frozen
+
+    /** A copy that is not frozen. */
+    open fun cloneAsThawed(): Collator = (clone() as Collator).also { it.frozen = false }
+
+    /** A copy with its own settings (frozen if this one is). */
+    public override fun clone(): Any = (super.clone() as Collator).also { it.delegate = delegate.clone() as java.text.Collator }
+
+    protected fun checkNotFrozen() {
+        if (frozen) throw UnsupportedOperationException("Attempt to modify frozen object")
+    }
+
+    override fun equals(other: Any?): Boolean = other is Collator && other.javaClass == javaClass && other.delegate == delegate
 
     override fun hashCode(): Int = delegate.hashCode()
 
@@ -64,7 +82,8 @@ open class Collator private constructor(private var delegate: java.text.Collator
         fun getInstance(): Collator = getInstance(Locale.getDefault())
 
         @JvmStatic
-        fun getInstance(locale: Locale?): Collator = Collator(java.text.Collator.getInstance(locale ?: Locale.getDefault()))
+        fun getInstance(locale: Locale?): Collator =
+            RuleBasedCollator(java.text.Collator.getInstance(locale ?: Locale.getDefault()) as java.text.RuleBasedCollator)
 
         @JvmStatic
         fun getAvailableLocales(): Array<Locale> = java.text.Collator.getAvailableLocales()
