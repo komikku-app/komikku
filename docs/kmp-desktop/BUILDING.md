@@ -343,14 +343,49 @@ the loopback port and token a second start uses to ask it to show its window; re
 
 ## Extension link check
 
-Lists the Android symbols an extension needs that the desktop compat layer lacks (inputs: APKs or
-converted jars you already have locally; nothing is downloaded):
+Lists the Android symbols extensions reference that the desktop host lacks, anywhere in their code (every method body,
+not only what creating the sources touches), and optionally verifies every class, creates the sources and lists the
+compat classes they use. One tool, two class paths:
+
+- `:desktopApp:extensionLinkCheck` checks against the desktop app's class path, the host extensions really run on.
+  Use it for measurements; `--create-sources` works only here (the sources resolve the app's Injekt graph, set up over
+  a data folder in `--work`).
+- `:desktop:extension-runtime:linkCheck` checks against the runtime module's class path (no app libraries such as
+  `okhttp-zstd`, no source creation).
 
 ```bash
-./gradlew :desktop:extension-runtime:linkCheck --args="path/to/ext.apk path/to/dir --output=build/linkcheck.txt"
+# Local files: APKs, converted jars or folders of them
+./gradlew :desktopApp:extensionLinkCheck --args="path/to/ext.apk path/to/dir --output=build/linkcheck.txt"
+
+# A whole store index, one APK at a time (downloaded into --work, checked, deleted), in batches of 250
+commit=$(git ls-remote https://github.com/keiyoushi/extensions.git refs/heads/repo | cut -f 1)
+./gradlew :desktopApp:extensionLinkCheck --args="--index=https://raw.githubusercontent.com/keiyoushi/extensions/$commit/index.pb \
+  --from=0 --count=250 --all-checks --work=/tmp/linkcheck --output=build/linkcheck-0.txt"
+
+# One summary (Markdown) of several reports
+./gradlew :desktopApp:extensionLinkCheck --args="--summarize build/linkcheck-0.txt build/linkcheck-250.txt --summary=build/summary.md"
 ```
 
-Details in [`PROGRESS.md`](PROGRESS.md#link-check-53).
+The packaged app runs it too: `java -cp 'Komikku/lib/app/*' app.komikku.desktop.extension.linkcheck.LinkCheckMainKt …`
+(the scheduled breadth job in `build_desktop.yml`). `--help`, or any unknown option, prints the usage.
+
+| Option | Effect |
+|---|---|
+| `--index=<url or file>` | every APK of a store index (Keiyoushi `index.pb`, gzip or not; Tachiyomi `index.min.json`) |
+| `--from=<n>` / `--count=<n>` | a slice of the inputs (batches) |
+| `--work=<dir>` | downloads, converted jars and the run's data folder (default: a temporary folder, deleted) |
+| `--verify` | load and link every class (the JVM verifier): `Verification: <n> verified, <n> rejected, <n> unresolved` |
+| `--create-sources` | instantiate the sources like the extension manager: `Sources: <n> created`, `Sources: unsupported on desktop: needs <member>`, `Sources: failed: <cause>` |
+| `--compat-usage` | `Compat classes used: …` (the counts in `desktop/android-compat/COMPAT_REGISTRY.md`) |
+| `--all-checks` | the three above |
+| `--output=<file>` | the report, written as it goes |
+| `--summary=<file>` | a Markdown summary: how many convert, resolve, verify, create sources; per missing `android.*` class and member, how many extensions reference it and how many of those do not create their sources; compat class usage |
+| `--summarize` | the inputs are earlier reports: write only their summary |
+| `--strict` | exit code 1 when a symbol is missing |
+
+The report keeps one block per extension, `== <apk>: <n> classes checked` (or `== <apk>: failed: <error>`), then the
+missing classes, methods and fields (`  <symbol>  <- <users>`), then the lines of the enabled checks; the breadth job's
+`desktop_extension_breadth.py` reads the same blocks. Results of the last full run: `EXTENSION_COMPAT.md`.
 
 ## WebView and Cloudflare (P7, P8)
 
