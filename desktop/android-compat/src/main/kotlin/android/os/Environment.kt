@@ -1,11 +1,13 @@
 package android.os
 
+import app.komikku.desktop.compat.ExtensionDataFolders
 import tachiyomi.core.common.desktop.DesktopDirs
 import java.io.File
 
 /**
  * android-compat: `android.os.Environment`. "External storage" is the user's home directory and
- * is always mounted; the data directory is the desktop data dir.
+ * is always mounted; the data directory is the desktop data dir, or the asking extension's own folder
+ * (`extensions-data/<package>/`).
  */
 object Environment {
 
@@ -53,10 +55,10 @@ object Environment {
     fun getExternalStorageState(path: File): String = if (path.exists()) MEDIA_MOUNTED else MEDIA_UNKNOWN
 
     @JvmStatic
-    fun getDataDirectory(): File = DesktopDirs.dataDir
+    fun getDataDirectory(): File = ExtensionDataFolders.forCaller() ?: DesktopDirs.dataDir
 
     @JvmStatic
-    fun getDownloadCacheDirectory(): File = DesktopDirs.dataDir.resolve("cache")
+    fun getDownloadCacheDirectory(): File = getDataDirectory().resolve("cache")
 
     @JvmStatic
     fun isExternalStorageEmulated(): Boolean = false

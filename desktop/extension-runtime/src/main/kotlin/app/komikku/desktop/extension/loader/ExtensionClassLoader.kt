@@ -1,5 +1,6 @@
 package app.komikku.desktop.extension.loader
 
+import app.komikku.desktop.compat.ExtensionDataOwner
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -27,7 +28,10 @@ class ExtensionClassLoader(
     jar: File,
     parent: ClassLoader,
     private val sharedPackages: List<String> = DEFAULT_SHARED_PACKAGES,
-) : URLClassLoader(arrayOf(jar.toURI().toURL()), parent) {
+    /** The extension's own data folder: every path the compat layer's contexts hand to its code lies inside. */
+    override val extensionDataDir: File? = null,
+) : URLClassLoader(arrayOf(jar.toURI().toURL()), parent),
+    ExtensionDataOwner {
 
     private val platform: ClassLoader = getPlatformClassLoader()
 

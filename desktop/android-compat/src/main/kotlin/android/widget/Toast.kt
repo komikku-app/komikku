@@ -20,7 +20,7 @@ class Toast(
         text = s ?: ""
     }
 
-    fun setText(resId: Int): Unit = unsupported("Toast.setText(resId)")
+    fun setText(resId: Int): Unit = unsupported("android.widget.Toast", "setText(resId)")
 
     fun show() {
         presenter(text, duration)
@@ -47,6 +47,6 @@ class Toast(
             }
 
         @JvmStatic
-        fun makeText(context: Context?, resId: Int, duration: Int): Toast = unsupported("Toast.makeText(resId)")
+        fun makeText(context: Context?, resId: Int, duration: Int): Toast = unsupported("android.widget.Toast", "makeText(context, resId, duration)")
     }
 }

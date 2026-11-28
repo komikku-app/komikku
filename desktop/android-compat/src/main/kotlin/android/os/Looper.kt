@@ -52,12 +52,12 @@ class Looper private constructor() {
         fun myLooper(): Looper? = main.takeIf { it.isCurrentThread }
 
         @JvmStatic
-        fun prepare(): Unit = unsupported("Looper.prepare()")
+        fun prepare(): Unit = unsupported("android.os.Looper", "prepare()")
 
         @JvmStatic
-        fun prepareMainLooper(): Unit = unsupported("Looper.prepareMainLooper()")
+        fun prepareMainLooper(): Unit = unsupported("android.os.Looper", "prepareMainLooper()")
 
         @JvmStatic
-        fun loop(): Unit = unsupported("Looper.loop()")
+        fun loop(): Unit = unsupported("android.os.Looper", "loop()")
     }
 }

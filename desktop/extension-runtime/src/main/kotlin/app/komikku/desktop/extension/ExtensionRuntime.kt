@@ -40,12 +40,16 @@ data class ClassVerification(
  *
  * Jars converted from APKs are cached in `<extensionsDir>/jars/` (see [DexJarConverter]).
  *
+ * @param dataDir the parent of the extensions' own data folders, `<dataDir>/<package>/`: every path the compat layer
+ * hands to an extension's code (`Context.cacheDir`, `ApplicationInfo.dataDir`, …) lies in its folder, never in the
+ * app's data folder (ATLAS_INSTRUCTIONS.md ANSWER 010). Defaults to `extensions-data/` next to [extensionsDir].
  * @param hostClassLoader the parent of every extension class loader; it must see the compat layer,
  * `source-api` and the network stack (the application class loader on desktop).
  */
 class ExtensionRuntime(
     extensionsDir: File,
     private val hostClassLoader: ClassLoader = ExtensionRuntime::class.java.classLoader,
+    val dataDir: File = File(extensionsDir.absoluteFile.parentFile, DATA_FOLDER),
 ) {
 
     val jarCacheDir: File = File(extensionsDir, "jars")
@@ -58,6 +62,9 @@ class ExtensionRuntime(
     } catch (e: Exception) {
         ExtensionPackageResult.Rejected("Not a readable APK (${apk.name}): ${e.message}")
     }
+
+    /** [extension]'s own data folder, `<dataDir>/<package>/` (not created here). */
+    fun dataDirOf(extension: ExtensionPackage): File = ExtensionPaths.packageFile(dataDir, extension.pkgName)
 
     /** The cached converted jar of [extension] (whether it exists or not). */
     fun cachedJar(extension: ExtensionPackage): File = converter.cachedJar(extension.apk.sha256)
@@ -85,7 +92,7 @@ class ExtensionRuntime(
                     conversion.unverifiableClasses.joinToString("\n")
             }
         }
-        val classLoader = ExtensionClassLoader(conversion.jar, hostClassLoader)
+        val classLoader = ExtensionClassLoader(conversion.jar, hostClassLoader, extensionDataDir = dataDirOf(extension))
         val sources = try {
             instantiateSources(extension.sourceClassNames, classLoader)
         } catch (e: Throwable) {
@@ -99,6 +106,9 @@ class ExtensionRuntime(
     fun pruneJarCache(installedApkHashes: Set<String>) = converter.prune(installedApkHashes)
 
     companion object {
+        /** The folder of the extensions' own data folders, next to the extensions folder. */
+        const val DATA_FOLDER = "extensions-data"
+
         /** Instantiates [classNames] from [classLoader] like `ExtensionLoader`. */
         fun instantiateSources(classNames: List<String>, classLoader: ClassLoader): List<Source> =
             classNames.flatMap { className ->

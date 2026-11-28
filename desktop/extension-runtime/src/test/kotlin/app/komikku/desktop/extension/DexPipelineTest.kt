@@ -1,5 +1,6 @@
 package app.komikku.desktop.extension
 
+import app.komikku.desktop.compat.ExtensionDataOwner
 import app.komikku.desktop.extension.dex.DexJarConverter
 import app.komikku.desktop.extension.testing.FixtureApk
 import app.komikku.desktop.extension.testing.FixtureClasses
@@ -57,6 +58,9 @@ class DexPipelineTest {
         val cached = File(runtime.jarCacheDir, "${inspected.extension.apk.sha256}-v${DexJarConverter.CACHE_VERSION}.jar")
         cached.isFile shouldBe true
         loaded.jar shouldBe cached
+        // Paths handed to the extension's code lie in its own folder, never the app's data folder (ANSWER 010)
+        (loaded.classLoader as ExtensionDataOwner).extensionDataDir shouldBe
+            File(dir, "extensions-data/eu.kanade.tachiyomi.extension.en.dexfixture").canonicalFile
         // APK entries are resources of the extension's class loader, like on Android (Keiyoushi's i18n assets)
         loaded.classLoader.getResourceAsStream(ASSET)!!.use { it.readBytes().decodeToString() } shouldBe "greeting=hello"
         ZipFile(cached).use { zip -> zip.getEntry("classes.dex") shouldBe null }
