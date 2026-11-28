@@ -168,7 +168,11 @@ the trigger and the marker file when the port reaches master.
   and runs the self-test with the Keiyoushi extensions pinned by commit and SHA-256 in
   `.github/desktop-test-extensions.txt`, the only place third-party extension code runs; never gates a release; bump the
   list with `.github/scripts/desktop_test_extensions.sh pin .github/desktop-test-extensions.txt` in a reviewed commit),
-  `release` (`contents: write`; needs `plan` and `package`; only when the mode is not `none`).
+  `extension-breadth` (non-blocking, `contents: read`, no secrets; on the weekly schedule once the workflow is on the
+  default branch, and on this branch's bring-up runs: the link checker inside the packaged Linux app over every APK
+  of Keiyoushi's live index, a static check; summary in the job summary, full report in the artifact
+  `desktop-extension-breadth-<sha>`), `release` (`contents: write`; needs `plan` and `package`; only when the mode is
+  not `none`).
 - **Non-blocking jobs** (`continue-on-error`; `release` never depends on them): `windows-test` runs `:desktopApp:test`
   on `windows-2022` and uploads the test report when it fails; `smoke` installs the `package` job's `.deb` / `.msi` on
   `ubuntu-24.04` (Xvfb + openbox) and `windows-2022`, starts the installed app on a fresh data folder, takes

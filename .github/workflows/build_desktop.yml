@@ -49,6 +49,10 @@ on:
       - '.github/desktop-build-trigger'
     # KMK <--
   # KMK -->
+  # Weekly, for `extension-breadth` (and a full build with it, artifacts only). GitHub runs schedules only from the
+  # default branch, so this starts once the workflow is there; until then the bring-up runs above carry that job.
+  schedule:
+    - cron: '17 3 * * 1'
   # Pull requests into this branch run only `pr-check` (ATLAS_INSTRUCTIONS.md ANSWER 009 point 3: the desktop job left
   # build_pull_request.yml, which is master's again); same path filter as that workflow
   pull_request:
@@ -582,6 +586,84 @@ jobs:
             echo "::error::The packaged app's self-test with real extensions failed (exit code $status)"
             exit 1
           fi
+
+  # ANSWER 010: the breadth check. The link checker inside the packaged Linux app (its jars as the host class path, the
+  # runner's JDK 21; the app's runtime has no `java` command) over every APK in Keiyoushi's live index: which android.*
+  # classes the catalogue references and how many extensions each blocks, host library gaps, conversion failures, as
+  # a job summary and the artifact desktop-extension-breadth-<sha>. Static (no extension code runs), no secrets, never
+  # gates anything. On the schedule (once this workflow is on the default branch) and on this branch's bring-up runs,
+  # never on a tag or a dispatched run.
+  extension-breadth:
+    name: Link check of the Keiyoushi catalogue (non-blocking)
+    needs: package
+    if: >-
+      ${{ !cancelled() && needs.package.result != 'skipped'
+      && (github.event_name == 'schedule' || (github.event_name == 'push' && github.ref_type == 'branch')) }}
+    runs-on: 'ubuntu-24.04'
+    continue-on-error: true
+    timeout-minutes: 90
+    concurrency:
+      group: ${{ github.workflow }}-extension-breadth-${{ github.ref }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Clone scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
+      - name: Download the Linux package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: Komikku-desktop-linux-X64-${{ github.sha }}
+          path: packages
+
+      - name: Download the catalogue
+        run: |
+          set -euo pipefail
+          commit=$(git ls-remote https://github.com/keiyoushi/extensions.git refs/heads/repo | cut -f 1)
+          if ! [[ $commit =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::No head commit of keiyoushi/extensions' repo branch"
+            exit 1
+          fi
+          echo "INDEX_COMMIT=$commit" >> "$GITHUB_ENV"
+          mkdir -p catalogue breadth
+          curl -fsSL --retry 3 "https://raw.githubusercontent.com/keiyoushi/extensions/$commit/index.pb" | gzip -dc > index.bin
+          grep -a -o -E 'https://github\.com/keiyoushi/extensions/releases/download/[^/"]+/tachiyomi-[a-z0-9_.]+-v[0-9.]+\.apk' \
+            index.bin | sort -u > breadth/apk-urls.txt
+          rm index.bin
+          : > breadth/download-failures.txt
+          xargs -P 8 -I '{}' sh -c 'curl -fsSL --retry 3 --output-dir catalogue -O "$1" || echo "$1" >> breadth/download-failures.txt' \
+            _ '{}' < breadth/apk-urls.txt
+          echo "$(wc -l < breadth/apk-urls.txt) APKs in the index at $commit, $(find catalogue -name '*.apk' | wc -l) downloaded," \
+            "$(wc -l < breadth/download-failures.txt) failed (breadth/download-failures.txt)"
+
+      - name: Link check
+        run: |
+          set -euo pipefail
+          tarballs=(packages/*.tar.gz)
+          mkdir -p app
+          tar -xzf "${tarballs[0]}" -C app
+          "$JAVA_HOME_21_X64/bin/java" -cp 'app/Komikku/lib/app/*' app.komikku.desktop.extension.linkcheck.LinkCheckMainKt \
+            catalogue --output=breadth/linkcheck.txt > /dev/null
+          python3 .github/scripts/desktop_extension_breadth.py breadth/linkcheck.txt "$INDEX_COMMIT" > breadth/summary.md
+          cat breadth/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-extension-breadth-${{ github.sha }}
+          path: breadth/
+          if-no-files-found: warn
+          retention-days: 30
 
   # Track D, step 1 (docs/kmp-desktop/WINDOWS_LINUX_TEST_PLAN.md): the desktop unit + headless UI tests on Windows,
   # where they had never run. Non-blocking (`continue-on-error`): a failure marks this job red but neither fails the
