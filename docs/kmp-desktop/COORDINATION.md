@@ -19,8 +19,18 @@ before [`HANDOVER.md`](HANDOVER.md). When this page and an older document disagr
      `:desktop:*`, `:app-shared` desktop / iOS source sets, `:source-js`, `:core:quickjs`);
   3. only when neither works, change the shared file: the smallest possible change, inside `// KMK -->` /
      `// KMK <--`, recorded in PROGRESS.md under "Changes to files owned by master" with the reason.
-  A change of the third kind that is really an Android bug fix is reported to the Architect: it has to reach `master`
-  through the maintainer, not through this branch.
+  A change of the third kind that is really an Android bug fix is not made here first: see the next point.
+- **Android bugs go to `master` as pull requests** (maintainer's rule, 2026-11-28). Whoever finds a bug in Android
+  code, on this branch or while reading `master`, does not fix it only here. The fix is made against `master`, one
+  bug per commit, with a test where `master` has the means, checked with `spotlessCheck` and
+  `:app:compileDebugKotlin`, and opened as a pull request into `master` that follows the repository's pull request
+  template. The maintainer reviews and merges it by hand: never merge it, never push to `master`. This is the one
+  exception to "no pull request into `master`". Who opens it: Forge's team pushes only to `multiplatform`, so its
+  *Upstream integrator* prepares the fix against `master` and commits it as a patch file under
+  `docs/kmp-desktop/android-fixes/`; Atlas's team applies it on a branch cut from `master` (`fix/<short-name>`) and
+  opens the pull request (ATLAS_INSTRUCTIONS.md, DECISION 002 and ANSWER 003). The fix reaches `multiplatform` with
+  the next merge of `master`; if the other platforms cannot wait, the same change may be applied here inside
+  `// KMK` markers, identical to the pull request, so the later merge is clean. Open ones are listed in HANDOVER.md.
 - The Android gates are still used as **compatibility checks, not as Android work**: `:app:verifyBorrowedSources`
   always, and `:app:compileDebugKotlin` when a file that `master` owns was touched, so the next merge does not
   surprise us. No `assemble*`, no Android tests, no Android CI on this branch.
