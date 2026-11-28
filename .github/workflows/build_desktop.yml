@@ -8,7 +8,7 @@ name: Desktop builder
 # KMK -->
 # Two non-blocking jobs never hold up a release: the desktop tests on Windows (`windows-test`) and a smoke test of the
 # installed app on Linux and Windows (`smoke`; how to read it: the comment above that job). Third-party extension code
-# runs only in `extension-check`, which can reach no secret (REVIEW_M3.md finding 1).
+# runs only in `extension-check`, which can reach no secret and gates nothing (ATLAS_INSTRUCTIONS.md ANSWER 010).
 # KMK <--
 
 on:
@@ -378,14 +378,15 @@ jobs:
   # KMK -->
   # M3: the packaged app's self-test with real extensions. The second macOS test build converted Keiyoushi's
   # extensions into classes the JVM's verifier rejects (no stack map frames, R8-inlined constructors) while the fixture
-  # passed; this job converts the current Hiperdex, Kagane, MangaDex and Weeb Central APKs (resolved from Keiyoushi's
-  # index), verifies every class and fails on classes the host libraries lack.
-  # Contained (REVIEW_M3.md finding 1): creating their sources runs third-party code, so it never runs where a secret
-  # can be reached. This job references no secret, its token is read-only, it does not check out the repository (no
-  # stored credentials), and after the extension code has run no further step runs (nothing could read a later
-  # action's runtime token). It unpacks the installers `package` uploaded (Linux .tar.gz, macOS .dmg, Windows .msi as
-  # an administrative image) instead of building again. It gates `release` as the same check did inside `package`.
-  # The downloads are not pinned yet (design question D3 in REVIEW_M3.md).
+  # passed; this job converts the extensions pinned in .github/desktop-test-extensions.txt (Hiperdex, Kagane, MangaDex,
+  # Weeb Central), verifies every class and fails on classes the host libraries lack.
+  # Contained (REVIEW_M3.md finding 1, ATLAS_INSTRUCTIONS.md ANSWER 010): creating their sources runs third-party code,
+  # so it never runs where a secret can be reached or an installer is made. This job references no secret, its token
+  # is read-only, it does not check out the repository (no stored credentials, no post step), and no step runs after
+  # the extension code (no later action whose runtime token, which can write caches and artifacts, could be read).
+  # Each APK is fetched by the Keiyoushi commit the list pins and checked against its SHA-256 before it is loaded.
+  # It unpacks the installers `package` uploaded (Linux .tar.gz, macOS .dmg, Windows .msi as an administrative image)
+  # instead of building again. It never gates `release` (ANSWER 010).
   extension-check:
     name: Self-test with real extensions (${{ matrix.os }})
     needs: package
@@ -465,6 +466,18 @@ jobs:
           }
           "KOMIKKU_LAUNCHER=$($launcher.FullName)" >> $env:GITHUB_ENV
 
+      # This run's pinned list and its script through the API, not a checkout (see the note above the job)
+      - name: Get the pinned extension list
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for file in .github/desktop-test-extensions.txt .github/scripts/desktop_test_extensions.sh; do
+            mkdir -p "$(dirname "$file")"
+            gh api -H 'Accept: application/vnd.github.raw+json' \
+              "repos/$GITHUB_REPOSITORY/contents/$file?ref=$GITHUB_SHA" > "$file"
+          done
+
       # The last step of this job (see the note above the job)
       - name: Self-test with real extensions
         timeout-minutes: 10
@@ -478,20 +491,7 @@ jobs:
           fi
           extensions=self-test-extensions
           rm -rf "$extensions"
-          mkdir -p "$extensions"
-          curl -fsSL --retry 3 -o "$extensions/index.pb" https://github.com/keiyoushi/extensions/raw/repo/index.pb
-          gzip -dc "$extensions/index.pb" > "$extensions/index.bin"
-          for name in en.hiperdex all.kagane all.mangadex en.weebcentral; do
-            url=$(grep -a -o "https://github.com/keiyoushi/extensions/releases/download/[^/\"]*/tachiyomi-${name}-v[0-9.]*\.apk" \
-              "$extensions/index.bin" | head -n 1 || true)
-            if [ -z "$url" ]; then
-              echo "::error::No APK of $name in Keiyoushi's index"
-              exit 1
-            fi
-            echo "$url"
-            curl -fsSL --retry 3 -o "$extensions/${url##*/}" "$url"
-          done
-          rm -f "$extensions/index.pb" "$extensions/index.bin"
+          bash .github/scripts/desktop_test_extensions.sh fetch .github/desktop-test-extensions.txt "$extensions"
           # Relative paths: Git Bash would not turn --self-test=/d/... into a Windows path for the launcher
           report=self-test-report.txt
           rm -f "$report"
@@ -629,15 +629,12 @@ jobs:
   release:
     name: Attach to release ${{ needs.plan.outputs.tag }}
     # KMK -->
-    # Never on `windows-test` or `smoke` while they are non-blocking (ATLAS_INSTRUCTIONS.md, ANSWER 005).
-    # `extension-check` is the real-extension self-test that used to run inside `package`, so it gates as before.
+    # Never on `windows-test` or `smoke` while they are non-blocking (ATLAS_INSTRUCTIONS.md, ANSWER 005), never on
+    # `extension-check` (ANSWER 010: third-party code never gates a release)
     # KMK <--
     needs:
       - plan
       - package
-      # KMK -->
-      - extension-check
-      # KMK <--
     if: needs.plan.outputs.mode != 'none'
     runs-on: 'ubuntu-24.04'
     # One upload per release tag at a time, never cancelled by a newer run (see the note at the top)

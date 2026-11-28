@@ -1,0 +1,13 @@
+# KMK: the real Keiyoushi extensions the `extension-check` job of .github/workflows/build_desktop.yml loads into the
+# packaged desktop app (docs/kmp-desktop/ATLAS_INSTRUCTIONS.md, ANSWER 010). One line per extension:
+#
+#   <package> <commit of keiyoushi/extensions' repo branch> <SHA-256 of the APK> <APK file name>
+#
+# The job reads that commit's index.pb for the APK's download URL, downloads it and compares its SHA-256 before
+# anything is loaded; a different hash fails the job without running the file. No APK is committed.
+# To bump: `.github/scripts/desktop_test_extensions.sh pin .github/desktop-test-extensions.txt` prints these lines for
+# the current head of the repo branch; replace them in a reviewed commit.
+eu.kanade.tachiyomi.extension.en.hiperdex 37749703dfa1ea3f715467dba1494dd57241f3ea 47e34e46967f7b34c7358bca99216be5f46b47eb5625a89c2fda542e50f7ae49 tachiyomi-en.hiperdex-v1.6.91.apk
+eu.kanade.tachiyomi.extension.all.kagane 37749703dfa1ea3f715467dba1494dd57241f3ea a33071a8aeee4bda256cf6e51052dad2bc928f94aa92b908784127a27c3e86c7 tachiyomi-all.kagane-v1.6.42.apk
+eu.kanade.tachiyomi.extension.all.mangadex 37749703dfa1ea3f715467dba1494dd57241f3ea 6e7c90200dbfe6cb74967a4b1ecc769fe5011a2c2587d43da8f14cf1b7ab9d69 tachiyomi-all.mangadex-v1.6.5.apk
+eu.kanade.tachiyomi.extension.en.weebcentral 37749703dfa1ea3f715467dba1494dd57241f3ea 35bf8f15a6f724279bc75a5a0b6b7df8b0d5ea8b6dcbda1cee22d582cf034d4d tachiyomi-en.weebcentral-v1.6.27.apk
