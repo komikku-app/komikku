@@ -10,6 +10,7 @@ import app.komikku.shared.jssource.JsSourceStoreException.Reason
 import app.komikku.shared.jssource.MangayomiSourceStore
 import app.komikku.sourcejs.mihon.JsSourceIds
 import app.komikku.sourcejs.mihon.MangayomiJsRuntime
+import app.komikku.sourcejs.mihon.MangayomiJsSource
 import app.komikku.sourcejs.repo.JsSourceStatus
 import app.komikku.sourcejs.sha256Hex
 import eu.kanade.tachiyomi.network.NetworkHelper
@@ -159,6 +160,14 @@ class MangayomiSourceStoreTest {
 
     private suspend fun item(s: MangayomiSourceStore = store) = s.items.first().single { it.id == ID }
 
+    /**
+     * [MangayomiSourceStore.sources] once it matches [predicate]. It follows an install, update or uninstall on the
+     * store's scope, not before that call returns (a read of `.value` right after `uninstall` saw the source still
+     * there: CI run 46129485116).
+     */
+    private suspend fun MangayomiSourceStore.sourcesWhere(predicate: (List<MangayomiJsSource>) -> Boolean) =
+        withTimeout(5_000) { sources.first(predicate) }
+
     @Test
     @Order(1)
     fun `refuses http and broken repositories`(): Unit = runBlocking {
@@ -271,7 +280,7 @@ class MangayomiSourceStoreTest {
         store.iconFileForSource(source.id).shouldBeNull()
         route("/icon.png", "PNG-BYTES")
         source.getPopularManga(1).mangas.single().title shouldBe "First v2"
-        store.sources.value.single() shouldBe source
+        store.sourcesWhere { it == listOf(source) }
         val record = store.installed.value!!.single()
         record.descriptor.version shouldBe "0.0.2"
         record.installedAt shouldBe installedAt
@@ -296,8 +305,8 @@ class MangayomiSourceStoreTest {
     fun `NSFW sources are left out while hidden`(): Unit = runBlocking {
         route("/repo/index.json", index(version = "0.0.3", nsfw = true))
         store.refresh()
-        store.update(ID, store.downloadUpdate(ID).sha256)
-        store.sources.value.size shouldBe 1
+        val source = store.update(ID, store.downloadUpdate(ID).sha256)
+        store.sourcesWhere { it == listOf(source) }
         showNsfw.value = false
         withTimeout(5_000) { store.sources.first { it.isEmpty() } }
         // Still listed (installed) so it can be uninstalled.
@@ -323,7 +332,7 @@ class MangayomiSourceStoreTest {
         val sha = store.installed.value!!.single().sha256
         val sourceId = JsSourceIds.komikkuId(ID)
         store.uninstall(ID)
-        store.sources.value.shouldBeEmpty()
+        store.sourcesWhere { it.isEmpty() }
         store.installed.value.shouldNotBeNull().shouldBeEmpty()
         File(storeDir, "code/$sha.js").exists() shouldBe false
         store.iconFileForSource(sourceId).shouldBeNull()
@@ -487,7 +496,7 @@ class MangayomiSourceStoreTest {
         failure.shouldBeStoreFailure()
 
         // The installed version is unchanged and still works.
-        s.sources.value.single() shouldBeSameInstanceAs old
+        s.sourcesWhere { it.isNotEmpty() }.single() shouldBeSameInstanceAs old
         s.installed.value!!.single().descriptor.version shouldBe "1.0.0"
         File(dir, "code/${sha256Hex(v1)}.js").isFile shouldBe true
         File(dir, "code/${download.sha256}.js").exists() shouldBe false
@@ -504,7 +513,7 @@ class MangayomiSourceStoreTest {
         // Once the manifest can be written again, the update goes through.
         manifest.deleteRecursively()
         val updated = s.update(FAIL_ID, download.sha256)
-        s.sources.value.single() shouldBeSameInstanceAs updated
+        s.sourcesWhere { it.singleOrNull() === updated }
         s.installed.value!!.single().descriptor.version shouldBe "1.0.1"
         File(dir, "code/${sha256Hex(v1)}.js").exists() shouldBe false
     }
