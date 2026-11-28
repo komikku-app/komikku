@@ -33,7 +33,7 @@ tasks.named { it == "packageDeb" || it == "packageReleaseDeb" }.configureEach {
             val control = work.resolve("DEBIAN")
             for (script in scripts) {
                 val original = control.resolve(script.name)
-                val commands = original.readLines().map { it.trim() }.filter { "xdg-" in it }
+                val commands = original.readLines().map { it.trim() }.filter(::runsXdgCommand)
                 check(commands == listOf(expectedCommands.getValue(script.name))) {
                     "jpackage's ${script.name} in ${deb.name} runs $commands; update desktopApp/packaging/linux"
                 }
@@ -79,10 +79,13 @@ tasks.named { it == "packageRpm" || it == "packageReleaseRpm" }.configureEach {
     }
 }
 
+/** Whether a script line calls an `xdg-` tool; the spec also names the `xdg-utils` package in `%if` and `Requires:`. */
+fun runsXdgCommand(line: String): Boolean = Regex("""(^|[;&|(]\s*)xdg-[\w-]+(\s|$)""").containsMatchIn(line)
+
 fun replaceRpmScriptlets(spec: String, rpmName: String): String {
     val lines = spec.lines().toMutableList()
-    val commands = lines.map { it.trim() }.filter { "xdg-" in it }
-    val expected = rpmScriptlets.flatMap { it.second }.filter { "xdg-" in it }
+    val commands = lines.map { it.trim() }.filter(::runsXdgCommand)
+    val expected = rpmScriptlets.flatMap { it.second }.filter(::runsXdgCommand)
     check(commands == expected) { "jpackage's spec for $rpmName runs $commands; update desktopApp/packaging/linux" }
     for ((section, body, replacement) in rpmScriptlets) {
         val start = lines.indexOf(section)
