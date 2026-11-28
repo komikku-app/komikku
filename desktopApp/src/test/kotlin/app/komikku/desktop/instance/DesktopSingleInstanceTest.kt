@@ -39,7 +39,8 @@ import kotlin.time.Duration.Companion.milliseconds
  * lock is per process): they exit with 0 and the running instance's "show window" callback runs; a killed holder's lock
  * is released by the system and its port file ignored; two data folders do not affect each other; a wrong token or
  * garbage is dropped without an answer; no answer within the timeout means "busy" (exit 1). An instance that is shutting
- * down no longer answers, and a slow client holds the listener for one read timeout at most.
+ * down no longer answers, and a slow client holds the listener for one read timeout at most. A start with an address
+ * (an OAuth redirect on Windows / Linux) hands it to the running instance instead of asking for the window.
  */
 class DesktopSingleInstanceTest {
 
@@ -67,6 +68,59 @@ class DesktopSingleInstanceTest {
         second.process.exitValue() shouldBe 0
         shown.tryAcquire(5, TimeUnit.SECONDS) shouldBe true
         second.remainingOutput() shouldBe emptyList()
+    }
+
+    @Test
+    fun `a second start with an address hands it to the running instance and exits with code 0`() {
+        val dataDir = folder("data")
+        val opened = LinkedBlockingQueue<String>()
+        val shown = Semaphore(0)
+        primary(dataDir).apply {
+            onOpenRequest = { opened.put(it) }
+            onShowRequest = { shown.release() }
+        }
+
+        val second = startChild(dataDir, open = REDIRECT)
+
+        second.process.waitFor(CHILD_TIMEOUT_S, TimeUnit.SECONDS) shouldBe true
+        second.process.exitValue() shouldBe 0
+        opened.poll(5, TimeUnit.SECONDS) shouldBe REDIRECT
+        shown.availablePermits() shouldBe 0
+    }
+
+    @Test
+    fun `an address that comes before the window is there is delivered when it is`() {
+        val dataDir = folder("data")
+        val instance = primary(dataDir)
+
+        DesktopSingleInstance.acquire(dataDir, openAddress = REDIRECT) shouldBe DesktopSingleInstance.Outcome.ShownOther
+        val opened = LinkedBlockingQueue<String>()
+        instance.onOpenRequest = { opened.put(it) }
+
+        opened.poll(5, TimeUnit.SECONDS) shouldBe REDIRECT
+    }
+
+    @Test
+    fun `an open request with a wrong token or an address that is empty, too long or not printable ASCII is ignored`() {
+        val dataDir = folder("data")
+        val opened = LinkedBlockingQueue<String>()
+        primary(dataDir, readTimeoutMs = 300).onOpenRequest = { opened.put(it) }
+        val portFile = dataDir.toPath().resolve(DesktopSingleInstance.PORT_FILE)
+        val endpoint = InstancePortFile.read(portFile).shouldNotBeNull()
+
+        send(endpoint.port, InstanceSignal.openRequest(InstanceSignal.newToken(), REDIRECT)) shouldBe null
+        send(endpoint.port, "OPEN ${endpoint.token} \n".toByteArray()) shouldBe null
+        send(endpoint.port, "OPEN ${endpoint.token}\n".toByteArray()) shouldBe null
+        send(endpoint.port, "OPEN ${endpoint.token} komikku://a?code=a b\n".toByteArray()) shouldBe null
+        send(endpoint.port, "OPEN ${endpoint.token} komikku://a?code=\u00e9\n".toByteArray()) shouldBe null
+        val tooLong = "komikku://a?code=" + "x".repeat(InstanceSignal.MAX_ADDRESS_BYTES)
+        send(endpoint.port, "OPEN ${endpoint.token} $tooLong\n".toByteArray()) shouldBe null
+        InstanceSignal.requestOpen(portFile, tooLong, DesktopSingleInstance.ANSWER_TIMEOUT) shouldBe false
+        opened.isEmpty() shouldBe true
+
+        val longest = "komikku://a?code=" + "x".repeat(InstanceSignal.MAX_ADDRESS_BYTES - 17)
+        InstanceSignal.requestOpen(portFile, longest, DesktopSingleInstance.ANSWER_TIMEOUT) shouldBe true
+        opened.poll(5, TimeUnit.SECONDS) shouldBe longest
     }
 
     @Test
@@ -428,7 +482,7 @@ class DesktopSingleInstanceTest {
     }
 
     /** Starts [SingleInstanceChild] on [dataDir] in a new JVM with this test's class path (through an argument file). */
-    private fun startChild(dataDir: File, unlockable: Boolean = false): Child {
+    private fun startChild(dataDir: File, unlockable: Boolean = false, open: String? = null): Child {
         val index = children.size
         val argFile = File(tempDir, "child-$index.args")
         val classPath = System.getProperty("java.class.path").replace("\\", "\\\\").replace("\"", "\\\"")
@@ -440,12 +494,16 @@ class DesktopSingleInstanceTest {
             "@${argFile.path}",
             SingleInstanceChild::class.java.name,
             dataDir.path,
-            *listOfNotNull(SingleInstanceChild.UNLOCKABLE.takeIf { unlockable }).toTypedArray(),
+            *listOfNotNull(
+                SingleInstanceChild.UNLOCKABLE.takeIf { unlockable },
+                open?.let { SingleInstanceChild.OPEN + it },
+            ).toTypedArray(),
         ).start()
         return Child(process).also { children += it }
     }
 
     private companion object {
         const val CHILD_TIMEOUT_S = 30L
+        const val REDIRECT = "komikku://myanimelist-auth?code=def50200a1&state=x"
     }
 }

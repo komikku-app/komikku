@@ -31,7 +31,8 @@ import kotlin.time.Duration.Companion.seconds
  * process ends; the system releases it when the process dies, also after a crash or `kill -9`. The instance that holds
  * it listens for "show your window" requests ([InstanceSignal]) and writes where to reach it to [PORT_FILE].
  *
- * A start that finds the lock taken asks the running instance to show its window and exits with code 0 ([ensure]); when
+ * A start that finds the lock taken asks the running instance to show its window, or to open the address it was started
+ * with (an OAuth tracker redirect on Windows / Linux, `OAuthRedirectInbox`), and exits with code 0 ([ensure]); when
  * no answer comes within [ANSWER_TIMEOUT] (it keeps retrying until then: the running instance may only just have taken
  * the lock, or may be quitting, which stops answering at once ([stopListening]) and releases the lock when it exits), a
  * dialog says another Komikku is using the data folder and it exits with code 1. A port file left by a process that died is never trusted: the next holder of the lock replaces it.
@@ -63,6 +64,16 @@ class DesktopSingleInstance private constructor(
         get() = server?.onShowRequest
         set(value) {
             server?.onShowRequest = value
+        }
+
+    /**
+     * Called on a background thread with the address another start on this data folder was asked to open; like
+     * [onShowRequest], one that comes before this is set is delivered when it is set.
+     */
+    var onOpenRequest: ((String) -> Unit)?
+        get() = server?.onOpenRequest
+        set(value) {
+            server?.onOpenRequest = value
         }
 
     /**
@@ -101,7 +112,7 @@ class DesktopSingleInstance private constructor(
         /** This process owns the data folder now. */
         class Primary(val instance: DesktopSingleInstance) : Outcome
 
-        /** Another process owns it and was asked to show its window. */
+        /** Another process owns it and was asked to show its window (or to open the address). */
         data object ShownOther : Outcome
 
         /** Another process owns it and did not answer in time. */
@@ -126,17 +137,20 @@ class DesktopSingleInstance private constructor(
 
         /**
          * The start-up check: returns this process's instance when it owns [dataDir]; otherwise asks the running one to
-         * show its window and calls [exit] with 0, or shows [showBusy] and calls [exit] with 1 when it does not answer.
+         * show its window (to open [openAddress] when there is one) and calls [exit] with 0, or shows [showBusy] and calls
+         * [exit] with 1 when it does not answer.
          */
         fun ensure(
             dataDir: File,
+            openAddress: String? = null,
             exit: (Int) -> Nothing = { exitProcess(it) },
             showBusy: (File) -> Unit = ::showBusyDialog,
             tryLock: (FileChannel) -> FileLock? = { it.tryLock() },
-        ): DesktopSingleInstance = when (val outcome = acquire(dataDir, tryLock = tryLock)) {
+        ): DesktopSingleInstance = when (val outcome = acquire(dataDir, openAddress = openAddress, tryLock = tryLock)) {
             is Outcome.Primary -> outcome.instance
             Outcome.ShownOther -> {
-                xLogI("Single instance: Komikku already runs on this data folder; asked it to show its window")
+                val asked = if (openAddress != null) "to open an address" else "to show its window"
+                xLogI("Single instance: Komikku already runs on this data folder; asked it $asked")
                 exit(0)
             }
             Outcome.OtherNotAnswering -> {
@@ -147,16 +161,22 @@ class DesktopSingleInstance private constructor(
         }
 
         /**
-         * Takes [dataDir]'s lock, or asks its holder to show its window; retries both until [answerTimeout] has passed.
-         * [requestReadTimeout] bounds how long the holder waits for a request line. [tryLock] takes the lock (tests: a
-         * file system that cannot lock).
+         * Takes [dataDir]'s lock, or asks its holder to show its window (to open [openAddress] when there is one); retries
+         * both until [answerTimeout] has passed. [requestReadTimeout] bounds how long the holder waits for a request line.
+         * [tryLock] takes the lock (tests: a file system that cannot lock).
          */
         fun acquire(
             dataDir: File,
             answerTimeout: Duration = ANSWER_TIMEOUT,
             requestReadTimeout: Duration = REQUEST_READ_TIMEOUT,
+            openAddress: String? = null,
             tryLock: (FileChannel) -> FileLock? = { it.tryLock() },
         ): Outcome {
+            val signal: (Path, Duration) -> Boolean = if (openAddress != null) {
+                { portFile, timeout -> InstanceSignal.requestOpen(portFile, openAddress, timeout) }
+            } else {
+                InstanceSignal::requestShow
+            }
             val directory = try {
                 dataDir.toPath().toRealPath()
             } catch (_: IOException) {
@@ -172,11 +192,11 @@ class DesktopSingleInstance private constructor(
                     }
                     is LockAttempt.Unsupported -> {
                         val remaining = (deadline - System.nanoTime()).coerceAtLeast(1)
-                        return advisory(lockFile, attempt.error, remaining.nanoseconds, requestReadTimeout)
+                        return advisory(lockFile, attempt.error, remaining.nanoseconds, requestReadTimeout, signal)
                     }
                     LockAttempt.Taken -> {
                         val remaining = (deadline - System.nanoTime()).coerceAtLeast(0)
-                        if (InstanceSignal.requestShow(portFile, remaining.nanoseconds)) return Outcome.ShownOther
+                        if (signal(portFile, remaining.nanoseconds)) return Outcome.ShownOther
                     }
                 }
                 val remaining = deadline - System.nanoTime()
@@ -191,10 +211,16 @@ class DesktopSingleInstance private constructor(
          * or one left by a process that died) this start takes the folder over and writes its own. An instance that is
          * quitting has removed its port file already, so a start then does not wait for it to exit.
          */
-        private fun advisory(lockFile: Path, error: IOException, answerTimeout: Duration, readTimeout: Duration): Outcome {
+        private fun advisory(
+            lockFile: Path,
+            error: IOException,
+            answerTimeout: Duration,
+            readTimeout: Duration,
+            signal: (Path, Duration) -> Boolean,
+        ): Outcome {
             xLogW(unlockableWarning(lockFile), error)
             val portFile = lockFile.resolveSibling(PORT_FILE)
-            if (InstanceSignal.requestShow(portFile, answerTimeout)) return Outcome.ShownOther
+            if (signal(portFile, answerTimeout)) return Outcome.ShownOther
             synchronized(held) {
                 if (lockFile in held) return Outcome.OtherNotAnswering
                 held.add(lockFile)

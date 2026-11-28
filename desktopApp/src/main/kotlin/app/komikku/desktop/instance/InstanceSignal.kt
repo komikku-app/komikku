@@ -20,22 +20,28 @@ import java.security.SecureRandom
 import kotlin.time.Duration
 
 /**
- * KMK: the "show your window" signal between two starts of the app on one data folder ([DesktopSingleInstance]).
+ * KMK: the signal between two starts of the app on one data folder ([DesktopSingleInstance]): "show your window", or
+ * "open this address" (an OAuth tracker redirect the OS handed the second start, `OAuthRedirectInbox`).
  *
  * The running instance listens on `127.0.0.1`, on a port the system picks, and writes the port and a random token to
- * the port file ([InstancePortFile]) with owner-only permissions. A second start sends one line, `SHOW <token>\n`;
- * when it matches exactly, the running instance answers `OK\n` and shows its window. Anything else (a wrong token,
- * another command, more than [MAX_REQUEST_BYTES] without a line end, no complete line within the read timeout, which
- * bounds the whole request and not each read) is dropped and the connection closed without an answer. Connections are
- * handled one at a time, so each slow client delays a real start by at most that timeout. The request is never parsed further: it means "show the window" and nothing
- * else.
+ * the port file ([InstancePortFile]) with owner-only permissions. A second start sends one line, `SHOW <token>\n` or
+ * `OPEN <token> <address>\n`; when the token matches, the running instance answers `OK\n` and shows its window or hands
+ * the address on. Anything else (a wrong token, another command, an address that is empty, longer than
+ * [MAX_ADDRESS_BYTES] or not printable ASCII, more than [MAX_REQUEST_BYTES] without a line end, no complete line within
+ * the read timeout, which bounds the whole request and not each read) is dropped and the connection closed without an
+ * answer. Connections are handled one at a time, so each slow client delays a real start by at most that timeout. The
+ * address is not interpreted here: the receiver decides what it accepts.
  */
 internal object InstanceSignal {
 
-    /** The longest request line read, line end included; the real one is 70 bytes. */
-    const val MAX_REQUEST_BYTES = 128
+    /** The longest address an `OPEN` request carries. */
+    const val MAX_ADDRESS_BYTES = 8192
+
+    /** The longest request line read, line end included: `SHOW` is 70 bytes, `OPEN` 71 plus the address. */
+    const val MAX_REQUEST_BYTES = MAX_ADDRESS_BYTES + 72
 
     private const val COMMAND = "SHOW "
+    private const val OPEN = "OPEN "
     private val REPLY = "OK\n".toByteArray(Charsets.US_ASCII)
 
     val loopback: InetAddress = InetAddress.getByAddress(byteArrayOf(127, 0, 0, 1))
@@ -47,11 +53,22 @@ internal object InstanceSignal {
 
     fun request(token: String): ByteArray = "$COMMAND$token\n".toByteArray(Charsets.US_ASCII)
 
+    fun openRequest(token: String, address: String): ByteArray = "$OPEN$token $address\n".toByteArray(Charsets.US_ASCII)
+
+    /** Whether [address] can travel in an `OPEN` request: 1 to [MAX_ADDRESS_BYTES] printable ASCII characters. */
+    fun isSendable(address: String): Boolean = address.length in 1..MAX_ADDRESS_BYTES && address.all { it in '!'..'~' }
+
     /**
      * Asks the instance named in [portFile] to show its window; `true` once it answered. Never takes longer than
      * [timeout] (connect, send, answer); a missing, unreadable or stale port file is `false`.
      */
-    fun requestShow(portFile: Path, timeout: Duration): Boolean {
+    fun requestShow(portFile: Path, timeout: Duration): Boolean = send(portFile, timeout, ::request)
+
+    /** Like [requestShow], but asks it to open [address] ([isSendable]; otherwise `false` at once). */
+    fun requestOpen(portFile: Path, address: String, timeout: Duration): Boolean =
+        isSendable(address) && send(portFile, timeout) { openRequest(it, address) }
+
+    private fun send(portFile: Path, timeout: Duration, request: (token: String) -> ByteArray): Boolean {
         val endpoint = InstancePortFile.read(portFile) ?: return false
         val millis = timeout.inWholeMilliseconds.coerceIn(1, Int.MAX_VALUE.toLong()).toInt()
         return try {
@@ -88,17 +105,34 @@ internal object InstanceSignal {
         return null
     }
 
+    /** A valid request: show the window, or open [address]. */
+    sealed interface Request {
+        data object Show : Request
+
+        data class Open(val address: String) : Request
+    }
+
+    /** [line] (without its end) as a request of the instance whose token is [token]; `null` when it is not a valid one. */
+    fun parseRequest(line: ByteArray, token: String): Request? {
+        val show = "$COMMAND$token".toByteArray(Charsets.US_ASCII)
+        if (MessageDigest.isEqual(line, show)) return Request.Show
+        val open = "$OPEN$token ".toByteArray(Charsets.US_ASCII)
+        if (line.size <= open.size || !MessageDigest.isEqual(line.copyOf(open.size), open)) return null
+        val address = String(line, open.size, line.size - open.size, Charsets.US_ASCII)
+        return Request.Open(address).takeIf { isSendable(address) }
+    }
+
     /**
      * The running instance's side: accepts one connection at a time on its own daemon thread and calls [onShowRequest]
-     * (on that thread) for each valid request. A request that comes before [onShowRequest] is set is kept and delivered
-     * when it is set.
+     * or [onOpenRequest] (on that thread) for each valid request. A request that comes before its callback is set is kept
+     * (the addresses: the last [MAX_PENDING_ADDRESSES]) and delivered when it is set.
      */
-    class Server(token: String, private val readTimeout: Duration) : AutoCloseable {
+    class Server(private val token: String, private val readTimeout: Duration) : AutoCloseable {
 
         private val socket = ServerSocket(0, BACKLOG, loopback)
-        private val expected = "$COMMAND$token".toByteArray(Charsets.US_ASCII)
         private val thread = Thread(::acceptLoop, "Komikku single instance").apply { isDaemon = true }
         private var pending = false
+        private val pendingAddresses = ArrayDeque<String>()
 
         val port: Int get() = socket.localPort
 
@@ -109,6 +143,15 @@ internal object InstanceSignal {
                     (value != null && pending).also { if (it) pending = false }
                 }
                 if (replay) value?.let(::deliver)
+            }
+
+        var onOpenRequest: ((String) -> Unit)? = null
+            set(value) {
+                val replay = synchronized(this) {
+                    field = value
+                    if (value == null) emptyList() else pendingAddresses.toList().also { pendingAddresses.clear() }
+                }
+                value?.let { listener -> replay.forEach { address -> deliver { listener(address) } } }
             }
 
         fun start(): Server = apply { thread.start() }
@@ -145,8 +188,9 @@ internal object InstanceSignal {
             } catch (_: IOException) {
                 null
             }
-            if (line == null || !MessageDigest.isEqual(line, expected)) {
-                xLogD("Single instance: ignored a request that was not a valid show request")
+            val request = line?.let { parseRequest(it, token) }
+            if (request == null) {
+                xLogD("Single instance: ignored a request that was not a valid show or open request")
                 return
             }
             if (socket.isClosed) return
@@ -157,22 +201,40 @@ internal object InstanceSignal {
                 }
             } catch (_: IOException) {
             }
-            xLogI("Single instance: another start on this data folder asked to show the window")
-            val listener = synchronized(this) { onShowRequest.also { if (it == null) pending = true } }
-            listener?.let(::deliver)
+            when (request) {
+                Request.Show -> {
+                    xLogI("Single instance: another start on this data folder asked to show the window")
+                    val listener = synchronized(this) { onShowRequest.also { if (it == null) pending = true } }
+                    listener?.let(::deliver)
+                }
+                is Request.Open -> {
+                    // Not the address itself: it may carry an authorization code
+                    xLogI("Single instance: another start on this data folder asked to open an address")
+                    val listener = synchronized(this) {
+                        onOpenRequest.also {
+                            if (it == null) {
+                                pendingAddresses.addLast(request.address)
+                                while (pendingAddresses.size > MAX_PENDING_ADDRESSES) pendingAddresses.removeFirst()
+                            }
+                        }
+                    }
+                    listener?.let { deliver { it(request.address) } }
+                }
+            }
         }
 
         private fun deliver(listener: () -> Unit) {
             try {
                 listener()
             } catch (e: Exception) {
-                xLogE("Single instance: showing the window failed", e)
+                xLogE("Single instance: handling another start's request failed", e)
             }
         }
 
         private companion object {
             const val BACKLOG = 8
             const val ACCEPT_RETRY_DELAY_MS = 100L
+            const val MAX_PENDING_ADDRESSES = 4
         }
     }
 }
