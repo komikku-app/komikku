@@ -35,6 +35,10 @@ data class TimeRange(private val startTime: Duration, private val endTime: Durat
     }
 
     operator fun contains(other: Duration): Boolean {
+        // KMK -->
+        // A range across midnight (e.g. 22:00 - 06:00) is stored with its start after its end
+        if (startTime > endTime) return other >= startTime || other <= endTime
+        // KMK <--
         return other in startTime..endTime
     }
 

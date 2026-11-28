@@ -101,8 +101,10 @@ class BulkFavoriteScreenModel(
 
     fun reverseSelection(mangas: List<Manga>) {
         mutableState.update { state ->
+            // By id like toggleSelection: an entry whose row changed since it was selected is still the selected one
+            val selectedIds = state.selection.mapTo(HashSet()) { it.id }
             val newSelection = mangas.filterNot { manga ->
-                state.selection.contains(manga)
+                manga.id in selectedIds
             }
                 .fastDistinctBy { it.id }
                 .toPersistentList()

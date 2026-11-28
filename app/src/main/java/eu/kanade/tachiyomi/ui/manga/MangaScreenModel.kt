@@ -695,7 +695,10 @@ class MangaScreenModel(
                 ogThumbnailUrl = thumbnailUrl?.trimOrNull(),
                 ogDescription = description?.trimOrNull(),
                 ogGenre = tags?.nullIfEmpty(),
-                ogStatus = status ?: 0,
+                // KMK -->
+                // "Default" (null) keeps the status, like the database update below does
+                ogStatus = status ?: manga.ogStatus,
+                // KMK <--
                 lastUpdate = manga.lastUpdate + 1,
             )
             (sourceManager.get(LocalSource.ID) as LocalSource).updateMangaInfo(manga.toSManga())

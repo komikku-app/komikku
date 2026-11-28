@@ -120,11 +120,15 @@ data object LibraryTab : Tab {
 
         val onClickRefresh: (Category?) -> Boolean = { category ->
             // SY -->
+            // KMK -->
+            // The grouping shown, not the preference: under a category filter the page is ungrouped
+            val groupType = state.effectiveGroupType
+            // KMK <--
             val started = LibraryUpdateJob.startNow(
                 context = context,
-                category = if (state.groupType == LibraryGroup.BY_DEFAULT) category else null,
-                group = state.groupType,
-                groupExtra = when (state.groupType) {
+                category = if (/* KMK --> */ groupType /* KMK <-- */ == LibraryGroup.BY_DEFAULT) category else null,
+                group = /* KMK --> */ groupType /* KMK <-- */,
+                groupExtra = when (/* KMK --> */ groupType /* KMK <-- */) {
                     LibraryGroup.BY_DEFAULT -> null
                     LibraryGroup.BY_SOURCE, LibraryGroup.BY_TRACK_STATUS -> category?.id?.toString()
                     LibraryGroup.BY_STATUS -> category?.id?.minus(1)?.toString()

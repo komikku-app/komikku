@@ -1761,6 +1761,15 @@ class LibraryScreenModel(
 
         val activeCategory: Category? = displayedCategories.getOrNull(coercedActiveCategoryIndex)
 
+        // KMK -->
+        /**
+         * The grouping shown: a category filter with included categories shows one ungrouped page, whatever
+         * [groupType] (the preference) says.
+         */
+        val effectiveGroupType: Int =
+            if (filterCategory && includedCategories.isNotEmpty()) LibraryGroup.UNGROUPED else groupType
+        // KMK <--
+
         val isLibraryEmpty = libraryData.favorites.isEmpty()
 
         val selectionMode = selection.isNotEmpty()

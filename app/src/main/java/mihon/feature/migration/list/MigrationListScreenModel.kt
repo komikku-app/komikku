@@ -76,6 +76,18 @@ class MigrationListScreenModel(
     private val navigateBackChannel = Channel<Unit>()
     val navigateBackEvent = navigateBackChannel.receiveAsFlow()
 
+    // KMK -->
+    private val migrationFailedChannel = Channel<Manga>(Channel.UNLIMITED)
+
+    /** An entry whose migration (or copy) failed; it stays in the list. */
+    val migrationFailedEvent = migrationFailedChannel.receiveAsFlow()
+
+    /** The target of the last successful migration (or copy), shown afterwards when there was one entry. */
+    @Volatile
+    var lastMigratedTargetId: Long? = null
+        private set
+    // KMK <--
+
     private var migrateJob: Job? = null
 
     init {
@@ -309,6 +321,9 @@ class MigrationListScreenModel(
         migrateJob = screenModelScope.launchIO {
             mutableState.update { it.copy(dialog = Dialog.Progress(0f)) }
             val items = items
+            // KMK -->
+            val failed = mutableListOf<MigratingManga>()
+            // KMK <--
             try {
                 items.forEachIndexed { index, manga ->
                     try {
@@ -321,25 +336,46 @@ class MigrationListScreenModel(
                             }
                         }
                         if (target != null) {
-                            migrateManga(
-                                current = manga.manga,
-                                target = target,
-                                replace = replace,
-                                // SY -->
-                                throttleFunc = throttleManager::throttle,
-                                // SY <--
-                            )
+                            // KMK -->
+                            val migrated =
+                                // KMK <--
+                                migrateManga(
+                                    current = manga.manga,
+                                    target = target,
+                                    replace = replace,
+                                    // SY -->
+                                    throttleFunc = throttleManager::throttle,
+                                    // SY <--
+                                )
+                            // KMK -->
+                            if (migrated) lastMigratedTargetId = target.id else failed += manga
+                            // KMK <--
                         }
                     } catch (e: Exception) {
                         if (e is CancellationException) throw e
                         logcat(LogPriority.WARN, throwable = e)
+                        // KMK -->
+                        failed += manga
+                        // KMK <--
                     }
                     mutableState.update {
                         it.copy(dialog = Dialog.Progress((index.toFloat() / items.size).coerceAtMost(1f)))
                     }
                 }
 
-                navigateBack()
+                // KMK -->
+                if (failed.isEmpty()) {
+                    // KMK <--
+                    navigateBack()
+                    // KMK -->
+                } else {
+                    // Keep only the failed entries, to retry or skip them; the others are done
+                    items.filterNot { it in failed }.forEach { it.migrationScope.cancel() }
+                    mutableState.update { it.copy(items = failed.toImmutableList()) }
+                    failed.forEach { migrationFailedChannel.send(it.manga) }
+                    updateMigrationProgress()
+                }
+                // KMK <--
             } finally {
                 mutableState.update { it.copy(dialog = null) }
                 migrateJob = null
@@ -360,7 +396,15 @@ class MigrationListScreenModel(
         screenModelScope.launchIO {
             val manga = items.find { it.manga.id == mangaId } ?: return@launchIO
             val target = (manga.searchResult.value as? SearchResult.Success)?.manga ?: return@launchIO
-            migrateManga(current = manga.manga, target = target, replace = replace)
+            // KMK -->
+            val migrated = migrateManga(current = manga.manga, target = target, replace = replace)
+            if (!migrated) {
+                // The entry stays in the list, to retry or skip it
+                migrationFailedChannel.send(manga.manga)
+                return@launchIO
+            }
+            lastMigratedTargetId = target.id
+            // KMK <--
 
             removeManga(mangaId)
         }

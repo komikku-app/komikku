@@ -56,6 +56,13 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
 
     private fun saveCustomInfo() {
         val jsonElements = customMangaMap.values.map { it.toJson() }
+        // KMK -->
+        if (jsonElements.isEmpty()) {
+            // The last custom info was removed: the old file left in place would bring it back at the next start
+            editJson.delete()
+            return
+        }
+        // KMK <--
         if (jsonElements.isNotEmpty()) {
             editJson.delete()
             editJson.writeText(Json.encodeToString(MangaList(jsonElements)))

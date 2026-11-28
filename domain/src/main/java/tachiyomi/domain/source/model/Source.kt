@@ -25,7 +25,10 @@ data class Source(
         when {
             isUsedLast -> "$id-lastused"
             // SY -->
-            category != null -> "$id-$category"
+            // KMK -->
+            // Not "$id-$category": a category named "lastused" took the last used copy's key
+            category != null -> "$id-category-$category"
+            // KMK <--
             // SY <--
             else -> "$id"
         }

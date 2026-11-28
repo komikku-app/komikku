@@ -191,6 +191,7 @@
     <string name="current_">Current: %1$s</string>
     <string name="migrationConfigScreen_smartSearchSingleEntryTitle">Use smart search</string>
     <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">If enabled, automatically picks the best match result. Otherwise, shows all search results for manual selection.</string>
+    <string name="migration_failed">Could not migrate %1$s</string>
     <!-- Misc -->
     <string name="job_failed_schedule_update_check">Failed to schedule automatic library update: %s</string>
     <string name="job_failed_schedule_backup_check">Failed to schedule automatic backup: %s</string>

@@ -185,7 +185,9 @@ open class FeedScreenModel(
     // KMK <--
 
     private suspend fun hasTooManyFeeds(): Boolean {
-        return countFeedSavedSearchGlobal.await() > MaxFeedItems
+        // KMK -->
+        return countFeedSavedSearchGlobal.await() >= MaxFeedItems
+        // KMK <--
     }
 
     private fun getEnabledSources(): ImmutableList<Source> {
