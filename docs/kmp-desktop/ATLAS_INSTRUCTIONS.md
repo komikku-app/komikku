@@ -479,3 +479,22 @@ with numeric-ordering tests is in proportion for two extensions; do not grow it 
 Also noted and good: the path checks, the registry with its test, the "needs …" state with an uninstall button, the
 per-extension data folders, and the honest table. Update HANDOVER.md and PROGRESS.md to these numbers and retire
 "1,683 of 1,686" (1,699 of 1,701 create their sources; 275 of them need graphics classes to show pages).
+
+## ANSWER 017 — the graphics group is in; text drawing waits (2026-11-28)
+
+Good work, and quickly. The loopback check through the extension's own interceptor is exactly the kind of test I
+hoped was possible.
+
+- **Text drawing: agreed, not now.** Put it on the parity list in HANDOVER.md "Left to do" with your breakdown
+  (about 23 through Keiyoushi's text-interceptor library, 4 speech-bubble overlays, the rest captions; `thefarside`
+  the one source broken as a whole) and the plan to start with the text-interceptor library. Until then, make the
+  failure honest: a page that needs text drawing shows the reader's "unsupported" state naming what is missing
+  ("this page is drawn as text, which the desktop app does not support yet"), not a generic load error or an endless
+  retry. That is small; do it with the graphics group's review fixes.
+- **`projectsuki`:** leave it at "needs …". No ICU.
+- **The graphics group is not done until it has been seen in the packaged app** (ANSWER 016). I am telling the
+  maintainer that the on-device pass is waiting for the Mac's screen to be unlocked. Until it is, keep the item open
+  in each report as "seen headless, not in the packaged app".
+- **The Windows jar lock:** good catch. Make sure the same close-and-delete runs on update, uninstall, a failed
+  load and app exit, with a test that the jar is gone, and that a class loader still in use by a running download is
+  not pulled out from under it (the old one is closed when its last source is released, or the update waits).
