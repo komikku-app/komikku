@@ -23,6 +23,9 @@ data class MemberRef(val owner: String, val name: String, val descriptor: String
  * [forwardedMethods] are missing methods only called by a method of the same signature in a class implementing their
  * owner: a delegating wrapper compiled against a newer library (Temple Scan's `Interceptor.Chain` wrapper forwards the
  * chain methods of a newer OkHttp). The host's library never calls them, so they are not counted as missing.
+ *
+ * [usedHostClasses] are the host classes the checked classes reference that [LinkChecker]'s `trackHostClass` selects
+ * (the compat layer's, for its registry).
  */
 data class LinkCheckReport(
     val checkedClasses: Int,
@@ -30,6 +33,7 @@ data class LinkCheckReport(
     val missingMethods: Map<MemberRef, Set<String>>,
     val missingFields: Map<MemberRef, Set<String>>,
     val forwardedMethods: Map<MemberRef, Set<String>> = emptyMap(),
+    val usedHostClasses: Set<String> = emptySet(),
 ) {
     val isClean: Boolean get() = missingClasses.isEmpty() && missingMethods.isEmpty() && missingFields.isEmpty()
 
@@ -69,9 +73,12 @@ data class LinkCheckReport(
  * Resolution follows the JVM: methods and fields are looked up in the owner, its superclasses and
  * all superinterfaces. Host classes are read as class files (never loaded or initialized).
  * Signature-polymorphic `MethodHandle` / `VarHandle` calls and array members are skipped.
+ *
+ * @param trackHostClass selects the referenced host classes reported as [LinkCheckReport.usedHostClasses].
  */
 class LinkChecker(
     private val hostClassLoader: ClassLoader = LinkChecker::class.java.classLoader,
+    private val trackHostClass: (String) -> Boolean = { false },
 ) {
 
     private class HostClass(
@@ -105,8 +112,14 @@ class LinkChecker(
         val missingMethods = sortedMapOf<MemberRef, MutableSet<String>>()
         val missingFields = sortedMapOf<MemberRef, MutableSet<String>>()
         val forwardedMethods = sortedMapOf<MemberRef, MutableSet<String>>()
+        val usedHostClasses = sortedSetOf<String>()
 
-        fun classExists(name: String): Boolean = name in local || host(name) != null
+        fun classExists(name: String): Boolean {
+            if (name in local) return true
+            if (host(name) == null) return false
+            if (trackHostClass(name)) usedHostClasses += name
+            return true
+        }
 
         fun checkClass(name: String?, user: String) {
             val element = name?.let(::elementClass) ?: return
@@ -217,7 +230,7 @@ class LinkChecker(
             )
         }
 
-        return LinkCheckReport(readers.size, missingClasses, missingMethods, missingFields, forwardedMethods)
+        return LinkCheckReport(readers.size, missingClasses, missingMethods, missingFields, forwardedMethods, usedHostClasses)
     }
 
     /** Whether [name] is [type] or extends / implements it (local classes first, then host). */

@@ -117,6 +117,16 @@ class LinkCheckerTest {
     }
 
     @Test
+    fun `lists the host classes it is asked to track`() {
+        val jar = File(dir, "fixture.jar")
+        FixtureClasses.jar(jar, mapOf(user to fixture()))
+
+        val report = LinkChecker(trackHostClass = { it.startsWith("android/") }).check(jar)
+
+        report.usedHostClasses shouldContainExactly setOf("android/os/Build", "android/os/Build\$VERSION", "android/util/Base64")
+    }
+
+    @Test
     fun `clean jar`() {
         val jar = File(dir, "clean.jar")
         FixtureClasses.jar(jar, mapOf(helper to FixtureClasses.classCalling(helper, "java/lang/Thread", "yield", "()V")))
