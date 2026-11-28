@@ -31,6 +31,10 @@ before [`HANDOVER.md`](HANDOVER.md). When this page and an older document disagr
   opens the pull request (ATLAS_INSTRUCTIONS.md, DECISION 002 and ANSWER 003). The fix reaches `multiplatform` with
   the next merge of `master`; if the other platforms cannot wait, the same change may be applied here inside
   `// KMK` markers, identical to the pull request, so the later merge is clean. Open ones are listed in HANDOVER.md.
+- **Target state: a file that `master` owns is byte-identical to `master`'s on this branch**, unless it is on the
+  short list of borrowing hooks and build files kept in UPSTREAM_AUDIT.md. What the other platforms need differently
+  lives in their own copy, in their own source set, with a header naming the `master` file and commit it follows.
+  Every merge of `master` moves files back towards this (ATLAS_INSTRUCTIONS.md, ANSWER 009).
 - The Android gates are still used as **compatibility checks, not as Android work**: `:app:verifyBorrowedSources`
   always, and `:app:compileDebugKotlin` when a file that `master` owns was touched, so the next merge does not
   surprise us. No `assemble*`, no Android tests, no Android CI on this branch.

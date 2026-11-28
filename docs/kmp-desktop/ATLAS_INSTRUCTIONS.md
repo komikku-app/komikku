@@ -211,3 +211,44 @@ once with lease, and post the old and new head; I then reset my clone to the new
 
 Add to your pre-push check the author and committer fields too: they must be the maintainer's usual commit identity,
 nothing else.
+
+## ANSWER 009 — A3 and the first merge of `master` (2026-11-28)
+
+Audit read (`UPSTREAM_AUDIT.md`, `42e3f32`). This is the kind of report I need; thank you for re-checking the
+`merge-tree` result.
+
+**Points 1, 2 and 3: approved.**
+
+1. **Yes: resolve `LibraryScreenModel`, `SourceFilterDialog`, `CloudflareInterceptor` and `WebViewInterceptor` in
+   `master`'s favour, for good,** and keep our versions for desktop only, in desktop source sets. This reverses the
+   earlier decisions to share that code with Android, and that is intended: those decisions were made when this
+   branch still carried Android. The rule from now on, which goes beyond these four files: **on `multiplatform`, a
+   file that `master` owns should be byte-identical to `master`'s unless it is on the short list of borrowing hooks
+   and build files.** Every merge of `master` is a chance to move one more file back onto that rule. Conditions:
+   - each desktop-only copy gets a header comment naming the `master` file it follows and the `master` commit it was
+     last synced to, and UPSTREAM_AUDIT.md keeps the list, so a later merge shows at a glance which copies to re-sync;
+   - where desktop and Android must behave the same (filter rows, Cloudflare detection), a desktop test pins the
+     behaviour, written from `master`'s code, including `master`'s filter fix that our shared rows lack;
+   - `MdList` / `MangaDexSessionNotifier`: solve it on the desktop side (a desktop counterpart or a desktop copy), not
+     by editing `master`'s file; desktop Cloudflare detection follows `master`'s `cf-mitigated` check in the same merge.
+2. **Merge now, before #2023 lands**, at Opus 5.5 high, in the separate checkout, reaching `multiplatform` only after
+   the gates and the desktop suite are green and CI has built it. Report the conflicts and each resolution in
+   PROGRESS.md as COORDINATION.md says. When #2023 is merged into `master`, the following merge puts the feed,
+   manga-edit, Migrate-tab and app-lock code back to `master`'s shape under the same rule.
+3. **Move the desktop job out of `build_pull_request.yml`** into the desktop workflow, and return that file to
+   `master`'s content.
+
+**Point 4 goes to the maintainer** (JavaScript sources and the QuickJS switch on Android). My recommendation to him:
+decide whether Android should have JavaScript sources at all. If yes, it becomes a feature pull request into
+`master` prepared from a patch like the fixes; if no, the Android wiring comes off this branch. Either way the
+Android code here ends up equal to `master`. Until he answers, leave that code as it is and keep it out of the merge's
+"resolve in `master`'s favour" list.
+
+**Point 5: agreed**, leave those as they are for now.
+
+**#2023:**
+- The missed `MdList` fix and the two newly confirmed bugs: send the three patches as planned; Atlas's team adds
+  them to #2023 as further commits while it is unmerged, or opens a second pull request if it has been merged.
+- Your notes on fixes 6, 9 and 10 are in my report to the maintainer; he reviews that pull request himself.
+- The footer in its description is added by the service Atlas's session posts through; an edit from this side puts
+  it back. I am telling the maintainer.
