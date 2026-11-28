@@ -129,9 +129,27 @@ Configuration (`desktopApp/build.gradle.kts`, `nativeDistributions`):
 | Formats | Msi, Exe, Dmg, Deb, Rpm, plus the app image *directory* of `createDistributable` (packed as the Linux `.tar.gz`; turning it into a single `.AppImage` file needs `appimagetool`, not part of the build). No `TargetFormat.AppImage`: its `packageAppImage` writes the same directory as `createDistributable`, which the DMG / DEB / RPM tasks read, and Gradle refuses that (first CI run, M1) |
 | Runtime | jlink image with the modules listed in `modules(...)` (jdeps + run-time additions, see the comment there); `includeAllModules = true` is the documented fallback if a packaged build misses a JDK module |
 | Icons | `desktopApp/icons/komikku.{png,ico,icns}`, generated from the Android launcher icon's vector layers by `python3 desktopApp/icons/generate_icons.py` (Pillow + numpy, offline); re-run it when the launcher icon changes |
-| Windows | menu group "Komikku", desktop shortcut, per-user install, directory chooser, fixed upgrade UUID (never change it: it lets newer MSIs replace older installs) |
+| Windows | menu group "Komikku", desktop shortcut, per-user install, directory chooser, fixed upgrade UUID (never change it: it lets newer MSIs replace older installs); `komikku://` links (tracker logins) registered by the installer, see below |
 | macOS | bundle ID `app.komikku`, category Entertainment |
 | Linux | package `komikku`, menu group / categories `Graphics;Viewer;`, shortcut |
+
+`komikku://` links (tracker logins redirect the browser to `komikku://<tracker>-auth?…`) start the installed app with
+the link as its argument:
+- **Windows `.msi` / `.exe`:** the installer writes `HKCU\Software\Classes\komikku` (`URL Protocol`,
+  `shell\open\command` = `"<install dir>\Komikku.exe" "%1"`; HKLM if the install were ever per-machine). Windows
+  Installer rewrites the path in an upgrade and removes the key on uninstall. jpackage accepts WiX additions only as
+  a `main.wxs` in its resource folder, which Compose replaces with its own, so
+  `desktopApp/packaging/windows/url-protocol.gradle.kts` runs jpackage a second time (Compose's argument file
+  `build/compose/tmp/<task>.args.txt`, jpackage's own `main.wxs` plus one component); the Windows package tasks take
+  that much longer. The build fails when jpackage's `main.wxs` changes shape or jpackage does not use ours.
+- **Linux `.deb` / `.rpm`:** the menu entry gets `MimeType=x-scheme-handler/komikku;` and `%u` in `Exec`
+  (`desktopApp/packaging/linux/deb-maintainer-scripts.gradle.kts`, in the built packages), and the install / removal
+  scripts run `update-desktop-database` when it is there (`desktop-file-utils`, on every desktop system), which is
+  what browsers look the handler up in.
+- **Linux `.tar.gz`, and `gradle run`:** nothing is registered; tracker logins go through the paste dialog (copy
+  the `komikku://…` address the browser was sent to).
+- CI: the smoke jobs check the registration after install and its removal after uninstall (`HKCU\…\komikku` on
+  Windows, `xdg-mime query default x-scheme-handler/komikku` for the `.deb`, the entry's lines for the RPM).
 | ProGuard | the `release` build type's ProGuard step is disabled: extensions are loaded reflectively against host classes (source API, OkHttp, kotlinx, compat layer) that shrinking would remove or rename. Enabling it needs keep rules for that shared surface |
 
 App update check (P6, [`PROGRESS.md`](PROGRESS.md#p6--app-update-check)): off unless the build gets Android's flag,

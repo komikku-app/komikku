@@ -5,7 +5,8 @@ Linux (`.deb`, `.rpm`, `.tar.gz`), x64 unless the name says arm64. Check a downl
 #### Linux
 
 - `.deb` (Debian, Ubuntu, Linux Mint): `sudo apt install ./Komikku-{{VERSION}}-linux-x64.deb`
-- `.tar.gz` (any distribution, nothing installed): unpack it and start `Komikku/bin/Komikku`
+- `.tar.gz` (any distribution, nothing installed): unpack it and start `Komikku/bin/Komikku`. Tracker logins then
+  end on a `komikku://…` address the browser cannot open: paste it into the login dialog
 <!-- rpm:unsigned -->
 - `.rpm` (Fedora, openSUSE, RHEL): **the package is not signed**.
   `sudo dnf install ./Komikku-{{VERSION}}-linux-x64.rpm` installs it as it is (and its dependencies); plain `rpm`
