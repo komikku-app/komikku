@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.platform.DesktopBrowser
 import app.komikku.desktop.track.DesktopTrackerLogin
+import app.komikku.desktop.track.OAuthRedirectInbox
 import app.komikku.desktop.track.TrackerLoginMethod
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import cafe.adriel.voyager.core.model.StateScreenModel
@@ -76,7 +77,12 @@ class TrackingSettingsScreenModel(
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val delegateSourcePreferences: DelegateSourcePreferences = Injekt.get(),
     private val app: Application = Injekt.get(),
+    private val openBrowser: (String) -> Unit = { DesktopBrowser.open(it) },
 ) : StateScreenModel<TrackingSettingsScreenModel.State>(State()) {
+
+    /** The redirect the open OAuth dialog waits for ([OAuthRedirectInbox]); closed with the dialog. */
+    private var redirectWait: AutoCloseable? = null
+    private val redirectLock = Any()
 
     @Immutable
     data class State(
@@ -137,14 +143,35 @@ class TrackingSettingsScreenModel(
         }
         when (val method = DesktopTrackerLogin.method(tracker)) {
             TrackerLoginMethod.Credentials -> mutableState.update { it.copy(dialog = Dialog.Credentials(tracker), error = null) }
-            is TrackerLoginMethod.OAuthPaste -> {
-                val authUrl = method.authUrl()
-                DesktopBrowser.open(authUrl)
-                mutableState.update { it.copy(dialog = Dialog.OAuthPaste(tracker, method, authUrl), error = null) }
-            }
+            is TrackerLoginMethod.OAuthPaste -> startOAuthLogin(tracker, method)
             TrackerLoginMethod.Enhanced -> (tracker as EnhancedTracker).loginNoop()
             TrackerLoginMethod.Unsupported -> {}
         }
+    }
+
+    /**
+     * Opens [method]'s authorize page and the dialog, which logs in with the redirect the OS hands the app while it is
+     * open (only then: a redirect without a login of this app in progress is ignored) or with a pasted one.
+     */
+    internal fun startOAuthLogin(tracker: Tracker, method: TrackerLoginMethod.OAuthPaste) {
+        val authUrl = method.authUrl()
+        redirectWait?.close()
+        val invalid = app.contextString(KMR.strings.desktop_tracker_redirect_invalid, tracker.name)
+        redirectWait = OAuthRedirectInbox.await(method.scheme, method.host) { redirect ->
+            // Redirects may come on two threads at once (the OS's open-URL event, another start): one login at a time
+            synchronized(redirectLock) {
+                val waiting = state.value.let { !it.busy && (it.dialog as? Dialog.OAuthPaste)?.method == method }
+                if (waiting) loginWithRedirect(tracker, method, redirect, invalid)
+                waiting
+            }
+        }
+        mutableState.update { it.copy(dialog = Dialog.OAuthPaste(tracker, method, authUrl), error = null) }
+        openBrowser(authUrl)
+    }
+
+    private fun stopWaitingForRedirect() {
+        redirectWait?.close()
+        redirectWait = null
     }
 
     fun loginWithCredentials(tracker: Tracker, username: String, password: String) = login {
@@ -178,6 +205,7 @@ class TrackingSettingsScreenModel(
             } catch (e: Exception) {
                 e.message?.takeIf { it.isNotBlank() } ?: app.contextString(MR.strings.unknown_error)
             }
+            if (error == null) stopWaitingForRedirect()
             mutableState.update { it.copy(busy = false, error = error, dialog = if (error == null) null else it.dialog) }
         }
     }
@@ -195,7 +223,15 @@ class TrackingSettingsScreenModel(
         }
     }
 
-    fun dismiss() = mutableState.update { it.copy(dialog = null, error = null, busy = false) }
+    fun dismiss() {
+        stopWaitingForRedirect()
+        mutableState.update { it.copy(dialog = null, error = null, busy = false) }
+    }
+
+    override fun onDispose() {
+        stopWaitingForRedirect()
+        super.onDispose()
+    }
 }
 
 class TrackingSettingsScreen : Screen() {

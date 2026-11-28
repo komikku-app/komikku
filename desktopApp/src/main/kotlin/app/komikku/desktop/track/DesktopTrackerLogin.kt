@@ -25,21 +25,29 @@ import uy.kohesive.injekt.api.get
 /**
  * KMK: how each tracker logs in on desktop (Android: `SettingsTrackingScreen` + `TrackLoginActivity`).
  *
- * The OAuth trackers' registered redirect URIs are app-scheme URIs (`komikku://<tracker>-auth`), which a
- * desktop app cannot receive (no OS scheme registration, and a loopback listener would need different
- * redirect URIs registered with each service, which is out of scope). So the login opens the authorize
- * page in the system browser and the user pastes the URL the browser was redirected to (or just the code /
- * token) into a dialog; [OAuthRedirect] extracts the same parameter Android's `TrackLoginActivity` reads.
+ * The OAuth trackers' registered redirect URIs are app-scheme URIs (`komikku://<tracker>-auth`, MDList
+ * `tachiyomisy://mangadex-auth`; a loopback listener would need other redirect URIs registered with each service). The
+ * login opens the authorize page in the system browser and waits for the redirect: the packaged app registers both
+ * schemes with the OS (macOS: the bundle's `CFBundleURLTypes`; Windows / Linux: their installers), which hands the
+ * address to the running app ([OAuthRedirectInbox]). Pasting the redirected URL (or just the code / token) into the
+ * dialog stays as the fallback, e.g. when the app runs from Gradle without a registration. [OAuthRedirect] extracts the
+ * same parameter Android's `TrackLoginActivity` reads.
  */
 sealed interface TrackerLoginMethod {
     /** Username + password (Kitsu, MangaUpdates, and in-test trackers). */
     data object Credentials : TrackerLoginMethod
 
     /**
-     * Browser authorization + pasted redirect: [parameter] of the redirect to `komikku://[host]`. Each [authUrl] call
-     * starts a new login (MyAnimeList and MDList store a new PKCE verifier), so call it once per login.
+     * Browser authorization + the redirect to `[scheme]://[host]`, received ([OAuthRedirectInbox]) or pasted; the
+     * credential is its [parameter]. Each [authUrl] call starts a new login (MyAnimeList and MDList store a new PKCE
+     * verifier), so call it once per login.
      */
-    data class OAuthPaste(val authUrl: () -> String, val host: String, val parameter: String) : TrackerLoginMethod
+    data class OAuthPaste(
+        val authUrl: () -> String,
+        val host: String,
+        val parameter: String,
+        val scheme: String = "komikku",
+    ) : TrackerLoginMethod
 
     /** Komga / Kavita / Suwayomi: logged in by the matching installed source (Android: `loginNoop`). */
     data object Enhanced : TrackerLoginMethod
@@ -65,6 +73,7 @@ object DesktopTrackerLogin {
             { MdConstants.Login.authUrl(MdUtil.newLoginCodeVerifier(Injekt.get<TrackPreferences>(), tracker)) },
             "mangadex-auth",
             "code",
+            MdConstants.Login.redirectUri.substringBefore("://"),
         )
         is EnhancedTracker -> TrackerLoginMethod.Enhanced
         else -> TrackerLoginMethod.Credentials
@@ -76,7 +85,7 @@ object DesktopTrackerLogin {
      */
     fun credentialFromRedirect(method: TrackerLoginMethod.OAuthPaste, pasted: String): String? {
         val redirect = OAuthRedirect.parse(pasted)
-        if (redirect.host != null && redirect.host != method.host) return null
+        if (redirect.host != null && !redirect.host.equals(method.host, ignoreCase = true)) return null
         return redirect.value(method.parameter)
     }
 

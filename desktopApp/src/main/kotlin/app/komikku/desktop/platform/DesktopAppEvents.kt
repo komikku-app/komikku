@@ -7,6 +7,7 @@ import java.awt.GraphicsEnvironment
 import java.awt.desktop.AppHiddenEvent
 import java.awt.desktop.AppHiddenListener
 import java.awt.desktop.QuitResponse
+import java.net.URI
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -18,8 +19,10 @@ import java.util.concurrent.atomic.AtomicReference
  *   a log-out is not cancelled.
  * - **Hide** (Cmd+H): the window is hidden without being minimised; [addHideListener] reports it like minimising, so
  *   the app lock applies.
+ * - **Open URL** (an address of a scheme the app bundle registers, `komikku://…`): [installOpenUriHandler]. AWT keeps
+ *   the events that come before a handler is set, such as the one that started the app.
  *
- * Both are no-ops where `java.awt.Desktop` does not support them (Windows, Linux, headless).
+ * All are no-ops where `java.awt.Desktop` does not support them (Windows, Linux, headless).
  */
 object DesktopAppEvents {
 
@@ -44,6 +47,17 @@ object DesktopAppEvents {
     /** Lets a quit requested by the OS go through (exits the JVM); call when the app's work stopped. */
     fun finishQuit() {
         pendingQuit.getAndSet(null)?.performQuit()
+    }
+
+    /** Hands the addresses the OS opens with this app to [onOpen]; `false` when the platform has no such event. */
+    fun installOpenUriHandler(onOpen: (URI) -> Unit): Boolean {
+        val desktop = desktopSupporting(Desktop.Action.APP_OPEN_URI) ?: return false
+        desktop.setOpenURIHandler { event -> onOpen(event.uri) }
+        return true
+    }
+
+    fun removeOpenUriHandler() {
+        desktopSupporting(Desktop.Action.APP_OPEN_URI)?.setOpenURIHandler(null)
     }
 
     /** Calls [onHidden] / [onShown] when the app is hidden / shown again (Cmd+H); `null` when not supported. */

@@ -27,6 +27,7 @@ import app.komikku.desktop.scheduler.stopDesktopWork
 import app.komikku.desktop.security.DesktopAppLock
 import app.komikku.desktop.selftest.DesktopSelfTest
 import app.komikku.desktop.smoke.UiSmoke
+import app.komikku.desktop.track.OAuthRedirectInbox
 import app.komikku.desktop.ui.DesktopTheme
 import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.HomeShell
@@ -71,7 +72,9 @@ import kotlin.system.exitProcess
  * network, database, repositories, interactors, local source), starts the scheduler ([DesktopScheduler]) and opens
  * the main window. `--self-test[=<report file>]` runs the packaged runtime's self-test ([DesktopSelfTest], M2) instead
  * and exits; `--self-test-extensions=<folder>` adds the extension APKs in that folder to it, `--self-test-notify` one
- * notification through the system notifier. One instance runs per data folder ([DesktopSingleInstance]).
+ * notification through the system notifier. One instance runs per data folder ([DesktopSingleInstance]). An OAuth
+ * tracker redirect (`komikku://…`) given as an argument, the way Windows and Linux open the app's scheme, goes to the
+ * running instance, or to this one's [OAuthRedirectInbox]; macOS sends it as an open-URL event instead.
  */
 fun main(args: Array<String>) {
     // `--ui-smoke=<report folder>`: this start on a new temporary data folder, driven by a fixed script ([UiSmoke])
@@ -86,7 +89,8 @@ fun main(args: Array<String>) {
     val dataDir = DesktopDirs.dataDir
     // One running instance per data folder: another start on it asks this one to show its window and exits. Checked
     // before the log file, which belongs to the running instance, and before `DesktopInjekt.init()` opens the database
-    val singleInstance = DesktopSingleInstance.ensure(dataDir)
+    val redirect = args.firstOrNull(OAuthRedirectInbox::isRedirect)
+    val singleInstance = DesktopSingleInstance.ensure(dataDir, openAddress = redirect)
     DesktopLogFile.start(dataDir, BuildConfig.VERSION_NAME)
     singleInstance.warnIfUnlockable()
     val app = DesktopInjekt.init(dataDir)
@@ -107,6 +111,10 @@ fun main(args: Array<String>) {
     // P17: Android's notifications (new chapters, update errors, downloader, backup / restore, app update) through the
     // system tray icon while there is one (KomikkuWindow installs it)
     Injekt.get<DesktopNotifications>().start(startScope)
+    // Redirects other starts on this data folder were given; this start's own one finds no login in progress (a login
+    // waits in the dialog of the process that opened its page), so the inbox logs and ignores it
+    singleInstance.onOpenRequest = { OAuthRedirectInbox.deliver(it) }
+    redirect?.let(OAuthRedirectInbox::deliver)
 
     // Not exiting from `application`: its default `System.exit` would skip the bounded shutdown below
     application(exitProcessOnExit = false) {
@@ -114,6 +122,12 @@ fun main(args: Array<String>) {
         DisposableEffect(Unit) {
             val installed = DesktopAppEvents.installQuitHandler(::exitApplication)
             onDispose { if (installed) DesktopAppEvents.removeQuitHandler() }
+        }
+        // macOS opens the app's URL schemes with an open-URL event (AWT keeps the ones that come before this, e.g. the
+        // one that started the app); Windows and Linux start the app with the address instead (see above)
+        DisposableEffect(Unit) {
+            val installed = DesktopAppEvents.installOpenUriHandler { OAuthRedirectInbox.deliver(it.toString()) }
+            onDispose { if (installed) DesktopAppEvents.removeOpenUriHandler() }
         }
         KomikkuWindow(app = app, onCloseRequest = ::exitApplication, singleInstance = singleInstance)
     }
@@ -185,9 +199,10 @@ fun ApplicationScope.KomikkuWindow(
             }
             onDispose { tray.remove() }
         }
-        // Another start on this data folder asked for the window (on the instance's thread)
+        // Another start on this data folder asked for the window (on the instance's thread), or a tracker login took a
+        // redirect the OS handed the app
         DisposableEffect(singleInstance, window) {
-            singleInstance?.onShowRequest = {
+            val bringToFront = {
                 SwingUtilities.invokeLater {
                     windowState.isMinimized = false
                     window.isVisible = true
@@ -196,7 +211,12 @@ fun ApplicationScope.KomikkuWindow(
                     DesktopSingleInstance.requestForeground()
                 }
             }
-            onDispose { singleInstance?.onShowRequest = null }
+            singleInstance?.onShowRequest = bringToFront
+            OAuthRedirectInbox.onAccepted = bringToFront
+            onDispose {
+                singleInstance?.onShowRequest = null
+                OAuthRedirectInbox.onAccepted = null
+            }
         }
         KomikkuApp(
             context = app,

@@ -22,6 +22,7 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldStartWith
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -284,5 +285,60 @@ class TrackingTest {
         model.loginWithRedirect(mdList, method, "tachiyomisy://mangadex-auth?code=abc", invalidMessage = "invalid")
         awaitCondition("login finished") { !model.state.value.busy && model.state.value.error != null }
         model.state.value.error shouldBe app.stringResource(KMR.strings.desktop_mdlist_needs_source)
+    }
+
+    @Test
+    @Order(12)
+    fun `the OAuth dialog logs in with the redirect the OS hands the app, only while it is open`() = runBlocking<Unit> {
+        val oauth = OAuthFakeTracker(id = 905L)
+        val method = TrackerLoginMethod.OAuthPaste({ "https://tracker.invalid/authorize" }, "fake-auth", "code")
+        val opened = mutableListOf<String>()
+        val model = TrackingSettingsScreenModel(openBrowser = { opened += it })
+
+        // No login in progress: a web page opening the scheme cannot log the app in
+        OAuthRedirectInbox.deliver("komikku://fake-auth?code=${FakeTracker.PASSWORD}") shouldBe false
+        oauth.isLoggedIn shouldBe false
+
+        model.startOAuthLogin(oauth, method)
+        opened shouldBe listOf("https://tracker.invalid/authorize")
+        OAuthRedirectInbox.deliver("komikku://other-auth?code=${FakeTracker.PASSWORD}") shouldBe false
+        // A code the tracker refuses: the dialog stays open with the error and keeps waiting
+        OAuthRedirectInbox.deliver("komikku://fake-auth?code=wrong") shouldBe true
+        awaitCondition("refused login finished") { !model.state.value.busy && model.state.value.error != null }
+        model.state.value.dialog.shouldBeInstanceOf<TrackingSettingsScreenModel.Dialog.OAuthPaste>()
+        oauth.isLoggedIn shouldBe false
+
+        OAuthRedirectInbox.deliver("KOMIKKU://Fake-Auth?code=${FakeTracker.PASSWORD}") shouldBe true
+        awaitCondition("login finished") { model.state.value.dialog == null && !model.state.value.busy }
+        oauth.isLoggedIn shouldBe true
+        // The login is over: the next redirect is ignored
+        OAuthRedirectInbox.deliver("komikku://fake-auth?code=${FakeTracker.PASSWORD}") shouldBe false
+    }
+
+    @Test
+    @Order(13)
+    fun `pasting the redirect still logs in, and a dismissed dialog stops waiting`() = runBlocking<Unit> {
+        val oauth = OAuthFakeTracker(id = 906L)
+        val method = TrackerLoginMethod.OAuthPaste({ "https://tracker.invalid/authorize" }, "fake-auth", "code")
+        val model = TrackingSettingsScreenModel(openBrowser = {})
+
+        model.startOAuthLogin(oauth, method)
+        model.dismiss()
+        OAuthRedirectInbox.deliver("komikku://fake-auth?code=${FakeTracker.PASSWORD}") shouldBe false
+        oauth.isLoggedIn shouldBe false
+
+        model.startOAuthLogin(oauth, method)
+        model.loginWithRedirect(oauth, method, "komikku://fake-auth?code=${FakeTracker.PASSWORD}", invalidMessage = "invalid")
+        awaitCondition("pasted login finished") { model.state.value.dialog == null && !model.state.value.busy }
+        oauth.isLoggedIn shouldBe true
+        OAuthRedirectInbox.deliver("komikku://fake-auth?code=${FakeTracker.PASSWORD}") shouldBe false
+    }
+
+    /** Like the OAuth trackers, logs in with only the code (as password) and stores its own user name. */
+    private class OAuthFakeTracker(id: Long) : FakeTracker(id = id, name = "OAuth tracker $id") {
+        override suspend fun login(username: String, password: String) {
+            if (password != PASSWORD) throw Exception("Wrong code")
+            saveCredentials("oauth user", password)
+        }
     }
 }
