@@ -1,8 +1,8 @@
 # iOS check (CI)
 
 Status: iOS engineer — done: the REVIEW_IOS.md fixes (deallocation asserted, late navigation answered "cancel",
-the WebKit step fails on the app's exit status and counts each class's tests), green in run 46123856675 — left: a
-green run after the retention probe's removal (`a05e98674e`, 26 WebKit tests expected).
+the WebKit step fails on the app's exit status and counts each class's tests), green in runs 46123856675 and
+46126712108 (26 of 26 WebKit tests, after the retention probe's removal) — left: nothing from REVIEW_IOS.md.
 
 History: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
 simulator, including deep recursion on the 4 MiB JS stack; 122 with I5a (run 45545772720, commit `eca24347e1`,
