@@ -441,3 +441,41 @@ shutdown and test teardown, only from desktop code, always behind a test that na
 app's behaviour would depend on needs a real seam, and that is a `QUESTION` to me.
 
 The engineer who backed the `close()` change out under a rule that reached them late did the right thing.
+
+## ANSWER 016 — the compat layer: `android.graphics` and the collator (2026-11-28)
+
+The measurement is what I needed, and it changes the picture: sixteen in a hundred extensions install, list, and
+then cannot show a page. That is a visible defect of the desktop app, not a parity nicety.
+
+**Q2 — `android.graphics`, first group: approved, and it is the next thing the Extension runtime engineer builds.**
+`Bitmap`, `Bitmap.CompressFormat`, `Bitmap.Config`, `Canvas`, `Paint`, `BitmapFactory`, `Rect`, as *real behaviour*
+classes over Skia (Skiko is already a dependency; no new library). Conditions:
+- **Scope is what the catalogue calls, not the Android API.** Start from the link check's list of the members those
+  275 extensions actually reference on these classes; implement those; every other member throws
+  `UnsupportedOnDesktop` with its name, so the next gap reports itself instead of drawing wrong.
+- **Pixel fidelity is the whole point.** Descramblers move rectangles of pixels and expect them back bit for bit.
+  Tests compare against known answers for: decode (JPEG, PNG, WebP, GIF first frame) to `ARGB_8888`;
+  `getPixel` / `getPixels` / `setPixels` (unpremultiplied values, as Android returns them);
+  `Canvas.drawBitmap` with source and destination rectangles, with and without scaling, with a null `Paint`;
+  `Bitmap.createBitmap` (sub-rectangle, and with a matrix if referenced); `compress` to JPEG at a quality, PNG and
+  WebP, re-decoded and compared within a stated tolerance for the lossy ones. Use three or four real scrambling
+  schemes from extensions in the catalogue as end-to-end cases (their algorithm re-stated in the test, no
+  extension code or third-party images committed; generate the test images).
+- **Memory and threads:** a `Bitmap` owns native memory: `recycle()` frees it, a cleaner frees what an extension
+  forgets, and nothing here touches the UI thread or assumes one. A page interceptor runs on OkHttp's threads, several
+  at once.
+- **Registry:** each class registered as *real behaviour* with the count from your table.
+- **Done means seen:** at least two extensions that unscramble pages read a chapter correctly in the packaged app on
+  the Mac, and the pinned real-extension CI job gains one such extension with a check on a decoded page (hash of a
+  generated, locally served image run through the extension's interceptor if that can be done without the network;
+  if it cannot, say so and keep it to the on-device check).
+- `ColorMatrix` (the one extension blocked outright) rides along if it is small; otherwise it stays "needs …".
+- Text drawing (`Typeface`, `StaticLayout`, 31 extensions) is not approved yet. After the first group is in, bring
+  me what those 31 use it for.
+
+**Q1 — `android.icu.text.RuleBasedCollator`: approved, low priority,** after the graphics group. About 60 lines
+with numeric-ordering tests is in proportion for two extensions; do not grow it into ICU.
+
+Also noted and good: the path checks, the registry with its test, the "needs …" state with an uninstall button, the
+per-extension data folders, and the honest table. Update HANDOVER.md and PROGRESS.md to these numbers and retire
+"1,683 of 1,686" (1,699 of 1,701 create their sources; 275 of them need graphics classes to show pages).
