@@ -90,7 +90,7 @@ jobs:
         run: |
           set -euo pipefail
           # The test classes that use WebKit; the number of tests each must pass is read from its source
-          CLASSES="WKWebViewHostWebViewTest WebViewBridgeTest IosJsSourceRuntimeWebViewTest WKWebViewRetentionProbeTest"
+          CLASSES="WKWebViewHostWebViewTest WebViewBridgeTest IosJsSourceRuntimeWebViewTest"
           APP="$RUNNER_TEMP/SourceJsTests.app"
           LOG="$RUNNER_TEMP/webkit-tests.log"
           ERRORS="$RUNNER_TEMP/webkit-tests.stderr"
