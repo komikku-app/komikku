@@ -4684,3 +4684,16 @@ Pushed commits are not rewritten, so wrong messages are corrected here.
   `sudo dnf install ./<rpm>` (dnf installs a local unsigned package as it is) or `sudo rpm -i --nosignature ./<rpm>`,
   and leaves `Release` and `ReleaseServiceImpl` as `master` has them: the asset names are recorded by the desktop's
   download link selection in `DesktopReleaseAssets`.
+- `9b6d50ab64` ("Register komikku:// links in the Windows installer") also carries the macOS `CFBundleURLTypes`
+  (`komikku` and `tachiyomisy`) in `desktopApp/build.gradle.kts`, written for `074a5ad7b3` and still uncommitted in
+  the shared tree when `9b6d50ab64` was made.
+
+## Open issues: tracker login redirects
+
+- **AniList has no PKCE.** Its implicit grant returns the token itself, so nothing ties a received
+  `komikku://anilist-auth#access_token=…` to the login this app started. `OAuthRedirectInbox` refuses it unless an
+  AniList login dialog is open, but while one is open the first link to arrive is taken. MyAnimeList and MDList are
+  protected by their PKCE verifier; Shikimori and Bangumi by the code exchange with the app's secret only.
+- **MDList on Windows and Linux** redirects to `tachiyomisy://mangadex-auth`, which only the macOS bundle registers;
+  the Windows installer and the `.deb` / RPM register `komikku` only, so MDList keeps the paste fallback there.
+  Fix: add `tachiyomisy` next to `komikku` in `url-protocol.gradle.kts` and the `.desktop` `MimeType`.
