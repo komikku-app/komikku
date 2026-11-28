@@ -150,4 +150,107 @@ class GetApplicationReleaseTest {
         coVerify(exactly = 0) { releaseService.releaseNotes(any()) }
         result shouldBe GetApplicationRelease.Result.NoNewUpdate
     }
+
+    // KMK -->
+    @Test
+    fun `When a release has a tag without a version expect it skipped and the valid update found`() = runTest {
+        every { preference.get() } returns 0
+        every { preference.set(any()) }.answers { }
+
+        val valid = Release(
+            "v2.0.0",
+            "info",
+            "http://example.com/release_link",
+            "http://example.com/release_link.apk",
+        )
+        val releases = listOf(
+            Release(
+                "nightly",
+                "info",
+                "http://example.com/release_link",
+                "http://example.com/release_link.apk",
+            ),
+            valid,
+        )
+
+        coEvery { releaseService.releaseNotes(any()) } returns releases
+
+        val result = getApplicationRelease.await(
+            GetApplicationRelease.Arguments(
+                isFoss = false,
+                isPreview = false,
+                commitCount = 0,
+                versionName = "v1.0.0",
+                repository = "test",
+            ),
+        )
+
+        result shouldBe GetApplicationRelease.Result.NewUpdate(listOf(valid).getLatest()!!)
+    }
+
+    @Test
+    fun `When a release tag has fewer parts and is equal so far expect no new update`() = runTest {
+        every { preference.get() } returns 0
+        every { preference.set(any()) }.answers { }
+
+        val releases = listOf(
+            Release(
+                "v1.0",
+                "info",
+                "http://example.com/release_link",
+                "http://example.com/release_link.apk",
+            ),
+        )
+
+        coEvery { releaseService.releaseNotes(any()) } returns releases
+
+        val result = getApplicationRelease.await(
+            GetApplicationRelease.Arguments(
+                isFoss = false,
+                isPreview = false,
+                commitCount = 0,
+                versionName = "v1.0.1",
+                repository = "test",
+            ),
+        )
+
+        result shouldBe GetApplicationRelease.Result.NoNewUpdate
+    }
+
+    @Test
+    fun `When a preview release tag is not a commit count expect it skipped`() = runTest {
+        every { preference.get() } returns 0
+        every { preference.set(any()) }.answers { }
+
+        val valid = Release(
+            "r2000",
+            "info",
+            "http://example.com/release_link",
+            "http://example.com/release_link.apk",
+        )
+        val releases = listOf(
+            Release(
+                "r12.4",
+                "info",
+                "http://example.com/release_link",
+                "http://example.com/release_link.apk",
+            ),
+            valid,
+        )
+
+        coEvery { releaseService.releaseNotes(any()) } returns releases
+
+        val result = getApplicationRelease.await(
+            GetApplicationRelease.Arguments(
+                isFoss = false,
+                isPreview = true,
+                commitCount = 1000,
+                versionName = "",
+                repository = "test",
+            ),
+        )
+
+        result shouldBe GetApplicationRelease.Result.NewUpdate(listOf(valid).getLatest()!!)
+    }
+    // KMK <--
 }

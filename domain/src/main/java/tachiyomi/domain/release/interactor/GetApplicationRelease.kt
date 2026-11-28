@@ -85,20 +85,30 @@ class GetApplicationRelease(
         return if (isPreview) {
             // Preview builds: based on releases in "komikku-app/komikku-preview" repo
             // tagged as something like "r1234"
-            newVersion.toInt() > commitCount
+            // KMK -->
+            // A tag that is not a commit count is not a newer build; throwing would fail the whole check
+            newVersion.toIntOrNull()?.let { it > commitCount } ?: false
+            // KMK <--
         } else {
             // Release builds: based on releases in "komikku-app/komikku" repo
             // tagged as something like "v0.1.2"
             val oldVersion = versionName.replace("[^\\d.]".toRegex(), "")
 
-            val newSemVer = newVersion.split(".").map { it.toInt() }
-            val oldSemVer = oldVersion.split(".").map { it.toInt() }
+            // KMK -->
+            // A tag that is not a version is not newer, and a missing part counts as 0 ("v1.0" is "v1.0.0"):
+            // throwing here would fail the whole check, valid releases included
+            val newSemVer = newVersion.split(".").map { it.toIntOrNull() ?: return false }
+            val oldSemVer = oldVersion.split(".").map { it.toIntOrNull() ?: return false }
+            // KMK <--
 
             oldSemVer.mapIndexed { index, i ->
-                if (newSemVer[index] > i) {
+                // KMK -->
+                val newPart = newSemVer.getOrElse(index) { 0 }
+                if (newPart > i) {
                     return true
                 }
-                if (newSemVer[index] < i) return false
+                if (newPart < i) return false
+                // KMK <--
             }
 
             false
