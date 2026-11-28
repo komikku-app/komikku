@@ -34,12 +34,13 @@ class DesktopNetworkTest {
 
     private val server = MockWebServer()
 
-    private val services by lazy {
+    private val lazyServices = lazy {
         DesktopServices(
             application = Application(dir.resolve("data")),
             preferenceStore = DesktopPreferenceStore(dir.resolve("preferences.json")),
         )
     }
+    private val services by lazyServices
 
     @BeforeEach
     fun start() {
@@ -49,6 +50,8 @@ class DesktopNetworkTest {
     @AfterEach
     fun stop() {
         server.close()
+        // The network cache's journal in `dir` stays open otherwise, and Windows does not delete an open file
+        if (lazyServices.isInitialized()) services.network.client.cache?.close()
     }
 
     @Test

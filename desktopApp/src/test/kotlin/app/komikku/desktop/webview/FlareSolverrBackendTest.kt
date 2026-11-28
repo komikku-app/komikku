@@ -287,12 +287,17 @@ class FlareSolverrBackendTest {
         preferences.flareSolverrUrl().set(solver.url("/v1").toString())
         backend.availability() shouldBe app.komikku.network.browser.BrowserAvailability.Available
         solver.enqueue(solved())
-        services.network.client.newCall(GET(site.url("/popular").toString())).execute().use { it.code shouldBe 200 }
+        try {
+            services.network.client.newCall(GET(site.url("/popular").toString())).execute().use { it.code shouldBe 200 }
 
-        // It shows no pages: "Open in WebView" opens the system browser and the cookie dialog.
-        val webView = DesktopWebView(services.network, services.networkPreferences, io.mockk.mockk(relaxed = true), browserOpener = { true })
-        webView.open(site.url("/").toString(), null).shouldBeInstanceOf<DesktopWebView.Opened.Manual>()
-        solver.requestCount shouldBe 1
+            // It shows no pages: "Open in WebView" opens the system browser and the cookie dialog.
+            val webView = DesktopWebView(services.network, services.networkPreferences, io.mockk.mockk(relaxed = true), browserOpener = { true })
+            webView.open(site.url("/").toString(), null).shouldBeInstanceOf<DesktopWebView.Opened.Manual>()
+            solver.requestCount shouldBe 1
+        } finally {
+            // Its journal in `dir` stays open otherwise, and Windows does not delete an open file
+            services.network.client.cache?.close()
+        }
     }
 
     @Test

@@ -47,9 +47,10 @@ class DesktopWebViewTest {
     lateinit var dir: File
 
     private val server = MockWebServer()
-    private val services by lazy {
+    private val lazyServices = lazy {
         DesktopServices(Application(dir.resolve("data")), DesktopPreferenceStore(dir.resolve("preferences.json")))
     }
+    private val services by lazyServices
     private val source = mockk<HttpSource> {
         every { id } returns SOURCE_ID
         every { headers } returns Headers.headersOf("User-Agent", SOURCE_UA, "Referer", "https://example.org/", "Host", "x")
@@ -84,6 +85,8 @@ class DesktopWebViewTest {
     fun stop() {
         server.close()
         BrowserBackends.current = NoBrowserBackend
+        // The network cache's journal in `dir` stays open otherwise, and Windows does not delete an open file
+        if (lazyServices.isInitialized()) services.network.client.cache?.close()
     }
 
     @Test

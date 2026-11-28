@@ -123,10 +123,15 @@ class DesktopCloudflareInterceptorTest {
         BrowserBackends.current = backend
         val services = DesktopServices(Application(dir.resolve("app")), DesktopPreferenceStore(dir.resolve("prefs.json")))
 
-        services.network.client.newCall(GET(server.url("/").toString())).execute().use { it.code shouldBe 200 }
+        try {
+            services.network.client.newCall(GET(server.url("/").toString())).execute().use { it.code shouldBe 200 }
 
-        backend.sessions shouldHaveSize 1
-        backend.sessions.single().userAgent shouldBe services.network.defaultUserAgentProvider()
+            backend.sessions shouldHaveSize 1
+            backend.sessions.single().userAgent shouldBe services.network.defaultUserAgentProvider()
+        } finally {
+            // Its journal in `dir` stays open otherwise, and Windows does not delete an open file
+            services.network.client.cache?.close()
+        }
     }
 
     @Test
