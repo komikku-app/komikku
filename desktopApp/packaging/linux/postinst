@@ -1,0 +1,32 @@
+#!/bin/sh
+# postinst script for komikku: jpackage's template, with a menu entry that never fails the install
+# (put into the .deb by desktopApp/packaging/linux/deb-maintainer-scripts.gradle.kts)
+
+set -e
+
+desktop_file=/opt/komikku/lib/komikku-Komikku.desktop
+
+case "$1" in
+    configure)
+        # xdg-desktop-menu exits with 3 unless XDG_DATA_DIRS (/usr/local/share, /usr/share) has both an applications
+        # and a desktop-directories folder it can write, which a system without a desktop lacks; the entry is then
+        # copied to where desktops read entries from.
+        if ! xdg-desktop-menu install "$desktop_file"; then
+            if mkdir -p /usr/share/applications && cp "$desktop_file" /usr/share/applications/; then
+                echo "komikku: menu entry copied to /usr/share/applications" >&2
+            else
+                echo "komikku: the menu entry could not be installed" >&2
+            fi
+        fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0

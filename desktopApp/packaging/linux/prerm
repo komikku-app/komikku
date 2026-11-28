@@ -1,0 +1,25 @@
+#!/bin/sh
+# prerm script for komikku: jpackage's template, with a menu entry whose removal never fails the removal
+# (put into the .deb by desktopApp/packaging/linux/deb-maintainer-scripts.gradle.kts)
+
+set -e
+
+desktop_file=/opt/komikku/lib/komikku-Komikku.desktop
+
+case "$1" in
+    remove|upgrade|deconfigure)
+        # Fails without the folders it needs (see postinst), when postinst copied the entry itself
+        xdg-desktop-menu uninstall "$desktop_file" || true
+        rm -f /usr/share/applications/komikku-Komikku.desktop
+    ;;
+
+    failed-upgrade)
+    ;;
+
+    *)
+        echo "prerm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0
