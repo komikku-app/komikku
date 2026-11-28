@@ -280,6 +280,26 @@ Unverified: none of this has run (no certificates exist); in particular whether 
 runtime and the native libraries inside the JARs as the Compose plugin signs them (it signs them itself; Compose's
 default entitlements for the JVM are used).
 
+**The macOS signing key in CI (untested):** the workflow imports the `.p12` into a temporary keychain with
+`security import … -T /usr/bin/codesign` and `security set-key-partition-list -S apple-tool:,apple:,codesign:`, so only
+`codesign` may use the private key (never `-A`, which would let every process on the runner use it). The list comes from
+the Compose plugin 1.12.2 code: `MacSigner` signs with `/usr/bin/codesign` and reads the certificate with
+`/usr/bin/security find-certificate` (no key access); jpackage's app-image signing also calls `codesign`; notarization
+(`xcrun notarytool` with the app-specific password, `stapler`) and the DMG tools (`hdiutil`, `osascript`) do not use
+the key; no `.pkg` is built.
+
+**Checklist for the first signed build** (the first run with the macOS secrets set):
+
+1. The `Import macOS signing certificate` step passes and `security find-identity -v -p codesigning "$keychain"` (add it
+   temporarily if needed) lists the identity.
+2. `Package desktop app` signs without a key-access error. If a tool that is not in the `-T` list uses the key, the run
+   cannot show the keychain's permission dialog and that tool fails, typically with `errSecInternalComponent` or
+   `User interaction is not allowed.` next to the tool's name. Fix: add `-T <full path of that tool>` to the
+   `security import` line in `build_desktop.yml` (and its name to the comment above it); never `-A`.
+3. `codesign --verify --deep --strict --verbose=2` on the `.app` inside the `.dmg` passes, `spctl -a -vv` says
+   `source=Notarized Developer ID` after notarization, and `xcrun stapler validate` passes (the workflow runs it).
+4. Then remove "untested" here.
+
 ## Data directory
 
 | OS | Default location |

@@ -349,8 +349,12 @@ jobs:
           security create-keychain -p "$keychain_password" "$keychain"
           security set-keychain-settings -lut 21600 "$keychain"
           security unlock-keychain -p "$keychain_password" "$keychain"
-          security import "$certificate" -P "$MACOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$keychain"
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain" > /dev/null
+          # Only codesign may use the key (never -A, which lets every process use it): the one tool that signs with
+          # it, called by the Compose plugin (MacSigner) and by jpackage (MacAppImageBuilder); `security` and
+          # `openssl` only read the certificate, `xcrun notarytool` / `stapler` do not use it, and no .pkg is built
+          # (`pkgbuild` / `productbuild`). Untested until the first signed build (BUILDING.md, "Signing").
+          security import "$certificate" -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign -t cert -f pkcs12 -k "$keychain"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$keychain" > /dev/null
           security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
           rm -f "$certificate"
           echo "KOMIKKU_MAC_SIGNING_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
