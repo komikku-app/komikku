@@ -45,7 +45,12 @@ import javax.imageio.ImageIO
  */
 @OptIn(ExperimentalTestApi::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class SmokeScriptTest(screenWidth: Int, screenHeight: Int, private val titleBar: Int) {
+abstract class SmokeScriptTest(
+    screenWidth: Int,
+    screenHeight: Int,
+    private val titleBar: Int,
+    private val accessibleNames: Boolean = false,
+) {
 
     private val window = SmokeWindowSize.choose(screenWidth, screenHeight) as SmokeWindowSize.Choice.Fits
 
@@ -67,7 +72,7 @@ abstract class SmokeScriptTest(screenWidth: Int, screenHeight: Int, private val 
     fun `every step of the smoke script passes`(@TempDir reportFolder: File) = runDesktopComposeUiTest(window.width, window.height - titleBar) {
         setContent { KomikkuApp(context = app) }
         waitForIdle()
-        val driver = TestDriver(this, navigators)
+        val driver = TestDriver(this, navigators, accessibleNames)
         val script = SmokeScript(driver)
         val report = SmokeReport(reportFolder)
 
@@ -88,8 +93,16 @@ abstract class SmokeScriptTest(screenWidth: Int, screenHeight: Int, private val 
         }
     }
 
-    /** [SmokeDriver] over the Compose test framework: its key injection, text input and captures. */
-    private class TestDriver(private val test: ComposeUiTest, override val navigators: SmokeNavigators) : SmokeDriver {
+    /**
+     * [SmokeDriver] over the Compose test framework: its key injection, text input and captures. With [accessibleNames]
+     * the text on screen is read as the window's accessibility tree gives it ([WindowSmokeDriver.texts]): one name per
+     * merged node, its texts joined with ", " (a chapter row is "Chapter 2, Jan 1, 2024"); otherwise one entry per text.
+     */
+    private class TestDriver(
+        private val test: ComposeUiTest,
+        override val navigators: SmokeNavigators,
+        private val accessibleNames: Boolean,
+    ) : SmokeDriver {
 
         override suspend fun <T> onUi(block: () -> T): T = test.runOnIdle(block)
 
@@ -113,11 +126,12 @@ abstract class SmokeScriptTest(screenWidth: Int, screenHeight: Int, private val 
         override suspend fun texts(): List<String> = buildList {
             test.waitForIdle()
             fun visit(node: SemanticsNode) {
-                node.config.getOrNull(SemanticsProperties.Text)?.forEach { add(it.text) }
+                val texts = node.config.getOrNull(SemanticsProperties.Text).orEmpty().map { it.text }
+                if (accessibleNames) texts.takeIf { it.isNotEmpty() }?.let { add(it.joinToString(", ")) } else addAll(texts)
                 node.config.getOrNull(SemanticsProperties.ContentDescription)?.let(::addAll)
                 node.children.forEach(::visit)
             }
-            test.onAllNodes(isRoot(), useUnmergedTree = true).fetchSemanticsNodes().forEach(::visit)
+            test.onAllNodes(isRoot(), useUnmergedTree = !accessibleNames).fetchSemanticsNodes().forEach(::visit)
         }
 
         override suspend fun awaitIdle(timeoutMillis: Long): Boolean {
@@ -151,3 +165,9 @@ class SmokeScriptSmallScreenTest : SmokeScriptTest(1024, 684, MAC_TITLE_BAR)
 
 /** The smallest window the mode accepts, with the tallest frame. */
 class SmokeScriptMinimumSizeTest : SmokeScriptTest(960, 600, MAX_TITLE_BAR)
+
+/**
+ * Linux xvfb in CI (run 46143782567): no window manager, so no title bar, and the window's text read as accessibility
+ * names, where a merged node's texts are one name.
+ */
+class SmokeScriptAccessibleNamesTest : SmokeScriptTest(1280, 800, titleBar = 0, accessibleNames = true)

@@ -79,13 +79,14 @@ internal class SmokeScript(val driver: SmokeDriver) {
                 driver.onUi { navigators.push(BrowseHomeScreen, MangaDetailsScreen(manga.id)) }
             },
             until = {
-                driver.texts().containsAll(SmokeFixture.CHAPTERS) &&
+                val texts = driver.texts()
+                SmokeFixture.CHAPTERS.all { shows(texts, it) } &&
                     driver.onUi { navigators.top(BrowseHomeScreen) } is MangaDetailsScreen &&
                     chapters().map { it.name }.toSet() == SmokeFixture.CHAPTERS.toSet()
             },
             state = {
                 val texts = driver.texts()
-                "listed: ${SmokeFixture.CHAPTERS.filter { it in texts }}, stored: ${chapters().map { it.name }}"
+                "listed: ${SmokeFixture.CHAPTERS.filter { shows(texts, it) }}, stored: ${chapters().map { it.name }}"
             },
         ),
         SmokeStep(
@@ -225,5 +226,12 @@ internal class SmokeScript(val driver: SmokeDriver) {
         private const val SETTLE_MILLIS = 2_000L
         private const val ACTION_GRACE_MILLIS = 10_000L
         private const val MAX_REPORTED_TEXTS = 40
+
+        /**
+         * Whether [texts] (the driver's text on screen) show [text] as a whole text: on its own, or first in the
+         * accessible name of a merged node, which joins the node's texts with ", " (a chapter row is "Chapter 2, Jan 1,
+         * 2024" in the window's accessibility tree).
+         */
+        fun shows(texts: List<String>, text: String): Boolean = texts.any { it == text || it.startsWith("$text, ") }
     }
 }
